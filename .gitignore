@@ -5,3 +5,4 @@ node_modules
 lib/db/*.db
 lib/db/*.db-shm
 lib/db/*.db-wal
+.env.local
