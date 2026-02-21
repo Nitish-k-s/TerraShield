@@ -198,8 +198,12 @@ interface GeminiResult {
     ai_tags: string[];
     ai_summary: string;
 }
+interface AnalysisMetadata {
+    ai: GeminiResult;
+    externalContext: any | null;
+}
 
-async function analyseWithGemini(record: ExifRecord): Promise<GeminiResult> {
+async function analyseWithGemini(record: ExifRecord): Promise<AnalysisMetadata> {
     const genAI = getGemini();
     // gemini-1.5-flash supports multimodal (vision) input
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -246,7 +250,7 @@ async function analyseWithGemini(record: ExifRecord): Promise<GeminiResult> {
     parsed.ai_confidence = Math.min(1, Math.max(0, Number(parsed.ai_confidence) || 0));
     parsed.ai_risk_score = Math.min(10, Math.max(0, Number(parsed.ai_risk_score) || 0));
 
-    return parsed;
+    return { ai: parsed, externalContext };
 }
 
 // ─── Route handler ────────────────────────────────────────────────────────────
@@ -311,7 +315,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     for (const record of records) {
         try {
-            const ai = await analyseWithGemini(record);
+            const { ai, externalContext } = await analyseWithGemini(record);
 
             const ai_analysed_at = new Date().toISOString();
 
@@ -322,6 +326,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                 ai_summary: ai.ai_summary,
                 ai_risk_score: ai.ai_risk_score,
                 ai_analysed_at,
+                satellite_context_json: externalContext ? JSON.stringify(externalContext) : null,
             });
 
             analysed.push({

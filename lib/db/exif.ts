@@ -101,6 +101,7 @@ function initSchema(db: Database.Database): void {
 
             -- ── Raw Payload ──────────────────────────────────────────────────
             all_tags_json   TEXT        NOT NULL DEFAULT '{}',  -- full EXIF dump as JSON
+            satellite_context_json TEXT,                        -- JSON dump of the Sentinel Hub fetch
 
             -- ── Audit ────────────────────────────────────────────────────────
             created_at      TEXT        NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
@@ -128,6 +129,7 @@ function initSchema(db: Database.Database): void {
     // SQLite does not support IF NOT EXISTS on ALTER TABLE, so we catch the
     // duplicate-column error and ignore it.
     try { db.exec("ALTER TABLE exif_data ADD COLUMN image_data BLOB"); } catch { /* already exists */ }
+    try { db.exec("ALTER TABLE exif_data ADD COLUMN satellite_context_json TEXT"); } catch { /* already exists */ }
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -179,6 +181,7 @@ export interface AiAnalysisUpdate {
     ai_summary?: string | null;
     ai_risk_score?: number | null;
     ai_analysed_at?: string | null;
+    satellite_context_json?: string | null; // JSON dump of Sentinel API context
 }
 
 /** Full row as returned by the database. */
@@ -264,7 +267,8 @@ export function updateAiAnalysis(id: number, update: AiAnalysisUpdate): void {
             ai_tags        = @ai_tags,
             ai_summary     = @ai_summary,
             ai_risk_score  = @ai_risk_score,
-            ai_analysed_at = @ai_analysed_at
+            ai_analysed_at = @ai_analysed_at,
+            satellite_context_json = @satellite_context_json
         WHERE id = @id
     `).run({ ...update, id });
 }
