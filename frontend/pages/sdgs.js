@@ -21,22 +21,25 @@ export function renderAlerts() {
     </section>
 
     <!-- Map -->
-    <section style="background:#fff;padding:var(--space-12) 0;border-bottom:1px solid var(--color-slate-200)">
-      <div class="container">
-        <div class="reveal" style="position:relative;border-radius:var(--radius-lg);overflow:hidden;background:rgba(74,93,78,0.05);border:1px solid var(--color-slate-200);min-height:20rem">
+    <section style="background:linear-gradient(180deg, var(--color-bg-light) 0%, var(--color-bg-dark) 50%, var(--color-bg-light) 100%);padding:var(--space-12) 0;position:relative;overflow:hidden">
+      <!-- Decorative ambient glow -->
+      <div style="position:absolute;top:-100px;right:12%;width:350px;height:350px;border-radius:50%;background:radial-gradient(circle,rgba(74,222,128,0.05) 0%,transparent 70%);pointer-events:none;filter:blur(60px);animation:footer-orb-float 16s ease-in-out infinite"></div>
+
+      <div class="container" style="position:relative;z-index:2">
+        <div class="reveal" style="position:relative;border-radius:var(--radius-lg);overflow:hidden;background:rgba(15,35,20,0.5);border:1px solid rgba(74,222,128,0.15);min-height:20rem;box-shadow:0 8px 32px rgba(0,0,0,0.3)">
           <div id="alerts-map" style="width:100%;height:100%;min-height:20rem;"></div>
           <!-- Legend -->
-          <div style="position:absolute;bottom:var(--space-4);left:50%;transform:translateX(-50%);display:flex;gap:var(--space-6);font-size:0.7rem;color:var(--color-slate-400);z-index:1000;background:rgba(255,255,255,0.85);padding:4px 12px;border-radius:999px;pointer-events:none">
+          <div style="position:absolute;bottom:var(--space-4);left:50%;transform:translateX(-50%);display:flex;gap:var(--space-6);font-size:0.7rem;color:var(--color-slate-600);z-index:1000;background:rgba(10,26,15,0.85);backdrop-filter:blur(8px);padding:6px 16px;border-radius:999px;border:1px solid rgba(74,222,128,0.12);pointer-events:none">
             <span style="display:flex;align-items:center;gap:var(--space-1)"><span style="width:6px;height:6px;border-radius:50%;background:#ef4444"></span>Critical (≥7)</span>
             <span style="display:flex;align-items:center;gap:var(--space-1)"><span style="width:6px;height:6px;border-radius:50%;background:#f59e0b"></span>Elevated (4–7)</span>
             <span style="display:flex;align-items:center;gap:var(--space-1)"><span style="width:6px;height:6px;border-radius:50%;background:#1dacc9"></span>Monitoring (&lt;4)</span>
           </div>
           <!-- Map loading indicator -->
-          <div id="map-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.7);z-index:999;pointer-events:none">
-            <span style="font-size:0.85rem;color:var(--color-slate-500)">Loading live reports…</span>
+          <div id="map-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,26,15,0.7);backdrop-filter:blur(4px);z-index:999;pointer-events:none">
+            <span style="font-size:0.85rem;color:var(--color-slate-600)">Loading live reports…</span>
           </div>
         </div>
-        <p id="map-count" style="text-align:center;font-size:0.75rem;color:var(--color-slate-400);margin-top:var(--space-3)"></p>
+        <p id="map-count" style="text-align:center;font-size:0.75rem;color:var(--color-slate-500);margin-top:var(--space-3)"></p>
       </div>
     </section>
 
