@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Impact Dashboard - SDG Tracker</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1dacc9",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#111e21",
+                        "earth-sage": "#7a9a8c",
+                        "earth-sand": "#e8e1d5",
+                        "earth-clay": "#d4a373",
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>.paper-texture {
+    background-color: #f6f8f8;
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuAh1EuKPZdC9PUCo-GBrp-J-a0isxLRr2aKLwWy4l04xkT8EGuIUGjzZP3kporwIfUF4q-hxVRFD9_TkKQoLGUzAi6vZnJt_LaJnGLWI312_B20HkyT_e7DgZHEsiLM_La4oWlom36yvZiJcjfF1HjAV6JXdRzXuF0pql0giCMoMwof6F65dAyswcnqSlxn_T_KZ1ImG9B7uHU2U609LDD8j2olR8cQVca9omwC9SxGK4m8iLl67tHZ1vR4o0Yxx21ycAbOsp1OX6BJ)
+    }
+.paper-cut-accent {
+    clip-path: polygon(0% 0%, 100% 0%, 100% 75%, 75% 100%, 0% 100%)
+    }</style>
+</head>
+<body class="paper-texture font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<!-- Paper Cut Decorative Accents -->
+<div class="fixed top-0 right-0 w-64 h-64 bg-earth-sand/20 -z-10 rounded-full blur-3xl opacity-50"></div>
+<div class="fixed bottom-0 left-0 w-96 h-96 bg-primary/10 -z-10 rounded-full blur-3xl opacity-40"></div>
+<div class="flex h-screen overflow-hidden">
+<!-- Side Navigation -->
+<aside class="w-64 border-r border-primary/10 bg-white/60 backdrop-blur-md flex flex-col justify-between p-6">
+<div class="flex flex-col gap-8">
+<div class="flex items-center gap-3 px-2">
+<div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white">
+<span class="material-symbols-outlined">eco</span>
+</div>
+<span class="text-xl font-bold tracking-tight text-slate-800">Impact.ly</span>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary text-white shadow-lg shadow-primary/20" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-medium text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-primary/10 transition-colors" href="#">
+<span class="material-symbols-outlined">target</span>
+<span class="font-medium text-sm">Goals</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-primary/10 transition-colors" href="#">
+<span class="material-symbols-outlined">forest</span>
+<span class="font-medium text-sm">Impact</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-primary/10 transition-colors" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-medium text-sm">Reports</span>
+</a>
+</nav>
+</div>
+<div class="flex flex-col gap-4">
+<div class="bg-earth-sand/30 p-4 rounded-xl border border-earth-sand/50">
+<p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Current Tier</p>
+<div class="flex items-center justify-between mb-2">
+<span class="text-sm font-bold text-slate-800">Guardian</span>
+<span class="text-xs font-medium text-primary">84%</span>
+</div>
+<div class="h-1.5 w-full bg-white/50 rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 84%;"></div>
+</div>
+</div>
+<button class="w-full flex items-center justify-center gap-2 bg-slate-900 text-white py-3 rounded-xl font-bold text-sm shadow-xl hover:bg-slate-800 transition-all">
+<span class="material-symbols-outlined text-sm">add</span>
+                    New Action
+                </button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto relative">
+<!-- Header -->
+<header class="sticky top-0 z-10 flex items-center justify-between px-10 py-6 bg-white/40 backdrop-blur-md border-b border-primary/5">
+<div>
+<h1 class="text-2xl font-bold text-slate-900 leading-tight">Good Morning, Alex</h1>
+<p class="text-sm text-slate-500 font-medium">Here's your environmental impact overview for today.</p>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-400 text-lg">search</span>
+</div>
+<input class="block w-64 pl-10 pr-3 py-2 border-none bg-white/80 rounded-xl text-sm placeholder-slate-400 focus:ring-2 focus:ring-primary shadow-sm" placeholder="Search initiatives..." type="text"/>
+</div>
+<div class="flex items-center gap-3">
+<button class="w-10 h-10 flex items-center justify-center rounded-xl bg-white shadow-sm text-slate-600 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="w-10 h-10 rounded-xl bg-primary/20 border-2 border-primary/30 flex items-center justify-center text-primary overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="User profile avatar placeholder" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCUQ1jCrQQhQElhD6vLR-nkRxKTA3K05U5IG_hShFUqWTiAy0kcKfM-Aw17JPaVXe1-kis9GMTGA9gEVwTfP349c6Zb9-AZWD9qry7OXtvImL8_myc4qoZIqBGBL5g70KmQBNYe31QzOG-QlCyihHmeHnaovqx6bzPJRiko4tM7w3RefQnvCGZFW3UX-9IhRLKrx3SCaswbGjM-xhz6EdgtYAXGa7L-GDqCSLGbdD9vvBWOizoBht-yRHXtesT5jWdvDgndoaxZrvxh')"></div>
+</div>
+</div>
+</div>
+</header>
+<div class="p-10 max-w-7xl mx-auto space-y-8">
+<!-- Impact Cards -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-white p-6 rounded-xl shadow-sm border border-primary/5 flex flex-col gap-4 group hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between">
+<div class="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined">co2</span>
+</div>
+<span class="text-emerald-600 text-xs font-bold px-2 py-1 bg-emerald-50 rounded-full">+12%</span>
+</div>
+<div>
+<p class="text-sm font-medium text-slate-500">Carbon Offset</p>
+<h3 class="text-3xl font-bold text-slate-800">2.4 tons</h3>
+</div>
+</div>
+<div class="bg-white p-6 rounded-xl shadow-sm border border-primary/5 flex flex-col gap-4 hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between">
+<div class="w-12 h-12 rounded-lg bg-earth-sage/10 text-earth-sage flex items-center justify-center">
+<span class="material-symbols-outlined">schedule</span>
+</div>
+<span class="text-emerald-600 text-xs font-bold px-2 py-1 bg-emerald-50 rounded-full">+5%</span>
+</div>
+<div>
+<p class="text-sm font-medium text-slate-500">Hours Volunteered</p>
+<h3 class="text-3xl font-bold text-slate-800">48 hrs</h3>
+</div>
+</div>
+<div class="bg-white p-6 rounded-xl shadow-sm border border-primary/5 flex flex-col gap-4 hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between">
+<div class="w-12 h-12 rounded-lg bg-earth-clay/10 text-earth-clay flex items-center justify-center">
+<span class="material-symbols-outlined">park</span>
+</div>
+<span class="text-emerald-600 text-xs font-bold px-2 py-1 bg-emerald-50 rounded-full">+18%</span>
+</div>
+<div>
+<p class="text-sm font-medium text-slate-500">Trees Planted</p>
+<h3 class="text-3xl font-bold text-slate-800">124</h3>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- SDG Tracker -->
+<section class="lg:col-span-2 space-y-6">
+<div class="bg-white/60 p-8 rounded-xl shadow-sm border border-primary/5">
+<div class="flex items-center justify-between mb-8">
+<h2 class="text-xl font-bold text-slate-800">SDG Engagement Tracker</h2>
+<button class="text-sm font-bold text-primary flex items-center gap-1">View Details <span class="material-symbols-outlined text-sm">arrow_forward</span></button>
+</div>
+<div class="space-y-6">
+<div class="space-y-2">
+<div class="flex justify-between items-center text-sm font-medium">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-[#4C9F38] text-white flex items-center justify-center text-xs font-bold">13</div>
+<span class="text-slate-700">Goal 13: Climate Action</span>
+</div>
+<span class="text-slate-500">65%</span>
+</div>
+<div class="h-2.5 w-full bg-earth-sand/30 rounded-full overflow-hidden">
+<div class="h-full bg-[#4C9F38]" style="width: 65%;"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center text-sm font-medium">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-[#EB1C2D] text-white flex items-center justify-center text-xs font-bold">4</div>
+<span class="text-slate-700">Goal 4: Quality Education</span>
+</div>
+<span class="text-slate-500">42%</span>
+</div>
+<div class="h-2.5 w-full bg-earth-sand/30 rounded-full overflow-hidden">
+<div class="h-full bg-[#EB1C2D]" style="width: 42%;"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center text-sm font-medium">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-[#FFB735] text-white flex items-center justify-center text-xs font-bold">7</div>
+<span class="text-slate-700">Goal 7: Affordable &amp; Clean Energy</span>
+</div>
+<span class="text-slate-500">88%</span>
+</div>
+<div class="h-2.5 w-full bg-earth-sand/30 rounded-full overflow-hidden">
+<div class="h-full bg-[#FFB735]" style="width: 88%;"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center text-sm font-medium">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-[#00AEC7] text-white flex items-center justify-center text-xs font-bold">14</div>
+<span class="text-slate-700">Goal 14: Life Below Water</span>
+</div>
+<span class="text-slate-500">15%</span>
+</div>
+<div class="h-2.5 w-full bg-earth-sand/30 rounded-full overflow-hidden">
+<div class="h-full bg-[#00AEC7]" style="width: 15%;"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Milestone History -->
+<div class="bg-white/60 p-8 rounded-xl shadow-sm border border-primary/5">
+<h2 class="text-xl font-bold text-slate-800 mb-6">Recent Contributions</h2>
+<div class="space-y-6">
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="w-2 h-2 rounded-full bg-primary ring-4 ring-primary/10"></div>
+<div class="w-0.5 h-full bg-earth-sand/40"></div>
+</div>
+<div class="pb-6">
+<p class="text-xs font-bold text-slate-400 uppercase tracking-tighter">Today, 09:45 AM</p>
+<h4 class="text-sm font-bold text-slate-800">Renewable Energy Subscription</h4>
+<p class="text-sm text-slate-500">Switched home energy provider to 100% wind source.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="w-2 h-2 rounded-full bg-earth-sage ring-4 ring-earth-sage/10"></div>
+<div class="w-0.5 h-full bg-earth-sand/40"></div>
+</div>
+<div class="pb-6">
+<p class="text-xs font-bold text-slate-400 uppercase tracking-tighter">Oct 24, 2023</p>
+<h4 class="text-sm font-bold text-slate-800">Local Reforestation Program</h4>
+<p class="text-sm text-slate-500">Planted 25 native saplings in North Ridge Park.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="w-2 h-2 rounded-full bg-earth-clay ring-4 ring-earth-clay/10"></div>
+</div>
+<div>
+<p class="text-xs font-bold text-slate-400 uppercase tracking-tighter">Oct 21, 2023</p>
+<h4 class="text-sm font-bold text-slate-800">Youth Mentorship Session</h4>
+<p class="text-sm text-slate-500">Conducted a 2-hour virtual career session for SDG advocates.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Sidebar / Info -->
+<section class="space-y-8">
+<!-- Next Milestone -->
+<div class="bg-slate-900 rounded-xl p-8 text-white relative overflow-hidden shadow-2xl">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/20 paper-cut-accent rotate-12 -mr-8 -mt-8"></div>
+<div class="relative z-10">
+<h3 class="text-lg font-bold mb-2">Next Milestone</h3>
+<p class="text-slate-400 text-sm mb-6">Plant 50 more trees to reach the 'Ecological Pioneer' badge.</p>
+<div class="flex items-center gap-4 mb-4">
+<div class="w-16 h-16 rounded-full border-4 border-primary/20 flex items-center justify-center">
+<div class="w-12 h-12 rounded-full border-4 border-primary border-t-transparent flex items-center justify-center">
+<span class="text-xs font-bold">75%</span>
+</div>
+</div>
+<div>
+<p class="text-xl font-bold">38 / 50</p>
+<p class="text-xs text-slate-400">Trees Planted</p>
+</div>
+</div>
+<button class="w-full bg-primary py-2.5 rounded-lg text-sm font-bold hover:brightness-110 transition-all">Track Progress</button>
+</div>
+</div>
+<!-- Impact Comparison -->
+<div class="bg-earth-sand/20 border border-earth-sand/40 p-6 rounded-xl">
+<h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4">Community Impact</h3>
+<div class="space-y-4">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">groups</span>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-800">Top 5%</p>
+<p class="text-xs text-slate-500">You are in the top 5% of active users this month.</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-earth-sage">
+<span class="material-symbols-outlined">trending_up</span>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-800">+2.5x Growth</p>
+<p class="text-xs text-slate-500">Your contribution frequency is increasing vs last year.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Tips/Article Card -->
+<div class="bg-primary/5 border border-primary/10 p-6 rounded-xl">
+<div class="w-full h-32 bg-primary/10 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+<div class="w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/20 via-primary/5 to-transparent flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-primary/40">lightbulb</span>
+</div>
+</div>
+<h4 class="text-sm font-bold text-slate-800 mb-2">Did you know?</h4>
+<p class="text-xs text-slate-600 leading-relaxed mb-4">Reducing meat consumption by just one day a week can save up to 1,100 gallons of water per person.</p>
+<a class="text-xs font-bold text-primary underline underline-offset-4" href="#">Learn more sustainable tips</a>
+</div>
+</section>
+</div>
+</div>
+<!-- Footer-like paper-cut accent bottom right -->
+<div class="absolute bottom-0 right-0 w-48 h-48 -z-10 opacity-10">
+<div class="w-full h-full bg-earth-clay paper-cut-accent transform rotate-180"></div>
+</div>
+</main>
+</div>
+</body></html>

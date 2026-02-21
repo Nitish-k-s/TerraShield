@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EcoAction - Take Action</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&amp;family=Playfair+Display:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1dacc9",
+                        "background-light": "#fdfaf6", // Warm cream
+                        "background-dark": "#111e21",
+                        "sage": "#a3b18a",
+                        "forest": "#3a5a40",
+                        "deep-teal": "#1d3557",
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans", "sans-serif"],
+                        "serif": ["Playfair Display", "serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>.paper-texture {
+    position: relative
+    }
+.paper-texture::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.05;
+    pointer-events: none;
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuC_mut-K40DwCArQTyQhVk77qmCu08hSVQuramBVYI6kXh0HUT1xkktQAGmzZrrE3ToOR4YLfj1_2lfJ6jcU_dndTQ0ZrWtSPTcGDAinXz7MPRA0g9uc7xqy7Cp1t1dOq8MtU3eN5WIV9_I8806Cz87Olr-WuyepCV3LKT4KSBZy-YjfNTc1pdV_mqaiN9VXUYS-wvSAX8Gy7PUIQqeRbBljhjlloazUSfxHVLJ-j_ZxkORUOZ5_3rcbRqQBQiY_FHu82kHBPDsBSEO);
+    z-index: 10
+    }
+.paper-shadow {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.5)
+    }
+.layer-1 {
+    z-index: 1;
+    transform: translatey(0)
+    }
+.layer-2 {
+    z-index: 2;
+    transform: translatey(-10px)
+    }
+.layer-3 {
+    z-index: 3;
+    transform: translatey(-20px)
+    }
+/* Custom serif utility since theme config uses font-display as primary */
+.font-serif-elegant {
+    font-family: "Playfair Display", serif
+    }</style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 paper-texture">
+<div class="relative flex min-h-screen flex-col overflow-x-hidden">
+<!-- Navigation Bar -->
+<header class="flex items-center justify-between px-10 py-6 border-b border-sage/20">
+<div class="flex items-center gap-3">
+<div class="size-8 bg-forest rounded-full flex items-center justify-center text-background-light">
+<span class="material-symbols-outlined text-xl">storm</span>
+</div>
+<h2 class="text-xl font-bold tracking-tight font-serif-elegant text-forest">EcoAction</h2>
+</div>
+<nav class="hidden md:flex items-center gap-10">
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Home</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">About</a>
+<a class="text-sm font-medium text-primary underline underline-offset-4" href="#">Take Action</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Community</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="px-6 py-2 rounded-full border border-forest/20 text-sm font-semibold hover:bg-forest/5 transition-all">Log In</button>
+<button class="px-6 py-2 rounded-full bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-transform">Get Started</button>
+</div>
+</header>
+<main class="flex-1 max-w-6xl mx-auto w-full px-6 py-12">
+<!-- Hero Section: Paper-cut Diorama -->
+<section class="relative mb-20">
+<div class="w-full h-[400px] rounded-xl overflow-hidden relative bg-deep-teal/10 flex items-end justify-center">
+<!-- Background Layers (Distant Mountains/Trees) -->
+<div class="absolute bottom-0 w-full h-3/4 bg-deep-teal/20 rounded-t-[100px] blur-sm opacity-50 translate-y-10"></div>
+<!-- Middle Layer (Rolling Hills) -->
+<div class="absolute bottom-0 w-[120%] h-1/2 bg-forest/40 rounded-t-full -rotate-2 -translate-x-10 paper-shadow"></div>
+<div class="absolute bottom-0 w-[120%] h-2/5 bg-sage/60 rounded-t-full rotate-3 translate-x-10 paper-shadow"></div>
+<!-- Foreground Layer (Soft Paper Cut Organic Shapes) -->
+<div class="absolute bottom-0 w-full h-1/4 bg-background-light rounded-t-3xl paper-shadow flex flex-col items-center justify-center">
+<h1 class="font-serif-elegant text-4xl md:text-5xl text-forest font-bold text-center px-4">Small Actions, Collective Change</h1>
+<p class="mt-4 text-slate-600 max-w-xl text-center px-4 text-lg">Join our community in building a sustainable future through tactile local and global initiatives.</p>
+</div>
+<!-- Floating Paper Elements -->
+<div class="absolute top-10 left-20 size-24 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
+<div class="absolute top-20 right-32 size-16 bg-sage/30 rounded-full blur-lg"></div>
+</div>
+</section>
+<!-- Action Grid -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+<!-- Volunteering Card -->
+<div class="group bg-white dark:bg-slate-800 p-8 rounded-xl paper-shadow border border-sage/10 flex flex-col items-center text-center transition-all hover:-translate-y-2">
+<div class="size-24 mb-6 relative">
+<!-- Paper Cut Style Icon: Tree/Leaf -->
+<div class="absolute inset-0 bg-sage rounded-full opacity-20 group-hover:scale-110 transition-transform"></div>
+<div class="absolute inset-4 bg-forest rounded-lg rotate-12 flex items-center justify-center paper-shadow">
+<span class="material-symbols-outlined text-white text-3xl">volunteer_activism</span>
+</div>
+</div>
+<h3 class="font-serif-elegant text-2xl font-bold text-forest mb-3">Volunteering</h3>
+<p class="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">Join local cleanups and tree planting events in your neighborhood. Real hands, real change.</p>
+<button class="mt-auto w-full py-3 rounded-lg bg-primary/10 text-primary font-bold hover:bg-primary hover:text-white transition-all">
+                        Find Events Near Me
+                    </button>
+</div>
+<!-- Carbon Offsetting Card -->
+<div class="group bg-white dark:bg-slate-800 p-8 rounded-xl paper-shadow border border-sage/10 flex flex-col items-center text-center transition-all hover:-translate-y-2">
+<div class="size-24 mb-6 relative">
+<!-- Paper Cut Style Icon: Cloud/Scale -->
+<div class="absolute inset-0 bg-primary rounded-full opacity-20 group-hover:scale-110 transition-transform"></div>
+<div class="absolute inset-4 bg-primary rounded-lg -rotate-6 flex items-center justify-center paper-shadow">
+<span class="material-symbols-outlined text-white text-3xl">eco</span>
+</div>
+</div>
+<h3 class="font-serif-elegant text-2xl font-bold text-forest mb-3">Carbon Offsetting</h3>
+<p class="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">Calculate your personal footprint and support verified green projects across the globe.</p>
+<button class="mt-auto w-full py-3 rounded-lg bg-primary text-white font-bold shadow-lg shadow-primary/30 hover:brightness-110 transition-all">
+                        Calculate &amp; Offset
+                    </button>
+</div>
+<!-- Community Programs Card -->
+<div class="group bg-white dark:bg-slate-800 p-8 rounded-xl paper-shadow border border-sage/10 flex flex-col items-center text-center transition-all hover:-translate-y-2">
+<div class="size-24 mb-6 relative">
+<!-- Paper Cut Style Icon: People/Circle -->
+<div class="absolute inset-0 bg-deep-teal rounded-full opacity-20 group-hover:scale-110 transition-transform"></div>
+<div class="absolute inset-4 bg-deep-teal rounded-lg rotate-3 flex items-center justify-center paper-shadow">
+<span class="material-symbols-outlined text-white text-3xl">groups</span>
+</div>
+</div>
+<h3 class="font-serif-elegant text-2xl font-bold text-forest mb-3">Community Programs</h3>
+<p class="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">Participate in educational workshops and start local green initiatives with your peers.</p>
+<button class="mt-auto w-full py-3 rounded-lg bg-primary/10 text-primary font-bold hover:bg-primary hover:text-white transition-all">
+                        Join a Chapter
+                    </button>
+</div>
+</section>
+<!-- Impact Counter Section -->
+<section class="max-w-4xl mx-auto">
+<div class="relative p-1 bg-gradient-to-r from-sage/20 via-forest/20 to-primary/20 rounded-2xl">
+<div class="bg-background-light dark:bg-background-dark rounded-xl p-10 flex flex-col md:flex-row items-center justify-around gap-8 border border-white/40">
+<div class="text-center">
+<span class="block text-4xl font-bold text-forest font-serif-elegant">12.4k</span>
+<span class="text-sm text-slate-500 font-medium uppercase tracking-widest">Trees Planted</span>
+</div>
+<div class="h-12 w-px bg-sage/30 hidden md:block"></div>
+<div class="text-center">
+<span class="block text-4xl font-bold text-primary font-serif-elegant">5.8M</span>
+<span class="text-sm text-slate-500 font-medium uppercase tracking-widest">CO2 Offset (Tons)</span>
+</div>
+<div class="h-12 w-px bg-sage/30 hidden md:block"></div>
+<div class="text-center">
+<span class="block text-4xl font-bold text-deep-teal font-serif-elegant">450+</span>
+<span class="text-sm text-slate-500 font-medium uppercase tracking-widest">Local Chapters</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer Decoration (Overlapping Foliage) -->
+<footer class="mt-20 overflow-hidden relative h-32">
+<div class="absolute bottom-0 left-0 w-full h-24 bg-forest paper-shadow rounded-t-[50px] z-20"></div>
+<div class="absolute bottom-0 left-[-5%] w-[40%] h-32 bg-sage rounded-t-full rotate-6 z-10 paper-shadow"></div>
+<div class="absolute bottom-0 right-[-5%] w-[40%] h-28 bg-primary rounded-t-full -rotate-6 z-10 paper-shadow"></div>
+<div class="relative z-30 flex items-center justify-center h-full pt-10 px-10">
+<p class="text-background-light text-sm font-medium">© 2024 EcoAction. Crafting a greener world, layer by layer.</p>
+</div>
+</footer>
+</div>
+</body></html>

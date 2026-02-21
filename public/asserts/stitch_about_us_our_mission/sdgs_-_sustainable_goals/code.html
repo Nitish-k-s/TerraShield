@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SDG Dashboard | Transforming Our World</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1dacc9",
+                        "background-light": "#fdfbf7", // Warm Cream
+                        "background-dark": "#111e21",
+                        "teal-deep": "#0e4d58",
+                        "green-muted": "#5c8d89",
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>.paper-texture {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuBMuTkES5yaBSlA79feVX0mrNyFE1jHR6MsYrhO-ojzbFXbczxWnBHucM7-ZbKUL0LiRX1pTk7Oo-DbEUxAIOak9l8Emsh8oMj9nsD54KLewXxs9goZJOaT8yz4d2YP0yHEcmOj0aOEHjqGlqnTFwlg4rUVMVLJashegS-ZsV1VPnEC3VG3tK0VL3VY_y9FdfEF4Q_0Hl2xWIuucAxyYi5OK_ZTUPeg7LsFIKDYVqxKRvtmjhZc-P58cv-0thNl-yvgLhow6LUSdK6_)
+    }
+.paper-shadow {
+    box-shadow: 4px 4px 0 rgba(14, 77, 88, 0.1)
+    }
+.paper-cut-out {
+    clip-path: circle(45% at 50% 50%)
+    }
+.organic-frame {
+    border-radius: 60% 40% 70% 30%/40% 50% 60% 50%
+    }</style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 paper-texture selection:bg-primary/30">
+<div class="relative flex min-h-screen flex-col overflow-x-hidden">
+<!-- Navigation Bar -->
+<header class="sticky top-0 z-50 flex items-center justify-between border-b border-primary/10 bg-background-light/80 backdrop-blur-md px-6 py-4 md:px-20 lg:px-40">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-3">
+<div class="bg-primary text-white p-2 rounded-lg paper-shadow">
+<span class="material-symbols-outlined block">auto_awesome</span>
+</div>
+<h2 class="text-teal-deep dark:text-slate-100 text-xl font-black leading-tight tracking-tight">SDG.Vision</h2>
+</div>
+<nav class="hidden md:flex items-center gap-8 ml-8">
+<a class="text-teal-deep/80 dark:text-slate-300 text-sm font-semibold hover:text-primary transition-colors" href="#">The Goals</a>
+<a class="text-teal-deep/80 dark:text-slate-300 text-sm font-semibold hover:text-primary transition-colors" href="#">Global Impact</a>
+<a class="text-teal-deep/80 dark:text-slate-300 text-sm font-semibold hover:text-primary transition-colors" href="#">Resources</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary/60 text-lg">search</span>
+<input class="bg-primary/5 border-none rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary w-48 lg:w-64" placeholder="Search targets..." type="text"/>
+</div>
+<button class="bg-primary hover:bg-primary/90 text-background-light px-5 py-2.5 rounded-xl font-bold text-sm tracking-wide transition-all paper-shadow active:translate-y-1 active:shadow-none">
+                    Take Action
+                </button>
+</div>
+</header>
+<main class="flex-1 px-6 md:px-20 lg:px-40 py-12">
+<!-- Hero Section -->
+<section class="mb-16 @container">
+<div class="flex flex-col gap-8 md:flex-row items-center">
+<div class="flex-1 flex flex-col gap-6">
+<div class="inline-flex items-center gap-2 bg-green-muted/10 text-green-muted px-4 py-1.5 rounded-full w-fit border border-green-muted/20">
+<span class="material-symbols-outlined text-sm">verified</span>
+<span class="text-xs font-bold uppercase tracking-widest">2030 Global Agenda</span>
+</div>
+<h1 class="text-teal-deep dark:text-slate-100 text-5xl md:text-6xl font-black leading-[1.1] tracking-tight">
+                            Transforming Our World Through <span class="text-primary italic">Action.</span>
+</h1>
+<p class="text-teal-deep/70 dark:text-slate-400 text-lg max-w-xl leading-relaxed font-medium">
+                            Explore the 17 Sustainable Development Goals through a curated gallery of progress, targets, and global impact, designed to bridge awareness and contribution.
+                        </p>
+<div class="flex gap-4">
+<button class="bg-teal-deep dark:bg-primary text-background-light px-8 py-4 rounded-xl font-bold transition-transform hover:scale-105 paper-shadow">
+                                Start Exploring
+                            </button>
+<button class="flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-teal-deep dark:text-slate-300 border border-teal-deep/20 hover:bg-teal-deep/5 transition-colors">
+<span class="material-symbols-outlined">play_circle</span>
+                                View Progress
+                            </button>
+</div>
+</div>
+<div class="flex-1 w-full relative">
+<div class="organic-frame aspect-square bg-primary/10 overflow-hidden paper-shadow border-4 border-background-light dark:border-slate-800">
+<img alt="Sustainability illustration" class="w-full h-full object-cover mix-blend-multiply opacity-80" data-alt="Abstract paper-cut illustration of a green earth" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJOKm6iLK_nT_H0SQnUBPqFfkGv-0KvwU3iauydEsRS2w3uXmXfP7XwK7Da1UsbJCNVeAZbi9PaAbRkUyEai15hK8P6dtJ_Fw1VPWYmfZTwQVtYZyIR2sLg88UerZKQmsv_XJI720VLudUtSDIgdDWIx_G7_rt0ebwB1Boex4lRjVngZBPkRV0l3ISbFL56irMelZ2RVjEmz0Gw9mqXX--YVk0ZIUJD472qgECad8Es1qtCrogg7tO-hIdHr6wwXI845rtVjybXlp1"/>
+</div>
+<div class="absolute -bottom-6 -left-6 bg-white dark:bg-slate-800 p-6 rounded-xl paper-shadow border border-slate-100 dark:border-slate-700 max-w-[240px]">
+<p class="text-xs font-bold text-primary mb-1 tracking-widest uppercase">Global Status</p>
+<p class="text-sm font-medium text-teal-deep/70 dark:text-slate-300 mb-3 leading-tight">12% of targets are currently on track for 2030.</p>
+<div class="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[12%]"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Filters -->
+<div class="flex flex-wrap items-center justify-between gap-4 mb-10 border-b border-teal-deep/5 pb-8">
+<div class="flex gap-2 p-1 bg-primary/5 rounded-2xl">
+<button class="bg-background-light dark:bg-slate-800 text-primary px-6 py-2 rounded-xl text-sm font-bold paper-shadow flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">grid_view</span> All Goals
+                    </button>
+<button class="text-teal-deep/60 dark:text-slate-400 px-6 py-2 rounded-xl text-sm font-bold hover:bg-background-light/50 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">people</span> Social
+                    </button>
+<button class="text-teal-deep/60 dark:text-slate-400 px-6 py-2 rounded-xl text-sm font-bold hover:bg-background-light/50 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">trending_up</span> Economic
+                    </button>
+<button class="text-teal-deep/60 dark:text-slate-400 px-6 py-2 rounded-xl text-sm font-bold hover:bg-background-light/50 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">eco</span> Environmental
+                    </button>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-sm font-medium text-teal-deep/50 dark:text-slate-400 uppercase tracking-widest">Sort by:</span>
+<select class="border-none bg-transparent text-teal-deep dark:text-slate-100 font-bold text-sm focus:ring-0 cursor-pointer">
+<option>Goal Number</option>
+<option>Current Progress</option>
+<option>Global Priority</option>
+</select>
+</div>
+</div>
+<!-- Goal Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+<!-- Card 1 -->
+<div class="group relative flex flex-col bg-white dark:bg-slate-800 p-6 rounded-2xl paper-shadow border border-teal-deep/5 hover:-translate-y-2 transition-all duration-300">
+<div class="absolute top-4 right-4 text-3xl font-black text-primary/20 group-hover:text-primary/40 transition-colors">01</div>
+<div class="w-20 h-20 mb-6 bg-[#E5243B]/10 rounded-2xl flex items-center justify-center text-[#E5243B] paper-shadow">
+<span class="material-symbols-outlined text-4xl font-light">money</span>
+</div>
+<h3 class="text-teal-deep dark:text-slate-100 text-xl font-black mb-2">No Poverty</h3>
+<p class="text-teal-deep/60 dark:text-slate-400 text-sm leading-relaxed mb-6 font-medium">
+                        End poverty in all its forms everywhere by ensuring everyone has access to resources.
+                    </p>
+<div class="mt-auto pt-6 border-t border-teal-deep/5 flex items-center justify-between">
+<span class="text-[10px] font-black uppercase tracking-widest text-primary">In Detail</span>
+<span class="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group relative flex flex-col bg-white dark:bg-slate-800 p-6 rounded-2xl paper-shadow border border-teal-deep/5 hover:-translate-y-2 transition-all duration-300">
+<div class="absolute top-4 right-4 text-3xl font-black text-primary/20 group-hover:text-primary/40 transition-colors">02</div>
+<div class="w-20 h-20 mb-6 bg-[#DDA63A]/10 rounded-2xl flex items-center justify-center text-[#DDA63A] paper-shadow">
+<span class="material-symbols-outlined text-4xl font-light">restaurant</span>
+</div>
+<h3 class="text-teal-deep dark:text-slate-100 text-xl font-black mb-2">Zero Hunger</h3>
+<p class="text-teal-deep/60 dark:text-slate-400 text-sm leading-relaxed mb-6 font-medium">
+                        End hunger, achieve food security and improved nutrition, and promote sustainable agriculture.
+                    </p>
+<div class="mt-auto pt-6 border-t border-teal-deep/5 flex items-center justify-between">
+<span class="text-[10px] font-black uppercase tracking-widest text-primary">In Detail</span>
+<span class="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group relative flex flex-col bg-white dark:bg-slate-800 p-6 rounded-2xl paper-shadow border border-teal-deep/5 hover:-translate-y-2 transition-all duration-300">
+<div class="absolute top-4 right-4 text-3xl font-black text-primary/20 group-hover:text-primary/40 transition-colors">03</div>
+<div class="w-20 h-20 mb-6 bg-[#4C9F38]/10 rounded-2xl flex items-center justify-center text-[#4C9F38] paper-shadow">
+<span class="material-symbols-outlined text-4xl font-light">health_and_safety</span>
+</div>
+<h3 class="text-teal-deep dark:text-slate-100 text-xl font-black mb-2">Good Health</h3>
+<p class="text-teal-deep/60 dark:text-slate-400 text-sm leading-relaxed mb-6 font-medium">
+                        Ensure healthy lives and promote well-being for all at all ages through universal healthcare.
+                    </p>
+<div class="mt-auto pt-6 border-t border-teal-deep/5 flex items-center justify-between">
+<span class="text-[10px] font-black uppercase tracking-widest text-primary">In Detail</span>
+<span class="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="group relative flex flex-col bg-white dark:bg-slate-800 p-6 rounded-2xl paper-shadow border border-teal-deep/5 hover:-translate-y-2 transition-all duration-300">
+<div class="absolute top-4 right-4 text-3xl font-black text-primary/20 group-hover:text-primary/40 transition-colors">04</div>
+<div class="w-20 h-20 mb-6 bg-[#C5192D]/10 rounded-2xl flex items-center justify-center text-[#C5192D] paper-shadow">
+<span class="material-symbols-outlined text-4xl font-light">school</span>
+</div>
+<h3 class="text-teal-deep dark:text-slate-100 text-xl font-black mb-2">Quality Education</h3>
+<p class="text-teal-deep/60 dark:text-slate-400 text-sm leading-relaxed mb-6 font-medium">
+                        Ensure inclusive and equitable quality education and promote lifelong learning opportunities.
+                    </p>
+<div class="mt-auto pt-6 border-t border-teal-deep/5 flex items-center justify-between">
+<span class="text-[10px] font-black uppercase tracking-widest text-primary">In Detail</span>
+<span class="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</div>
+<!-- Card 13 (Highlighted) -->
+<div class="group relative flex flex-col bg-primary text-white p-6 rounded-2xl paper-shadow border-none hover:-translate-y-2 transition-all duration-300 lg:col-span-2">
+<div class="absolute top-4 right-6 text-5xl font-black text-white/10 group-hover:text-white/20 transition-colors">13</div>
+<div class="w-24 h-24 mb-6 bg-white/20 rounded-full flex items-center justify-center paper-shadow">
+<span class="material-symbols-outlined text-5xl font-light">tsunami</span>
+</div>
+<div class="flex flex-col md:flex-row md:items-end gap-8">
+<div class="flex-1">
+<h3 class="text-2xl font-black mb-4">Climate Action</h3>
+<p class="text-white/80 text-base leading-relaxed mb-6 font-medium">
+                                Take urgent action to combat climate change and its impacts by regulating emissions and promoting developments in renewable energy.
+                            </p>
+<button class="bg-white text-primary px-6 py-2.5 rounded-xl font-bold text-sm tracking-wide paper-shadow">
+                                View Climate Report
+                            </button>
+</div>
+<div class="hidden md:block w-48 h-32 bg-teal-deep/20 rounded-xl organic-frame overflow-hidden">
+<img alt="Mountain range" class="w-full h-full object-cover mix-blend-overlay opacity-60" data-alt="Abstract mountain range at sunset" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBD7JETt4T_RyY-V1upSz3CjtNPdfHraTCfLlr7AwHpV1ZGEZLcax2sw_BCqge8R-AE9h5-LuqsKAEjGjRjEzjbxaKNnGxQMbfLjvz9cPEsbo3olck7UuFEd8N6F40uGC9QsWPMW5Lh2vkv3jIRj4CNXEidanxXtX9wsTUaa4eMfmeENI8s8xiyEIU7BTYFUsaal7-jm0U3bz3iQhNcARqpfW9NGRuI7KyN3S0V-ifK5caQXiE4R1fQHPWQE4Os3cFCGo-DUJxaSuJN"/>
+</div>
+</div>
+</div>
+<!-- Card 14 -->
+<div class="group relative flex flex-col bg-white dark:bg-slate-800 p-6 rounded-2xl paper-shadow border border-teal-deep/5 hover:-translate-y-2 transition-all duration-300">
+<div class="absolute top-4 right-4 text-3xl font-black text-primary/20 group-hover:text-primary/40 transition-colors">14</div>
+<div class="w-20 h-20 mb-6 bg-[#0A97D9]/10 rounded-2xl flex items-center justify-center text-[#0A97D9] paper-shadow">
+<span class="material-symbols-outlined text-4xl font-light">waves</span>
+</div>
+<h3 class="text-teal-deep dark:text-slate-100 text-xl font-black mb-2">Life Below Water</h3>
+<p class="text-teal-deep/60 dark:text-slate-400 text-sm leading-relaxed mb-6 font-medium">
+                        Conserve and sustainably use the oceans, seas and marine resources for development.
+                    </p>
+<div class="mt-auto pt-6 border-t border-teal-deep/5 flex items-center justify-between">
+<span class="text-[10px] font-black uppercase tracking-widest text-primary">In Detail</span>
+<span class="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</div>
+<!-- Card 15 -->
+<div class="group relative flex flex-col bg-white dark:bg-slate-800 p-6 rounded-2xl paper-shadow border border-teal-deep/5 hover:-translate-y-2 transition-all duration-300">
+<div class="absolute top-4 right-4 text-3xl font-black text-primary/20 group-hover:text-primary/40 transition-colors">15</div>
+<div class="w-20 h-20 mb-6 bg-[#56C02B]/10 rounded-2xl flex items-center justify-center text-[#56C02B] paper-shadow">
+<span class="material-symbols-outlined text-4xl font-light">park</span>
+</div>
+<h3 class="text-teal-deep dark:text-slate-100 text-xl font-black mb-2">Life on Land</h3>
+<p class="text-teal-deep/60 dark:text-slate-400 text-sm leading-relaxed mb-6 font-medium">
+                        Protect, restore and promote sustainable use of terrestrial ecosystems and halt biodiversity loss.
+                    </p>
+<div class="mt-auto pt-6 border-t border-teal-deep/5 flex items-center justify-between">
+<span class="text-[10px] font-black uppercase tracking-widest text-primary">In Detail</span>
+<span class="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</div>
+</div>
+<!-- Detailed Section / Featured Case Study -->
+<section class="mt-24">
+<div class="bg-teal-deep dark:bg-slate-900 rounded-3xl p-8 md:p-16 flex flex-col lg:flex-row items-center gap-12 paper-shadow">
+<div class="flex-1">
+<h4 class="text-primary font-bold uppercase tracking-[0.3em] text-sm mb-4">Featured Impact</h4>
+<h2 class="text-white text-4xl font-black mb-6 leading-tight">The Great Green Wall: <br/>Africa's Hope for 2030</h2>
+<p class="text-white/70 text-lg mb-8 leading-relaxed max-w-xl">
+                            A global initiative to grow 8,000km of new natural wonder across the entire width of Africa to combat desertification and provide jobs for millions.
+                        </p>
+<div class="grid grid-cols-2 gap-8 mb-10">
+<div>
+<p class="text-white text-3xl font-black mb-1">100M</p>
+<p class="text-white/50 text-xs font-bold uppercase tracking-widest leading-none">Hectares Restored</p>
+</div>
+<div>
+<p class="text-white text-3xl font-black mb-1">250M</p>
+<p class="text-white/50 text-xs font-bold uppercase tracking-widest leading-none">Tons Carbon Captured</p>
+</div>
+</div>
+<button class="bg-primary hover:bg-primary/90 text-white px-10 py-4 rounded-xl font-bold transition-all paper-shadow">
+                            Read the Story
+                        </button>
+</div>
+<div class="flex-1 w-full relative">
+<div class="organic-frame w-full aspect-[4/3] bg-primary/20 overflow-hidden paper-shadow">
+<img alt="Green field" class="w-full h-full object-cover mix-blend-overlay opacity-80" data-alt="Wide landscape of green fields in Africa" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCc4VY77S7FeOjsZmhYw_9XwtXxeIUWQgrJB5ujO7qt_UPFgg9YqL6z2_EeRpZUrlAZMujrW97qjZoXhezyay9aUTvTjIU7C01Vzn4PPL6UnUihm71t_OiltXFA0yYssemrSgNBYNCWBqB7PMzA3_YD0rmkqCAiY3JsapBsCGt7cOA0CZYtzTz3XGJ_tcZ5rL8AOXRQdswho64ayTOCBtgsb_aM8XCcGzaBRqxK7UT7Wqp_rbeAEF2U9pbkRNKx4uTWJAKwXSfpOYT1"/>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-background-light dark:bg-background-dark border-t border-teal-deep/5 px-6 md:px-20 lg:px-40 py-16">
+<div class="flex flex-col md:flex-row justify-between gap-12">
+<div class="max-w-xs">
+<div class="flex items-center gap-3 mb-6">
+<div class="bg-primary text-white p-2 rounded-lg">
+<span class="material-symbols-outlined block">auto_awesome</span>
+</div>
+<h2 class="text-teal-deep dark:text-slate-100 text-xl font-black tracking-tight">SDG.Vision</h2>
+</div>
+<p class="text-teal-deep/60 dark:text-slate-400 text-sm leading-relaxed mb-6 font-medium">
+                        A digital initiative to bridge the gap between global goals and individual action through immersive data storytelling.
+                    </p>
+<div class="flex gap-4">
+<a class="text-teal-deep/40 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">public</span>
+</a>
+<a class="text-teal-deep/40 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">alternate_email</span>
+</a>
+<a class="text-teal-deep/40 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">share</span>
+</a>
+</div>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-12">
+<div>
+<h5 class="text-teal-deep dark:text-slate-100 font-black text-sm uppercase tracking-widest mb-6">Goals</h5>
+<ul class="flex flex-col gap-4 text-sm font-medium text-teal-deep/60 dark:text-slate-400">
+<li><a class="hover:text-primary transition-colors" href="#">Social Goals</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Climate Action</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Economy Hub</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Partnerships</a></li>
+</ul>
+</div>
+<div>
+<h5 class="text-teal-deep dark:text-slate-100 font-black text-sm uppercase tracking-widest mb-6">Learn</h5>
+<ul class="flex flex-col gap-4 text-sm font-medium text-teal-deep/60 dark:text-slate-400">
+<li><a class="hover:text-primary transition-colors" href="#">Methodology</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Reports 2024</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Data Privacy</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Media Kit</a></li>
+</ul>
+</div>
+<div class="col-span-2 sm:col-span-1">
+<h5 class="text-teal-deep dark:text-slate-100 font-black text-sm uppercase tracking-widest mb-6">Newsletter</h5>
+<p class="text-xs text-teal-deep/60 dark:text-slate-400 mb-4 font-medium">Stay updated with the latest progress towards 2030.</p>
+<div class="flex">
+<input class="bg-primary/5 border-none rounded-l-xl px-4 py-2 w-full text-sm focus:ring-1 focus:ring-primary" placeholder="Email" type="email"/>
+<button class="bg-primary text-white p-2 rounded-r-xl">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-16 pt-8 border-t border-teal-deep/5 flex flex-col sm:flex-row justify-between items-center gap-6">
+<p class="text-[10px] font-bold text-teal-deep/30 dark:text-slate-500 uppercase tracking-widest">
+                    © 2024 Sustainable Development Goals Vision. All rights reserved.
+                </p>
+<div class="flex gap-8 text-[10px] font-bold text-teal-deep/30 dark:text-slate-500 uppercase tracking-widest">
+<a class="hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms</a>
+<a class="hover:text-primary transition-colors" href="#">Cookie Policy</a>
+</div>
+</div>
+</footer>
+<!-- Bottom Tracker Bar -->
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border border-teal-deep/10 px-6 py-3 rounded-2xl paper-shadow flex items-center gap-8 w-[90%] max-w-2xl">
+<div class="flex-1 flex flex-col gap-1">
+<div class="flex justify-between items-center">
+<span class="text-[10px] font-black uppercase tracking-widest text-teal-deep/50 dark:text-slate-400">2030 Global Completion</span>
+<span class="text-[10px] font-black text-primary">12%</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[12%]"></div>
+</div>
+</div>
+<div class="h-8 w-px bg-teal-deep/10"></div>
+<button class="flex items-center gap-2 text-teal-deep dark:text-slate-100">
+<span class="material-symbols-outlined text-primary">account_tree</span>
+<span class="text-xs font-black uppercase tracking-widest whitespace-nowrap">View Map</span>
+</button>
+</div>
+</div>
+</body></html>
