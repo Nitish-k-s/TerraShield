@@ -50,10 +50,10 @@ function getGemini() {
  */
 async function fetchLocationContext(lat: number, lng: number): Promise<any> {
     const sentinelClientId = process.env.SENTINEL_CLIENT_ID;
-    const sentinelSecret = process.env.SENTINEL_CLIENT_SECRET || process.env.SENTINAL_API_KEY;
+    const sentinelSecret = process.env.SENTINAL_CLIENT_SECRET;
 
     if (!sentinelClientId || !sentinelSecret) {
-        console.warn("[analyse-exif] Missing Sentinel Hub credentials (SENTINEL_CLIENT_ID or SENTINEL_CLIENT_SECRET).");
+        console.warn("[analyse-exif] Missing Sentinel Hub credentials (SENTINEL_CLIENT_ID or SENTINAL_CLIENT_SECRET).");
         return null;
     }
 
