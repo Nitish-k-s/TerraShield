@@ -184,10 +184,12 @@ export function renderReport() {
                 </div>
                 <div class="form-group">
                   <label class="form-label">Date Observed</label>
-                  <div class="form-input-icon">
-                    <span class="material-symbols-outlined">calendar_today</span>
-                    <input class="form-input" type="date">
-                  </div>
+                  <input
+                    class="form-input"
+                    id="report-date"
+                    type="date"
+                    style="cursor:pointer;padding-right:0.75rem"
+                  >
                 </div>
               </div>
 
@@ -390,6 +392,16 @@ export function renderReport() {
     async init() {
       initNavbarAuth();
 
+      // ── Date picker setup: set max = today, default value = today (ISO yyyy-mm-dd)
+      const dateInput = document.getElementById('report-date');
+      if (dateInput) {
+        const todayISO = new Date().toISOString().slice(0, 10);
+        dateInput.max = todayISO;   // prevent future dates
+        dateInput.value = todayISO;   // pre-fill with today so field is immediately useful
+        dateInput.addEventListener('change', () => {
+          console.log('[TerraShield] Date Observed selected:', dateInput.value); // yyyy-mm-dd confirmed
+        });
+      }
       // Check auth status immediately
       const user = await getUser();
       const form = document.getElementById('report-form');
@@ -652,6 +664,13 @@ export function renderReport() {
         try {
           const formData = new FormData();
           formData.append('image', file);
+
+          // Append the manually selected date (ISO yyyy-mm-dd) so the backend
+          // can use it as the observation date when EXIF has no DateTimeOriginal
+          const dateInput = document.getElementById('report-date');
+          if (dateInput && dateInput.value) {
+            formData.append('observed_date', dateInput.value);
+          }
 
           const token = await getSessionToken();
           const headers = {};

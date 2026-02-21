@@ -1,5 +1,5 @@
 // Alerts Page – Live Risk Map & Active Alerts
-import { renderNavbar } from '../components/navbar.js';
+import { renderNavbar, initNavbarAuth } from '../components/navbar.js';
 import { renderFooter } from '../components/footer.js';
 
 export function renderAlerts() {
@@ -82,6 +82,7 @@ export function renderAlerts() {
   ${renderFooter()}`,
 
     init() {
+      initNavbarAuth();
       function bootMap() {
         const mapEl = document.getElementById('alerts-map');
         if (!mapEl || !window.L) return;

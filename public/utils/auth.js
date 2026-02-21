@@ -43,11 +43,14 @@ export async function signIn(email, password) {
     return { error };
 }
 
-export async function signUp(email, password) {
+export async function signUp(email, password, name = '') {
     const { error } = await getSupabase().auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: `${location.origin}/auth/callback` },
+        options: {
+            emailRedirectTo: `${location.origin}/auth/callback`,
+            data: { full_name: name }
+        },
     });
     return { error };
 }
@@ -60,6 +63,18 @@ export async function signOut() {
 export async function getSessionToken() {
     const session = await getSession();
     return session?.access_token || null;
+}
+
+/**
+ * Returns the display name for the current user.
+ * Priority: user_metadata.full_name (set at signup) → local part of email → null
+ * This is synchronous-friendly — call getUser() first, then pass the user here.
+ */
+export function getUserDisplayName(user) {
+    if (!user) return null;
+    return user.user_metadata?.full_name
+        || user.user_metadata?.name
+        || null;
 }
 
 /** Subscribe to auth state changes. Returns the unsubscribe function. */

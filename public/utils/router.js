@@ -1,7 +1,6 @@
 // SPA Hash Router
 import { initScrollObserver, animateCounters } from './scroll-observer.js';
 import { initLazyLoad } from './lazy-load.js';
-import { initNavbarAuth } from '../components/navbar.js';
 import { initMagnetAll } from './magnet.js';
 
 // Page imports
@@ -67,13 +66,13 @@ async function navigate() {
         app.classList.add('page-active');
     });
 
-    // Initialize observers + navbar auth
+    // Initialize observers
     setTimeout(() => {
         initScrollObserver();
         animateCounters();
         initLazyLoad();
         initParallax();
-        initNavbarAuth();
+        // Note: initNavbarAuth() is called by each page's own init() function
 
         // Magnet effect on all card-type elements and CTA buttons
         if (magnetCleanup) { magnetCleanup(); magnetCleanup = null; }
