@@ -298,6 +298,95 @@ export function renderReport() {
           </div>
         </div>
 
+        <!-- ═══ SATELLITE INTELLIGENCE CARD ═══ -->
+        <div id="satellite-result-section" style="display:none;margin-top:var(--space-6)">
+          <div style="border-radius:var(--radius-xl);overflow:hidden;background:linear-gradient(135deg,#060f18,#0a1825);border:1px solid rgba(56,189,248,0.2)">
+
+            <!-- Header -->
+            <div style="padding:var(--space-5) var(--space-6);border-bottom:1px solid rgba(56,189,248,0.1);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-3)">
+              <div style="display:flex;align-items:center;gap:var(--space-3)">
+                <div style="width:2.25rem;height:2.25rem;border-radius:var(--radius-lg);background:rgba(56,189,248,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                  <span class="material-symbols-outlined" style="color:#38bdf8;font-size:1.25rem">satellite_alt</span>
+                </div>
+                <div>
+                  <h3 style="font-size:1rem;font-weight:700;color:#e0f2fe;margin:0">Sentinel-2 Satellite Analysis</h3>
+                  <p id="sat-date-label" style="font-size:0.7rem;color:rgba(56,189,248,0.55);margin:0">30-day vegetation analysis</p>
+                </div>
+              </div>
+              <span style="font-size:0.6rem;font-weight:700;padding:2px 10px;border-radius:999px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);color:#38bdf8;letter-spacing:0.1em;text-transform:uppercase">ESA Copernicus</span>
+            </div>
+
+            <!-- Loading state -->
+            <div id="sat-loading" style="padding:var(--space-8);text-align:center;color:rgba(56,189,248,0.5);font-size:0.875rem">
+              <span class="material-symbols-outlined" style="display:block;font-size:2rem;margin-bottom:var(--space-2);animation:spin 1.5s linear infinite">sync</span>
+              Fetching satellite data…
+            </div>
+
+            <!-- Results (hidden until data arrives) -->
+            <div id="sat-data" style="display:none">
+              <!-- Metrics row -->
+              <div style="padding:var(--space-5) var(--space-6);display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-5);border-bottom:1px solid rgba(56,189,248,0.08)">
+                <div>
+                  <p style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:rgba(56,189,248,0.55);margin-bottom:6px">Current NDVI</p>
+                  <p id="sat-ndvi-val" style="font-size:1.75rem;font-weight:800;color:#e0f2fe;margin:0 0 6px"></p>
+                  <div style="height:5px;border-radius:3px;background:rgba(255,255,255,0.08);overflow:hidden">
+                    <div id="sat-ndvi-bar" style="height:100%;border-radius:3px;transition:width 1.2s ease"></div>
+                  </div>
+                  <p style="font-size:0.6rem;color:rgba(255,255,255,0.3);margin:4px 0 0">0 = barren · 1 = dense vegetation</p>
+                </div>
+                <div>
+                  <p style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:rgba(56,189,248,0.55);margin-bottom:6px">Historical Avg</p>
+                  <p id="sat-hist-val" style="font-size:1.75rem;font-weight:800;color:#e0f2fe;margin:0 0 6px"></p>
+                  <p style="font-size:0.6rem;color:rgba(255,255,255,0.3);margin:0">90-day baseline</p>
+                </div>
+                <div>
+                  <p style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:rgba(56,189,248,0.55);margin-bottom:6px">Anomaly Score</p>
+                  <p id="sat-anomaly-val" style="font-size:1.75rem;font-weight:800;color:#e0f2fe;margin:0 0 6px"></p>
+                  <p style="font-size:0.6rem;color:rgba(255,255,255,0.3);margin:0">0 = normal · 1 = extreme</p>
+                </div>
+              </div>
+              <!-- Risk + interpretation -->
+              <div style="padding:var(--space-5) var(--space-6);display:flex;align-items:flex-start;gap:var(--space-4);flex-wrap:wrap">
+                <div style="flex:1;min-width:200px">
+                  <p style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:rgba(56,189,248,0.55);margin-bottom:6px">Satellite Ecological Assessment</p>
+                  <p id="sat-risk-text" style="font-size:0.9375rem;font-weight:700;margin:0 0 6px"></p>
+                  <p id="sat-interp-text" style="font-size:0.8125rem;color:#bae6fd;line-height:1.6;margin:0"></p>
+                </div>
+                <span id="sat-risk-badge" style="flex-shrink:0;font-size:0.7rem;font-weight:700;padding:4px 14px;border-radius:999px;white-space:nowrap"></span>
+              </div>
+            </div>
+
+            <!-- Error state -->
+            <div id="sat-error" style="display:none;padding:var(--space-5) var(--space-6);color:rgba(251,191,36,0.8);font-size:0.8125rem;display:flex;align-items:flex-start;gap:var(--space-3)">
+              <span class="material-symbols-outlined" style="flex-shrink:0;font-size:1.1rem;margin-top:1px">cloud_off</span>
+              <p id="sat-error-text" style="margin:0"></p>
+            </div>
+
+          </div>
+        </div>
+        <!-- ═══ END SATELLITE CARD ═══ -->
+
+        <!-- ═══ PDF DOWNLOAD BUTTON ═══ -->
+        <div id="pdf-download-section" style="display:none;margin-top:var(--space-5)">
+          <button
+            id="pdf-download-btn"
+            style="width:100%;display:flex;align-items:center;justify-content:center;gap:0.6rem;
+                   padding:var(--space-4) var(--space-6);border-radius:var(--radius-lg);
+                   background:linear-gradient(135deg,#0f3460,#1a5276);
+                   border:1px solid rgba(56,189,248,0.35);color:#e0f2fe;
+                   font-size:0.9375rem;font-weight:700;cursor:pointer;
+                   transition:all 0.2s;letter-spacing:0.02em"
+            onmouseover="this.style.background='linear-gradient(135deg,#1a5276,#21618c)'"
+            onmouseout="this.style.background='linear-gradient(135deg,#0f3460,#1a5276)'">
+            <span class="material-symbols-outlined" style="font-size:1.25rem;color:#38bdf8">picture_as_pdf</span>
+            <span id="pdf-btn-label">Download Full Ecological Risk Report (PDF)</span>
+          </button>
+          <p style="font-size:0.7rem;color:rgba(255,255,255,0.3);text-align:center;margin-top:6px">
+            Generated by Gemini AI · Includes Sentinel-2 satellite data · Suitable for authorities
+          </p>
+        </div>
+        <!-- ═══ END PDF DOWNLOAD ═══ -->
+
       </div>
     </section>
 
@@ -315,22 +404,22 @@ export function renderReport() {
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-6)">
           <div class="card hover-lift reveal" data-delay="0" style="padding:var(--space-8);text-align:center">
             <span class="material-symbols-outlined" style="font-size:2.5rem;color:var(--color-primary);margin-bottom:var(--space-3);display:block">radar</span>
-            <span style="font-size:2rem;font-weight:var(--fw-bold);display:block;margin-bottom:var(--space-1)" class="counter" data-target="2847">0</span>
+            <span id="impact-reports" style="font-size:2rem;font-weight:var(--fw-bold);display:block;margin-bottom:var(--space-1)">–</span>
             <span style="font-size:0.65rem;color:var(--color-slate-500);text-transform:uppercase;letter-spacing:0.08em;font-weight:var(--fw-bold)">Reports Filed</span>
           </div>
           <div class="card hover-lift reveal" data-delay="100" style="padding:var(--space-8);text-align:center">
             <span class="material-symbols-outlined" style="font-size:2.5rem;color:#f59e0b;margin-bottom:var(--space-3);display:block">warning</span>
-            <span style="font-size:2rem;font-weight:var(--fw-bold);display:block;margin-bottom:var(--space-1)" class="counter" data-target="186">0</span>
+            <span id="impact-outbreaks" style="font-size:2rem;font-weight:var(--fw-bold);display:block;margin-bottom:var(--space-1)">–</span>
             <span style="font-size:0.65rem;color:var(--color-slate-500);text-transform:uppercase;letter-spacing:0.08em;font-weight:var(--fw-bold)">Outbreaks Flagged</span>
           </div>
           <div class="card hover-lift reveal" data-delay="200" style="padding:var(--space-8);text-align:center">
             <span class="material-symbols-outlined" style="font-size:2.5rem;color:#22c55e;margin-bottom:var(--space-3);display:block">public</span>
-            <span style="font-size:2rem;font-weight:var(--fw-bold);display:block;margin-bottom:var(--space-1)" class="counter" data-target="24">0</span>
+            <span id="impact-countries" style="font-size:2rem;font-weight:var(--fw-bold);display:block;margin-bottom:var(--space-1)">–</span>
             <span style="font-size:0.65rem;color:var(--color-slate-500);text-transform:uppercase;letter-spacing:0.08em;font-weight:var(--fw-bold)">Countries Active</span>
           </div>
           <div class="card hover-lift reveal" data-delay="300" style="padding:var(--space-8);text-align:center">
             <span class="material-symbols-outlined" style="font-size:2.5rem;color:#ef4444;margin-bottom:var(--space-3);display:block">eco</span>
-            <span style="font-size:2rem;font-weight:var(--fw-bold);display:block;margin-bottom:var(--space-1)" class="counter" data-target="142">0</span>
+            <span id="impact-species" style="font-size:2rem;font-weight:var(--fw-bold);display:block;margin-bottom:var(--space-1)">–</span>
             <span style="font-size:0.65rem;color:var(--color-slate-500);text-transform:uppercase;letter-spacing:0.08em;font-weight:var(--fw-bold)">Species Tracked</span>
           </div>
         </div>
@@ -395,13 +484,77 @@ export function renderReport() {
       // ── Date picker setup: set max = today, default value = today (ISO yyyy-mm-dd)
       const dateInput = document.getElementById('report-date');
       if (dateInput) {
-        const todayISO = new Date().toISOString().slice(0, 10);
+        const now = new Date();
+        const todayISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         dateInput.max = todayISO;   // prevent future dates
         dateInput.value = todayISO;   // pre-fill with today so field is immediately useful
+
         dateInput.addEventListener('change', () => {
           console.log('[TerraShield] Date Observed selected:', dateInput.value); // yyyy-mm-dd confirmed
         });
       }
+
+      // ── Impact stats — fetch real user data then animate ────────────────────
+      (async () => {
+        const animateCount = (el, target) => {
+          const duration = 1600;
+          const start = performance.now();
+          const tick = (now) => {
+            const p = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - p, 3);
+            el.textContent = Math.floor(eased * target).toLocaleString();
+            if (p < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        };
+
+        const ids = {
+          reports: document.getElementById('impact-reports'),
+          outbreaks: document.getElementById('impact-outbreaks'),
+          countries: document.getElementById('impact-countries'),
+          species: document.getElementById('impact-species'),
+        };
+
+        try {
+          const tok = await getSessionToken();
+          const res = await fetch('/api/user-stats', {
+            headers: tok ? { Authorization: `Bearer ${tok}` } : {},
+          });
+          const d = await res.json();
+
+          if (d.success) {
+            const values = {
+              reports: d.total_reports,
+              outbreaks: d.outbreaks_flagged,
+              countries: d.countries_active,
+              species: d.species_tracked,
+            };
+
+            // Trigger animation when section scrolls into view
+            const section = document.querySelector('[data-impact-section]') ||
+              ids.reports?.closest('section');
+            const trigger = () => {
+              Object.entries(values).forEach(([key, val]) => {
+                if (ids[key]) animateCount(ids[key], val);
+              });
+            };
+
+            if (section) {
+              const obs = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting) { trigger(); obs.disconnect(); }
+              }, { threshold: 0.2 });
+              obs.observe(section);
+            } else {
+              trigger();
+            }
+          } else {
+            // Not logged in or no data yet — show 0s
+            Object.values(ids).forEach(el => { if (el) el.textContent = '0'; });
+          }
+        } catch {
+          Object.values(ids).forEach(el => { if (el) el.textContent = '0'; });
+        }
+      })();
       // Check auth status immediately
       const user = await getUser();
       const form = document.getElementById('report-form');
@@ -615,6 +768,175 @@ export function renderReport() {
         setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
       }
 
+      // ─── Satellite Intelligence Card ──────────────────────────────────────────
+      async function renderSatelliteResult(lat, lng, token) {
+        const section = document.getElementById('satellite-result-section');
+        const loading = document.getElementById('sat-loading');
+        const dataDiv = document.getElementById('sat-data');
+        const errDiv = document.getElementById('sat-error');
+        const errText = document.getElementById('sat-error-text');
+
+        // Show card in loading state
+        section.style.display = 'block';
+        loading.style.display = 'block';
+        dataDiv.style.display = 'none';
+        errDiv.style.display = 'none';
+
+        try {
+          const res = await fetch('/api/sentinel', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ latitude: lat, longitude: lng }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok || !data.current_ndvi) {
+            throw new Error(data.error || 'No satellite data available for this location.');
+          }
+
+          // ── Populate metrics ──
+          const ndvi = data.current_ndvi;
+          const hist = data.historical_ndvi;
+          const anomaly = data.anomaly_score;
+          const risk = data.risk_level;
+
+          // NDVI color
+          const ndviColor = ndvi < 0 ? '#38bdf8'
+            : ndvi < 0.2 ? '#94a3b8'
+              : ndvi < 0.4 ? '#fbbf24'
+                : ndvi < 0.6 ? '#a3e635'
+                  : '#22c55e';
+
+          document.getElementById('sat-ndvi-val').textContent = ndvi.toFixed(3);
+          document.getElementById('sat-ndvi-val').style.color = ndviColor;
+          document.getElementById('sat-hist-val').textContent = hist.toFixed(3);
+          document.getElementById('sat-anomaly-val').textContent = anomaly.toFixed(3);
+
+          // NDVI gauge bar
+          const bar = document.getElementById('sat-ndvi-bar');
+          bar.style.width = `${Math.max(0, Math.min(1, ndvi)) * 100}%`;
+          bar.style.background = `linear-gradient(90deg, ${ndviColor}, ${ndviColor}aa)`;
+
+          // Risk badge
+          const badge = document.getElementById('sat-risk-badge');
+          const riskEl = document.getElementById('sat-risk-text');
+          if (anomaly < 0.33) {
+            badge.style.background = 'rgba(34,197,94,0.12)';
+            badge.style.border = '1px solid rgba(34,197,94,0.3)';
+            badge.style.color = '#22c55e';
+          } else if (anomaly < 0.66) {
+            badge.style.background = 'rgba(251,191,36,0.12)';
+            badge.style.border = '1px solid rgba(251,191,36,0.3)';
+            badge.style.color = '#fbbf24';
+          } else {
+            badge.style.background = 'rgba(239,68,68,0.12)';
+            badge.style.border = '1px solid rgba(239,68,68,0.3)';
+            badge.style.color = '#ef4444';
+          }
+          badge.textContent = risk;
+          riskEl.textContent = risk;
+          riskEl.style.color = badge.style.color;
+
+          // Interpretation text
+          const delta = (ndvi - hist).toFixed(3);
+          const direction = ndvi > hist ? '+' : '';
+          document.getElementById('sat-interp-text').textContent =
+            `NDVI deviation from baseline: ${direction}${delta}. ` +
+            (data.meta?.cloud_coverage_pct != null
+              ? `Cloud/no-data coverage: ${data.meta.cloud_coverage_pct}%. `
+              : '') +
+            'Data sourced from Sentinel-2 L2A (10 m resolution).';
+
+          // Date label
+          if (data.meta?.current_period) {
+            document.getElementById('sat-date-label').textContent =
+              `${data.meta.current_period.from} → ${data.meta.current_period.to}`;
+          }
+
+          // Show data, hide loader
+          loading.style.display = 'none';
+          dataDiv.style.display = 'block';
+
+          // Update the PDF payload with real satellite values
+          if (window._reportPayload) {
+            window._reportPayload.current_ndvi = ndvi;
+            window._reportPayload.historical_ndvi = hist;
+            window._reportPayload.anomaly_score = anomaly;
+            window._reportPayload.risk_level = risk;
+          }
+
+        } catch (err) {
+          loading.style.display = 'none';
+          errDiv.style.display = 'flex';
+          errText.textContent = err.message;
+        }
+      }
+
+      // ─── PDF Report Download ────────────────────────────────────────
+      async function downloadReport() {
+        const btn = document.getElementById('pdf-download-btn');
+        const label = document.getElementById('pdf-btn-label');
+
+        if (!window._reportPayload) {
+          alert('No report data available. Please submit a report first.');
+          return;
+        }
+
+        // Guard: wait for satellite card to resolve before generating report
+        if (window._reportPayload.risk_level === 'Unknown' || window._reportPayload.current_ndvi === 0) {
+          label.textContent = '⏳ Waiting for satellite data to load…';
+          setTimeout(() => { label.textContent = 'Download Full Ecological Risk Report (PDF)'; }, 3000);
+          return;
+        }
+
+        try {
+          btn.disabled = true;
+          label.textContent = 'Generating PDF report…';
+
+          const res = await fetch('/api/report', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(window._reportToken ? { 'Authorization': `Bearer ${window._reportToken}` } : {}),
+            },
+            body: JSON.stringify(window._reportPayload),
+          });
+
+          if (!res.ok) {
+            const errJson = await res.json().catch(() => ({}));
+            throw new Error(errJson.error || `Server error: ${res.status}`);
+          }
+
+          // Trigger browser download via Blob URL
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          const species = (window._reportPayload.species || 'report').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 30);
+          a.href = url;
+          a.download = `TerraShield_${species}_${new Date().toISOString().slice(0, 10)}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 5000);
+
+          label.textContent = '✓ Report Downloaded';
+          setTimeout(() => { label.textContent = 'Download Full Ecological Risk Report (PDF)'; }, 4000);
+
+        } catch (err) {
+          label.textContent = `✗ Failed: ${err.message}`;
+          setTimeout(() => { label.textContent = 'Download Full Ecological Risk Report (PDF)'; }, 5000);
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      // Wire button click
+      document.getElementById('pdf-download-btn').addEventListener('click', downloadReport);
+
       function loadLeaflet(callback) {
         if (window.L) { callback(); return; }
 
@@ -752,6 +1074,9 @@ export function renderReport() {
             ${pointsBadge}
           `, 'success');
 
+          // Capture species name BEFORE form.reset() clears the input
+          const typedSpecies = (document.getElementById('report-species')?.value || '').trim();
+
           // Reset form inputs
           form.reset();
           uploadText.textContent = 'Click to upload image';
@@ -759,6 +1084,31 @@ export function renderReport() {
 
           // Render AI result card + map
           renderAiResult(ai, gps, mapsUrl);
+
+          // ── Step 3: Satellite Validation (runs in parallel, non-blocking) ──
+          if (gps && gps.latitude != null && gps.longitude != null) {
+            renderSatelliteResult(gps.latitude, gps.longitude, token);
+          }
+
+          // ── Step 4: Show PDF download button ─────────────────────────────
+          // Store data needed for PDF generation on window so the button handler can read it
+          window._reportPayload = {
+            // Best species name: user-typed > first AI tag > ai_label
+            species: typedSpecies
+              || (Array.isArray(ai.ai_tags) && ai.ai_tags.length ? ai.ai_tags[0] : '')
+              || ai.ai_label
+              || 'Unknown Species',
+            ai_confidence: ai.ai_confidence || 0,
+            latitude: gps?.latitude ?? 0,
+            longitude: gps?.longitude ?? 0,
+            cluster_density: 1,
+            current_ndvi: 0,    // will be updated when satellite card resolves
+            historical_ndvi: 0,
+            anomaly_score: 0,
+            risk_level: 'Unknown',
+          };
+          window._reportToken = token;
+          document.getElementById('pdf-download-section').style.display = 'block';
 
         } catch (error) {
           showMsg(`<strong>Submission Failed:</strong> ${error.message}`, 'error');

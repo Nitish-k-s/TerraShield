@@ -17,7 +17,7 @@ import formidable, { File } from "formidable";
 import * as fs from "fs";
 import exifr from "exifr";
 import { createClient } from "@/lib/supabase/server";
-import { insertExifRecord } from "@/lib/db/exif";
+import { insertExifRecord, updateExifDistrict } from "@/lib/db/exif";
 
 // ─── Disable the built-in Next.js body parser for this route ─────────────────
 // (Next.js App Router does NOT automatically parse multipart bodies, so we
@@ -195,51 +195,114 @@ export async function POST(req: NextRequest): Promise<NextResponse<ExifResponse>
                 ? buildMapsUrl(gps.latitude, gps.longitude)
                 : null;
 
-        // 7. Persist to local SQLite database (includes raw image buffer as BLOB)
+        // ── SQLite type sanitizers ────────────────────────────────────────────
+        // exifr returns Date objects, fraction objects {numerator,denominator},
+        // booleans, and plain objects. SQLite only accepts: string | number | bigint | Buffer | null.
+        const toSafeStr = (v: unknown): string | null => {
+            if (v === undefined || v === null) return null;
+            if (v instanceof Date) return v.toISOString();
+            if (typeof v === 'string') return v;
+            if (typeof v === 'number' || typeof v === 'bigint') return String(v);
+            if (typeof v === 'boolean') return null; // boolean has no useful string form for EXIF
+            if (typeof v === 'object') return JSON.stringify(v); // Flash objects etc → JSON string
+            return null;
+        };
+        const toSafeNum = (v: unknown): number | null => {
+            if (v === undefined || v === null) return null;
+            if (typeof v === 'number' && isFinite(v)) return v;
+            if (typeof v === 'bigint') return Number(v);
+            if (typeof v === 'boolean') return null;
+            // exifr Fraction objects: { numerator: 1, denominator: 100 }
+            if (typeof v === 'object' && v !== null && 'numerator' in v && 'denominator' in v) {
+                const o = v as { numerator: number; denominator: number };
+                return o.denominator !== 0 ? o.numerator / o.denominator : null;
+            }
+            if (typeof v === 'string') { const n = parseFloat(v); return isFinite(n) ? n : null; }
+            return null;
+        };
+        const toSafeDate = (v: unknown): string | null => {
+            if (v instanceof Date) return v.toISOString();
+            if (typeof v === 'string' && v.trim()) return v;
+            return null;
+        };
+
+        // 7. Persist to local SQLite database (insert FIRST — district added below via UPDATE)
+        //    District columns are guaranteed to exist from the migration in getDb().
         //    We delete the temp file AFTER the insert so the buffer is safely saved.
         const recordId = insertExifRecord({
             user_id: user.id,
             filename: file.originalFilename ?? "unknown",
             mime_type: file.mimetype ?? "application/octet-stream",
-            file_size_bytes: file.size ?? null,
+            file_size_bytes: typeof file.size === 'number' ? file.size : null,
 
-            // GPS
+            // GPS — already number | null from exifr.gps()
             latitude: gps.latitude,
             longitude: gps.longitude,
-            altitude: gps.altitude,
-            latitude_ref: gps.latitudeRef,
-            longitude_ref: gps.longitudeRef,
+            altitude: toSafeNum(gps.altitude),
+            latitude_ref: toSafeStr(gps.latitudeRef),
+            longitude_ref: toSafeStr(gps.longitudeRef),
             maps_url: mapsUrl,
 
-            // Camera / device
-            make: (allTags["Make"] as string) ?? null,
-            model: (allTags["Model"] as string) ?? null,
-            software: (allTags["Software"] as string) ?? null,
-            date_time: (allTags["DateTimeOriginal"] as string)
-                ?? (allTags["DateTime"] as string)
-                ?? observedDate   // ← user-picked date from the form as last resort
+            // Camera / device — exifr can return Date, Fraction, bool, object
+            make: toSafeStr(allTags["Make"]),
+            model: toSafeStr(allTags["Model"]),
+            software: toSafeStr(allTags["Software"]),
+            date_time: toSafeDate(allTags["DateTimeOriginal"])
+                ?? toSafeDate(allTags["DateTime"])
+                ?? observedDate
                 ?? null,
-            exposure_time: (allTags["ExposureTime"] as string) ?? null,
-            f_number: (allTags["FNumber"] as number) ?? null,
-            iso: (allTags["ISO"] as number) ?? null,
-            focal_length: (allTags["FocalLength"] as number) ?? null,
-            flash: (allTags["Flash"] as string) ?? null,
+            exposure_time: toSafeNum(allTags["ExposureTime"]) !== null
+                ? String(toSafeNum(allTags["ExposureTime"]))
+                : null,
+            f_number: toSafeNum(allTags["FNumber"]),
+            iso: toSafeNum(allTags["ISO"]),
+            focal_length: toSafeNum(allTags["FocalLength"]),
+            // Flash is an object like {fired:false, mode:0, ...} — store as JSON string
+            flash: toSafeStr(allTags["Flash"]),
 
             // Image properties
-            image_width: (allTags["ImageWidth"] as number) ?? null,
-            image_height: (allTags["ImageHeight"] as number) ?? null,
-            orientation: (allTags["Orientation"] as number) ?? null,
-            color_space: (allTags["ColorSpace"] as string) ?? null,
+            image_width: toSafeNum(allTags["ImageWidth"]),
+            image_height: toSafeNum(allTags["ImageHeight"]),
+            orientation: toSafeNum(allTags["Orientation"]),
+            // ColorSpace is often a number (e.g. 1 = sRGB) — convert to string label
+            color_space: toSafeStr(allTags["ColorSpace"]),
 
-            // Full raw dump
+            // Full raw dump — JSON.stringify is always a string, safe
             all_tags_json: JSON.stringify(allTags),
 
-            // Raw image bytes — stored as BLOB so Gemini Vision can analyse
-            // the actual pixels when /api/analyse-exif is called later.
+            // Raw image bytes — Buffer is accepted by SQLite
             image_data: buffer,
         });
 
-        // 8. Now safe to delete the temp file formidable wrote to disk
+
+        // 7b. Reverse-geocode GPS → district / state / country (after insert, non-blocking)
+        // District columns exist via migration in getDb(). Uses Nominatim OSM — free, no API key.
+        if (gps.latitude !== null && gps.longitude !== null) {
+            try {
+                const controller = new AbortController();
+                const geoTimeout = setTimeout(() => controller.abort(), 3000);
+                const geoRes = await fetch(
+                    `https://nominatim.openstreetmap.org/reverse?lat=${gps.latitude}&lon=${gps.longitude}&format=json`,
+                    {
+                        signal: controller.signal,
+                        headers: { 'User-Agent': 'TerraShield-App/1.0 (ecological intelligence platform)' },
+                    }
+                );
+                clearTimeout(geoTimeout);
+                if (geoRes.ok) {
+                    const geo = await geoRes.json();
+                    const addr = geo?.address ?? {};
+                    const district = addr.county ?? addr.district ?? addr.suburb ?? addr.borough ?? null;
+                    const state = addr.state ?? addr.province ?? null;
+                    const country = addr.country ?? null;
+                    // Write district onto the already-saved record
+                    updateExifDistrict(recordId, district, state, country);
+                }
+            } catch {
+                console.warn('[extract-exif] Nominatim geocoding skipped (timeout/offline)');
+                // District stays NULL — report is already saved
+            }
+        }
         fs.unlinkSync(file.filepath);
 
         // 9. Return the structured response (include recordId for reference)

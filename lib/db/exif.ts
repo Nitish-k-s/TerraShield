@@ -34,7 +34,7 @@ declare global {
     var __exifDb: Database.Database | undefined;
 }
 
-function getDb(): Database.Database {
+export function getDb(): Database.Database {
     if (!global.__exifDb) {
         global.__exifDb = new Database(DB_PATH);
         // Enable WAL mode for better concurrent read performance
@@ -128,11 +128,16 @@ function initSchema(db: Database.Database): void {
     // ── Safe migration for existing databases ────────────────────────────────
     try { db.exec("ALTER TABLE exif_data ADD COLUMN image_data BLOB"); } catch { /* already exists */ }
     try { db.exec("ALTER TABLE exif_data ADD COLUMN satellite_context_json TEXT"); } catch { /* already exists */ }
+    // District geocoding columns
+    try { db.exec("ALTER TABLE exif_data ADD COLUMN district TEXT"); } catch { /* already exists */ }
+    try { db.exec("ALTER TABLE exif_data ADD COLUMN state    TEXT"); } catch { /* already exists */ }
+    try { db.exec("ALTER TABLE exif_data ADD COLUMN country  TEXT"); } catch { /* already exists */ }
 
     // ── Performance indexes (idempotent) ─────────────────────────────────────
     try { db.exec("CREATE INDEX IF NOT EXISTS idx_exif_ai_label ON exif_data (ai_label)"); } catch { /* ok */ }
     try { db.exec("CREATE INDEX IF NOT EXISTS idx_exif_analysed_at ON exif_data (ai_analysed_at)"); } catch { /* ok */ }
     try { db.exec("CREATE INDEX IF NOT EXISTS idx_exif_created_at ON exif_data (created_at)"); } catch { /* ok */ }
+    try { db.exec("CREATE INDEX IF NOT EXISTS idx_exif_district ON exif_data (district)"); } catch { /* ok */ }
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -174,6 +179,11 @@ export interface InsertExifRecord {
 
     // Image binary (stored as BLOB; typed as Buffer in Node.js)
     image_data?: Buffer | null;
+
+    // Reverse-geocoded location (set at insert time, NULL if GPS absent)
+    district?: string | null;
+    state?: string | null;
+    country?: string | null;
 }
 
 /** AI analysis fields applied via updateAiAnalysis(). */
@@ -223,6 +233,21 @@ export function insertExifRecord(data: InsertExifRecord): number {
 
     const result = stmt.run(data);
     return result.lastInsertRowid as number;
+}
+
+/**
+ * Writes the reverse-geocoded location onto an already-inserted exif_data row.
+ * Called after insertExifRecord so a geocoding failure never blocks submission.
+ */
+export function updateExifDistrict(
+    id: number,
+    district: string | null,
+    state: string | null,
+    country: string | null
+): void {
+    getDb().prepare<[string | null, string | null, string | null, number]>(
+        "UPDATE exif_data SET district = ?, state = ?, country = ? WHERE id = ?"
+    ).run(district, state, country, id);
 }
 
 /**
@@ -459,4 +484,294 @@ export function detectOutbreakClusters(): OutbreakCluster[] {
     }
 
     return clusters.sort((a, b) => b.avg_risk - a.avg_risk);
+}
+
+// ─── District Distribution ────────────────────────────────────────────────────
+
+export interface DistrictRow {
+    district: string;
+    state: string | null;
+    country: string | null;
+    report_count: number;
+    invasive_count: number;
+    avg_risk_score: number;
+    risk_level: 'Monitoring' | 'Elevated' | 'Critical';
+}
+
+/**
+ * Aggregates analysed reports by district (last 30 days).
+ * Risk level is computed server-side — never in the frontend.
+ * Returns rows ordered by report_count DESC.
+ */
+export function getDistrictDistribution(): DistrictRow[] {
+    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const rows = getDb().prepare<[string], {
+        district: string;
+        state: string | null;
+        country: string | null;
+        report_count: number;
+        invasive_count: number;
+        avg_risk_score: number | null;
+    }>(`
+        SELECT
+            district,
+            state,
+            country,
+            COUNT(*)                                                              AS report_count,
+            SUM(CASE WHEN ai_label IN ('invasive-plant','invasive-animal') THEN 1 ELSE 0 END) AS invasive_count,
+            ROUND(AVG(COALESCE(ai_risk_score, 0)), 1)                             AS avg_risk_score
+        FROM   exif_data
+        WHERE  district         IS NOT NULL
+          AND  ai_analysed_at   IS NOT NULL
+          AND  created_at       >= ?
+        GROUP  BY district
+        ORDER  BY report_count DESC
+    `).all(cutoff);
+
+    return rows.map(r => {
+        const score = r.avg_risk_score ?? 0;
+        const risk_level: DistrictRow['risk_level'] =
+            score >= 7 ? 'Critical' :
+                score >= 4 ? 'Elevated' :
+                    'Monitoring';
+        return {
+            district: r.district,
+            state: r.state,
+            country: r.country,
+            report_count: r.report_count,
+            invasive_count: r.invasive_count,
+            avg_risk_score: score,
+            risk_level,
+        };
+    });
+}
+
+// ─── District Filter Type ─────────────────────────────────────────────────────
+
+export interface DistrictFilter {
+    district?: string | null;
+    state?: string | null;
+    country?: string | null;
+}
+
+/** Build a WHERE clause fragment + params for optional district/state/country filtering. */
+function districtWhere(base: string, f?: DistrictFilter): { sql: string; params: (string | null)[] } {
+    const clauses: string[] = [base];
+    const params: (string | null)[] = [];
+    if (f?.country) { clauses.push("country = ?"); params.push(f.country); }
+    if (f?.state) { clauses.push("state = ?"); params.push(f.state); }
+    if (f?.district) { clauses.push("district = ?"); params.push(f.district); }
+    return { sql: clauses.join(" AND "), params };
+}
+
+// ─── District List ────────────────────────────────────────────────────────────
+
+export interface DistrictListRow { country: string; state: string | null; district: string; }
+
+export function getDistrictList(): DistrictListRow[] {
+    return getDb().prepare<[], DistrictListRow>(`
+        SELECT DISTINCT country, state, district
+        FROM   exif_data
+        WHERE  district IS NOT NULL
+          AND  ai_analysed_at IS NOT NULL
+          AND  country IS NOT NULL
+        ORDER  BY country, state, district
+    `).all();
+}
+
+// ─── Overview Stats ───────────────────────────────────────────────────────────
+
+export interface OverviewStats {
+    total_reports: number;
+    invasive_count: number;
+    high_risk_zones: number;
+    avg_confidence: number;
+    most_reported_species: string | null;
+    active_clusters: number;
+}
+
+export function getOverviewStats(f?: DistrictFilter): OverviewStats {
+    const db = getDb();
+    const { sql, params } = districtWhere(
+        "ai_analysed_at IS NOT NULL",
+        f
+    );
+
+    const base = db.prepare<unknown[], {
+        total: number; invasive: number; high_risk: number; avg_conf: number | null;
+    }>(`
+        SELECT COUNT(*)                                                                   AS total,
+               SUM(CASE WHEN ai_label IN ('invasive-plant','invasive-animal') THEN 1 ELSE 0 END) AS invasive,
+               SUM(CASE WHEN ai_risk_score >= 7 THEN 1 ELSE 0 END)                      AS high_risk,
+               ROUND(AVG(COALESCE(ai_confidence, 0)), 3)                                 AS avg_conf
+        FROM   exif_data
+        WHERE  ${sql}
+    `).get(...params);
+
+    // Most reported species from ai_tags JSON
+    const speciesRow = db.prepare<unknown[], { species: string; n: number }>(`
+        SELECT json_extract(ai_tags, '$[0]') AS species, COUNT(*) AS n
+        FROM   exif_data
+        WHERE  ${sql}
+          AND  ai_tags IS NOT NULL
+        GROUP  BY species
+        ORDER  BY n DESC
+        LIMIT  1
+    `).get(...params);
+
+    return {
+        total_reports: base?.total ?? 0,
+        invasive_count: base?.invasive ?? 0,
+        high_risk_zones: base?.high_risk ?? 0,
+        avg_confidence: Math.round((base?.avg_conf ?? 0) * 100),
+        most_reported_species: speciesRow?.species ?? null,
+        active_clusters: detectOutbreakClusters().length,
+    };
+}
+
+// ─── Risk Distribution ────────────────────────────────────────────────────────
+
+export interface RiskDistribution { low: number; moderate: number; high: number; }
+
+export function getRiskDistribution(f?: DistrictFilter): RiskDistribution {
+    const { sql, params } = districtWhere("ai_analysed_at IS NOT NULL", f);
+    const row = getDb().prepare<unknown[], { low: number; moderate: number; high: number }>(`
+        SELECT
+            SUM(CASE WHEN ai_risk_score <  3.5 THEN 1 ELSE 0 END) AS low,
+            SUM(CASE WHEN ai_risk_score >= 3.5 AND ai_risk_score <= 6.5 THEN 1 ELSE 0 END) AS moderate,
+            SUM(CASE WHEN ai_risk_score >  6.5 THEN 1 ELSE 0 END) AS high
+        FROM exif_data
+        WHERE ${sql}
+    `).get(...params);
+    return { low: row?.low ?? 0, moderate: row?.moderate ?? 0, high: row?.high ?? 0 };
+}
+
+// ─── Species by District ──────────────────────────────────────────────────────
+
+export interface SpeciesDistrictRow {
+    district: string;
+    state: string | null;
+    country: string | null;
+    species: string;
+    count: number;
+}
+
+export function getSpeciesByDistrict(): SpeciesDistrictRow[] {
+    return getDb().prepare<[], SpeciesDistrictRow>(`
+        SELECT district,
+               state,
+               country,
+               json_extract(ai_tags, '$[0]') AS species,
+               COUNT(*)                       AS count
+        FROM   exif_data
+        WHERE  district         IS NOT NULL
+          AND  ai_analysed_at   IS NOT NULL
+          AND  ai_tags          IS NOT NULL
+          AND  json_extract(ai_tags, '$[0]') IS NOT NULL
+        GROUP  BY district, species
+        ORDER  BY district, count DESC
+    `).all();
+}
+
+// ─── Top Districts ────────────────────────────────────────────────────────────
+
+export interface TopDistrictRow {
+    district: string;
+    state: string | null;
+    country: string | null;
+    report_count: number;
+    invasive_count: number;
+    avg_risk: number;
+    risk_level: 'Monitoring' | 'Elevated' | 'Critical';
+}
+
+export function getTopDistricts(f?: Pick<DistrictFilter, 'country'>): TopDistrictRow[] {
+    const clauses = ["ai_analysed_at IS NOT NULL", "district IS NOT NULL"];
+    const params: (string | null)[] = [];
+    if (f?.country) { clauses.push("country = ?"); params.push(f.country); }
+
+    const rows = getDb().prepare<unknown[], {
+        district: string; state: string | null; country: string | null;
+        report_count: number; invasive_count: number; avg_risk: number | null;
+    }>(`
+        SELECT district, state, country,
+               COUNT(*)                                                                        AS report_count,
+               SUM(CASE WHEN ai_label IN ('invasive-plant','invasive-animal') THEN 1 ELSE 0 END) AS invasive_count,
+               ROUND(AVG(COALESCE(ai_risk_score, 0)), 1)                                      AS avg_risk
+        FROM   exif_data
+        WHERE  ${clauses.join(" AND ")}
+        GROUP  BY district
+        ORDER  BY avg_risk DESC
+        LIMIT  10
+    `).all(...params);
+
+    return rows.map(r => {
+        const score = r.avg_risk ?? 0;
+        return {
+            ...r,
+            avg_risk: score,
+            risk_level: (score >= 7 ? 'Critical' : score >= 4 ? 'Elevated' : 'Monitoring') as TopDistrictRow['risk_level'],
+        };
+    });
+}
+
+// ─── Time Trends ─────────────────────────────────────────────────────────────
+
+export interface DailyTrendRow { day: string; date: string; count: number; }
+
+export function getTimeTrends(f?: DistrictFilter, days = 30): DailyTrendRow[] {
+    const db = getDb();
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const result: DailyTrendRow[] = [];
+
+    const { sql: baseWhere, params: baseParams } = districtWhere("ai_analysed_at IS NOT NULL", f);
+
+    for (let i = days - 1; i >= 0; i--) {
+        const d = new Date(Date.now() - i * 86_400_000);
+        const dateStr = d.toISOString().slice(0, 10);
+        const count = (db.prepare<unknown[], { n: number }>(`
+            SELECT COUNT(*) AS n
+            FROM   exif_data
+            WHERE  ${baseWhere}
+              AND  created_at >= ?
+              AND  created_at <  date(?, '+1 day')
+        `).get(...baseParams, `${dateStr}T00:00:00.000Z`, dateStr)?.n) ?? 0;
+        result.push({ day: dayNames[d.getDay()], date: dateStr, count });
+    }
+    return result;
+}
+
+// ─── Recent Alerts ────────────────────────────────────────────────────────────
+
+export interface AlertRow {
+    id: number;
+    species: string | null;
+    district: string | null;
+    state: string | null;
+    country: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    ai_risk_score: number | null;
+    ai_confidence: number | null;
+    ai_label: string | null;
+    ai_analysed_at: string | null;
+}
+
+export function getRecentAlerts(f?: DistrictFilter, limit = 20): AlertRow[] {
+    const { sql, params } = districtWhere(
+        "ai_analysed_at IS NOT NULL AND ai_risk_score > 4",
+        f
+    );
+    return getDb().prepare<unknown[], AlertRow>(`
+        SELECT id,
+               json_extract(ai_tags, '$[0]') AS species,
+               district, state, country,
+               latitude, longitude,
+               ai_risk_score, ai_confidence, ai_label,
+               ai_analysed_at
+        FROM   exif_data
+        WHERE  ${sql}
+        ORDER  BY ai_analysed_at DESC
+        LIMIT  ${limit}
+    `).all(...params);
 }
