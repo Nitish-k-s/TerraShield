@@ -39,11 +39,14 @@ export async function middleware(request: NextRequest) {
         user = data?.user || null;
     }
 
-    // Protect all /api routes except public endpoints if any exist later
+    // Protect all /api routes except explicitly public ones
     const isApiRoute = request.nextUrl.pathname.startsWith("/api");
+    const isPublicApiRoute = [
+        "/api/public-reports",
+    ].some(p => request.nextUrl.pathname.startsWith(p));
 
-    // Return 401 Unauthorized for API routes instead of redirecting to a UI page
-    if (!user && isApiRoute) {
+    // Return 401 Unauthorized for protected API routes
+    if (!user && isApiRoute && !isPublicApiRoute) {
         return new NextResponse(
             JSON.stringify({ error: "Unauthorized access: Please sign in." }),
             { status: 401, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }

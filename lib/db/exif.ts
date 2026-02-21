@@ -126,10 +126,13 @@ function initSchema(db: Database.Database): void {
     `);
 
     // ── Safe migration for existing databases ────────────────────────────────
-    // SQLite does not support IF NOT EXISTS on ALTER TABLE, so we catch the
-    // duplicate-column error and ignore it.
     try { db.exec("ALTER TABLE exif_data ADD COLUMN image_data BLOB"); } catch { /* already exists */ }
     try { db.exec("ALTER TABLE exif_data ADD COLUMN satellite_context_json TEXT"); } catch { /* already exists */ }
+
+    // ── Performance indexes (idempotent) ─────────────────────────────────────
+    try { db.exec("CREATE INDEX IF NOT EXISTS idx_exif_ai_label ON exif_data (ai_label)"); } catch { /* ok */ }
+    try { db.exec("CREATE INDEX IF NOT EXISTS idx_exif_analysed_at ON exif_data (ai_analysed_at)"); } catch { /* ok */ }
+    try { db.exec("CREATE INDEX IF NOT EXISTS idx_exif_created_at ON exif_data (created_at)"); } catch { /* ok */ }
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -290,4 +293,170 @@ export function countExifRecords(): number {
         .prepare<[], { total: number }>("SELECT COUNT(*) AS total FROM exif_data")
         .get();
     return row?.total ?? 0;
+}
+
+// ─── Public Report Types ─────────────────────────────────────────────────────
+
+export interface PublicReport {
+    id: number;
+    lat: number;
+    lon: number;
+    species: string;
+    risk_score: number;
+    confidence: number;
+    created_at: string;
+}
+
+export interface OutbreakCluster {
+    species: string;
+    lat: number;
+    lon: number;
+    count: number;
+    avg_risk: number;
+    level: 'monitoring' | 'elevated' | 'critical';
+}
+
+/** Extract inferred species name from ai_tags JSON array or ai_summary. */
+function parseSpecies(ai_tags: string | null, ai_summary: string | null): string {
+    if (ai_tags) {
+        try {
+            const tags: string[] = JSON.parse(ai_tags);
+            // First tag that looks like a species name (contains a space or is capitalised)
+            const species = tags.find(t => /^[A-Z]/.test(t) || t.includes(' '));
+            if (species) return species;
+            if (tags.length > 0) return tags[0];
+        } catch { /* fall through */ }
+    }
+    if (ai_summary) {
+        // Take first sentence / first 40 chars as species hint
+        const match = ai_summary.match(/^([A-Z][a-z]+ [a-z]+)/);
+        if (match) return match[1];
+    }
+    return 'Unknown species';
+}
+
+/** Haversine distance in km between two lat/lng points. */
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371;
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/** Risk level from 0-10 score. */
+function riskLevel(score: number): 'monitoring' | 'elevated' | 'critical' {
+    if (score >= 7) return 'critical';
+    if (score >= 4) return 'elevated';
+    return 'monitoring';
+}
+
+/**
+ * Returns safe public fields for all analysed invasive reports (last 30 days).
+ * NO user_id, email, image_data, or internal metadata exposed.
+ */
+export function getPublicReports(): PublicReport[] {
+    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const rows = getDb().prepare<[string], {
+        id: number; latitude: number; longitude: number;
+        ai_tags: string | null; ai_summary: string | null;
+        ai_risk_score: number | null; ai_confidence: number | null;
+        created_at: string;
+    }>(`
+        SELECT id, latitude, longitude, ai_tags, ai_summary,
+               ai_risk_score, ai_confidence, created_at
+        FROM   exif_data
+        WHERE  ai_analysed_at IS NOT NULL
+          AND  ai_label IN ('invasive-plant', 'invasive-animal')
+          AND  latitude  IS NOT NULL
+          AND  longitude IS NOT NULL
+          AND  created_at >= ?
+        ORDER BY created_at DESC
+        LIMIT 200
+    `).all(cutoff);
+
+    return rows.map(r => ({
+        id: r.id,
+        lat: r.latitude,
+        lon: r.longitude,
+        species: parseSpecies(r.ai_tags, r.ai_summary),
+        risk_score: Math.round((r.ai_risk_score ?? 0) * 10) / 10,
+        confidence: Math.round((r.ai_confidence ?? 0) * 100) / 100,
+        created_at: r.created_at.slice(0, 10),   // yyyy-mm-dd only
+    }));
+}
+
+/**
+ * Groups public reports into spatial clusters:
+ *  - same first-tag species
+ *  - within 5 km radius
+ *  - within last 7 days
+ *  - at least CLUSTER_THRESHOLD reports in cluster
+ *
+ * Returns clusters sorted by avg risk score descending.
+ */
+const CLUSTER_THRESHOLD = 3;
+const CLUSTER_RADIUS_KM = 5;
+const CLUSTER_WINDOW_DAYS = 7;
+
+export function detectOutbreakClusters(): OutbreakCluster[] {
+    const cutoff = new Date(Date.now() - CLUSTER_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
+    const rows = getDb().prepare<[string], {
+        id: number; latitude: number; longitude: number;
+        ai_tags: string | null; ai_summary: string | null;
+        ai_risk_score: number | null;
+    }>(`
+        SELECT id, latitude, longitude, ai_tags, ai_summary, ai_risk_score
+        FROM   exif_data
+        WHERE  ai_analysed_at IS NOT NULL
+          AND  ai_label IN ('invasive-plant', 'invasive-animal')
+          AND  latitude  IS NOT NULL
+          AND  longitude IS NOT NULL
+          AND  created_at >= ?
+        ORDER BY created_at DESC
+    `).all(cutoff);
+
+    // Greedy cluster assignment
+    const assigned = new Set<number>();
+    const clusters: OutbreakCluster[] = [];
+
+    for (let i = 0; i < rows.length; i++) {
+        if (assigned.has(rows[i].id)) continue;
+        const seed = rows[i];
+        const seedSpecies = parseSpecies(seed.ai_tags, seed.ai_summary);
+        const members = [seed];
+        assigned.add(seed.id);
+
+        for (let j = i + 1; j < rows.length; j++) {
+            if (assigned.has(rows[j].id)) continue;
+            const candidate = rows[j];
+            const candSpecies = parseSpecies(candidate.ai_tags, candidate.ai_summary);
+            if (candSpecies !== seedSpecies) continue;
+            const dist = haversineKm(seed.latitude, seed.longitude, candidate.latitude, candidate.longitude);
+            if (dist <= CLUSTER_RADIUS_KM) {
+                members.push(candidate);
+                assigned.add(candidate.id);
+            }
+        }
+
+        if (members.length >= CLUSTER_THRESHOLD) {
+            const avgLat = members.reduce((s, r) => s + r.latitude, 0) / members.length;
+            const avgLon = members.reduce((s, r) => s + r.longitude, 0) / members.length;
+            const avgRisk = members.reduce((s, r) => s + (r.ai_risk_score ?? 0), 0) / members.length;
+            clusters.push({
+                species: seedSpecies,
+                lat: Math.round(avgLat * 1e5) / 1e5,
+                lon: Math.round(avgLon * 1e5) / 1e5,
+                count: members.length,
+                avg_risk: Math.round(avgRisk * 10) / 10,
+                level: riskLevel(avgRisk),
+            });
+        }
+    }
+
+    return clusters.sort((a, b) => b.avg_risk - a.avg_risk);
 }
