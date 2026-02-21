@@ -21,7 +21,8 @@ export function renderProfile() {
                 <span id="profile-gender"></span>
                 <span id="profile-phone"></span>
             </div>
-            <p id="profile-role" style="text-transform:uppercase;letter-spacing:0.05em;font-size:0.75rem;font-weight:var(--fw-bold);display:inline-block;padding:0.25rem 0.5rem;background:var(--color-primary);border-radius:100px">Observer</p>
+            <p id="profile-role" style="display:none"></p>
+            <span id="profile-level-badge" style="display:none;margin-left:0.5rem;font-size:0.7rem;font-weight:var(--fw-bold);padding:0.2rem 0.6rem;border-radius:100px;letter-spacing:0.06em;text-transform:uppercase"></span>
           </div>
           <div>
             <button id="edit-profile-btn" class="btn mix-btn-primary" style="display:none;align-items:center;gap:0.5rem">
@@ -88,6 +89,16 @@ export function renderProfile() {
               <span class="material-symbols-outlined" style="font-size:2.5rem;color:var(--color-primary);margin-bottom:var(--space-2)">toll</span>
               <h2 style="font-size:1.125rem;color:var(--color-slate-600);font-weight:normal;margin-bottom:var(--space-2)">TerraPoints Balance</h2>
               <div id="profile-points" style="font-size:3.5rem;font-weight:var(--fw-bold);color:var(--color-primary);line-height:1">0</div>
+
+              <!-- Level display -->
+              <div id="level-display" style="display:none;margin-top:var(--space-5)">
+                <div id="level-name" style="font-size:1rem;font-weight:var(--fw-bold);letter-spacing:0.04em;margin-bottom:var(--space-3)"></div>
+                <div style="position:relative;height:8px;background:var(--color-slate-200);border-radius:4px;overflow:hidden">
+                  <div id="level-bar" style="position:absolute;left:0;top:0;height:100%;border-radius:4px;transition:width 1s ease;background:var(--color-primary);width:0%"></div>
+                </div>
+                <div id="level-progress-label" style="font-size:0.75rem;color:var(--color-slate-500);margin-top:var(--space-2)"></div>
+              </div>
+
               <p style="font-size:0.875rem;color:var(--color-slate-500);margin-top:var(--space-4)">Earn points by submitting verified invasive species reports.</p>
             </div>
 
@@ -158,7 +169,48 @@ export function renderProfile() {
           document.getElementById('profile-content').style.display = 'grid';
 
           // Update Stats
-          document.getElementById('profile-role').textContent = data.profile.role.toUpperCase();
+          // profile-role is hidden; level shown exclusively via the badge below
+
+          // ── Level badge ─────────────────────────────────────────────────────
+          const levelColors = {
+            Observer: { bg: 'rgba(100,116,139,0.15)', color: '#64748b' },
+            Defender: { bg: 'rgba(29,172,201,0.15)', color: '#1dacc9' },
+            Protector: { bg: 'rgba(16,185,129,0.15)', color: '#10b981' },
+            Guardian: { bg: 'rgba(245,158,11,0.15)', color: '#f59e0b' },
+          };
+          const level = data.profile.level || 'Observer';
+          const lc = levelColors[level] || levelColors.Observer;
+          const badge = document.getElementById('profile-level-badge');
+          if (badge) {
+            badge.textContent = level;
+            badge.style.background = lc.bg;
+            badge.style.color = lc.color;
+            badge.style.border = `1px solid ${lc.color}40`;
+            badge.style.display = 'inline-block';
+          }
+
+          // ── Progress bar ────────────────────────────────────────────────────
+          const levelDisplay = document.getElementById('level-display');
+          const levelNameEl = document.getElementById('level-name');
+          const levelBar = document.getElementById('level-bar');
+          const levelLabel = document.getElementById('level-progress-label');
+          if (levelDisplay && levelNameEl && levelBar && levelLabel) {
+            levelDisplay.style.display = 'block';
+            levelNameEl.textContent = level;
+            levelNameEl.style.color = lc.color;
+            const pct = data.profile.level_progress_pct ?? 0;
+            const nextAt = data.profile.next_level_at;
+            requestAnimationFrame(() => {
+              levelBar.style.width = pct + '%';
+              levelBar.style.background = lc.color;
+            });
+            if (nextAt) {
+              const pts = data.profile.terra_points;
+              levelLabel.textContent = `${nextAt - pts} pts to next level`;
+            } else {
+              levelLabel.textContent = 'Max level reached 🌟';
+            }
+          }
 
           if (data.profile.name) nameEl.textContent = data.profile.name;
           if (data.profile.gender) document.getElementById('profile-gender').innerHTML = `<span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle;margin-right:0.25rem">wc</span>${data.profile.gender}`;
