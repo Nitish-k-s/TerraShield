@@ -25,11 +25,7 @@
     "@types/node": "^20.0.0",
     "@types/react": "^18.3.0",
     "eslint": "^10.0.1",
-<<<<<<< HEAD
-    "eslint-config-next": "^0.2.4",
-=======
     "eslint-config-next": "^16.1.6",
->>>>>>> 243810f291c4fe64588c20dd2b80db37f4d3b57f
     "typescript": "^5.0.0"
   }
 }
