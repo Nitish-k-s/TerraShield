@@ -2,6 +2,7 @@
 import { initScrollObserver, animateCounters } from './scroll-observer.js';
 import { initLazyLoad } from './lazy-load.js';
 import { initNavbarAuth } from '../components/navbar.js';
+import { initMagnetAll } from './magnet.js';
 
 // Page imports
 import { renderHome } from '../pages/home.js';
@@ -32,6 +33,7 @@ function getRoute() {
 }
 
 let currentCleanup = null;
+let magnetCleanup = null;
 
 async function navigate() {
     const path = getRoute();
@@ -71,7 +73,19 @@ async function navigate() {
         animateCounters();
         initLazyLoad();
         initParallax();
-        initNavbarAuth();   // update Sign In ↔ Sign Out based on session
+        initNavbarAuth();
+
+        // Magnet effect on all card-type elements and CTA buttons
+        if (magnetCleanup) { magnetCleanup(); magnetCleanup = null; }
+        const cleanups = [];
+        const c1 = initMagnetAll('.card.hover-lift', { padding: 80, strength: 3 });
+        const c2 = initMagnetAll('.stat-card, [class*="stat-"]', { padding: 60, strength: 4 });
+        const c3 = initMagnetAll('#login-card, #signup-card, .hero-animate-delay[style*="border-radius"]', { padding: 50, strength: 5 });
+        const c4 = initMagnetAll('.btn-primary', { padding: 50, strength: 4 });
+        const c5 = initMagnetAll('.btn-lg:not(.btn-primary)', { padding: 40, strength: 5 });
+        const c6 = initMagnetAll('[data-delay].card', { padding: 70, strength: 3.5 });
+        [c1, c2, c3, c4, c5, c6].forEach(c => { if (c) cleanups.push(c); });
+        magnetCleanup = () => cleanups.forEach(fn => fn());
     }, 50);
 
     // Scroll to top
