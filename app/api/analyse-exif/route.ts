@@ -216,7 +216,11 @@ async function analyseWithGemini(record: ExifRecord): Promise<AnalysisMetadata> 
     // The user's API key provisions Gemini 2.5 and 2.0 models, so we use gemini-2.5-flash
     // temperature: 0 → deterministic output so the same image always yields the same score
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    const generationConfig = { temperature: 0, maxOutputTokens: 1024 };
+    // temperature: 0.2 gives near-deterministic results while remaining compatible
+    // with gemini-2.5-flash (a thinking model that doesn't support strict 0).
+    // maxOutputTokens: 2048 gives plenty of room for the JSON response.
+    const generationConfig = { temperature: 0.2, maxOutputTokens: 2048 };
+
 
     // Fetch external geographical context if GPS coordinates exist
     let externalContext = null;
@@ -258,9 +262,26 @@ async function analyseWithGemini(record: ExifRecord): Promise<AnalysisMetadata> 
     const text = result.response.text().trim();
 
     // Strip accidental markdown fences if model wraps output in ```json … ```
-    const clean = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+    const clean = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
 
-    const parsed: GeminiResult = JSON.parse(clean);
+    if (!clean) {
+        throw new Error(
+            "Gemini returned an empty response. The image may be too large or the model timed out. " +
+            "Please try again with a smaller image."
+        );
+    }
+
+    let parsed: GeminiResult;
+    try {
+        parsed = JSON.parse(clean);
+    } catch {
+        console.error("[analyse-exif] Gemini raw response (unparseable):", clean.slice(0, 300));
+        throw new Error(
+            "Gemini response was not valid JSON. This can happen if the model output was truncated. " +
+            `Raw start: ${clean.slice(0, 80)}`
+        );
+    }
+
 
     // Clamp values to valid ranges
     parsed.ai_confidence = Math.min(1, Math.max(0, Number(parsed.ai_confidence) || 0));
