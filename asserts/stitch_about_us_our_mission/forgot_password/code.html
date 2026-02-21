@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Forgot Password - Security</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1dacc9",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#111e21",
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>.paper-texture {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuAy7WuP15XnYuZ9EugDJGQBh1nRw5SYq0bJsxCtnme9TNFsWn2rMCG86rHh0St5C2xMDSYpL2FA6iQmCa2eE2eUQEB6ym0GFcXayKrLnCWT-cGM6AnSQMfNm7M1GGC5YhOIz3pE1pHznR10kcmOdcY_-ZtWt6ClJgeOvXOOlazmAHPkv0cAwo7hVPEwG2dA3JnMHFtn-563tg7N8ONbBYc3fdLizbza5FRSa475egL66dprW0WgucFf2oa7MQBrMCbU_Oo6lBZ7A9vX);
+    opacity: 0.03
+    }
+.organic-shape-1 {
+    border-radius: 60% 40% 30% 70%/60% 30% 70% 40%
+    }
+.organic-shape-2 {
+    border-radius: 30% 70% 70% 30%/30% 30% 70% 70%
+    }</style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen overflow-hidden relative selection:bg-primary/30">
+<!-- Decorative Paper-Cut Organic Shapes -->
+<div class="absolute -top-20 -left-20 w-96 h-96 bg-primary/10 organic-shape-1 blur-3xl pointer-events-none"></div>
+<div class="absolute top-10 left-10 w-64 h-64 bg-primary/5 organic-shape-2 border border-primary/10 pointer-events-none"></div>
+<div class="absolute -bottom-24 -right-24 w-[30rem] h-[30rem] bg-primary/10 organic-shape-2 blur-3xl pointer-events-none"></div>
+<div class="absolute bottom-20 right-20 w-80 h-80 bg-primary/5 organic-shape-1 border border-primary/20 pointer-events-none"></div>
+<!-- Background Texture Overlay -->
+<div class="absolute inset-0 paper-texture pointer-events-none"></div>
+<div class="relative flex min-h-screen w-full flex-col items-center justify-center p-6">
+<!-- Header / Logo Area -->
+<div class="mb-10 flex flex-col items-center gap-2">
+<div class="flex items-center justify-center w-12 h-12 rounded-xl bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700">
+<span class="material-symbols-outlined text-primary text-3xl">shield_lock</span>
+</div>
+<h2 class="text-xl font-bold tracking-tight">Security</h2>
+</div>
+<!-- Central Card -->
+<main class="w-full max-w-md bg-white dark:bg-slate-900 rounded-xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 overflow-hidden">
+<div class="p-8 md:p-10">
+<div class="text-center mb-8">
+<h1 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-3">Forgot Password?</h1>
+<p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+                        No worries, it happens. Enter your email address below and we'll send you a link to reset your password.
+                    </p>
+</div>
+<form class="space-y-6">
+<div>
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 px-1" for="email">Email Address</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors duration-200">mail</span>
+</div>
+<input class="block w-full pl-11 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-slate-400 dark:placeholder:text-slate-500" id="email" name="email" placeholder="name@example.com" required="" type="email"/>
+</div>
+</div>
+<button class="w-full py-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg shadow-lg shadow-primary/20 transition-all duration-200 flex items-center justify-center gap-2 group" type="submit">
+<span>Send Reset Link</span>
+<span class="material-symbols-outlined text-xl group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</form>
+<div class="mt-8 flex items-center justify-center">
+<a class="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-lg">arrow_back</span>
+                        Return to Login
+                    </a>
+</div>
+</div>
+<!-- Footer Decorative Element -->
+<div class="h-1.5 w-full bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-50"></div>
+</main>
+<!-- Support Link -->
+<div class="mt-10">
+<button class="flex items-center gap-2 px-6 py-2 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:shadow-md transition-all duration-200">
+<span class="material-symbols-outlined text-lg">help_outline</span>
+                Need more help?
+            </button>
+</div>
+</div>
+<!-- Small decorative card image for visual context if needed -->
+<div class="hidden lg:block fixed bottom-10 left-10 w-48 h-48 opacity-10 rotate-12">
+<img alt="Minimalist abstract layered paper circles" class="w-full h-full object-contain" data-alt="Abstract layered paper cut circles with soft shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-Wp_LkES1nRnLz0K7jWlLmPOxqAomfJ10rwJsbkC-XyKoaT5By0OpnXdGxkkSWSYHnp_JnEG56RRB4qbajdm20WZSk9-BxPem1xybx7X51v29C6M19tYBXiFc21uwHHoDSvvOmiXU0Ebn1etU9OoKcDxtuPrXSW_YODGUqAujJX-FVoXii55UGW7k9ldAhhSwkmwcDzLtN1JcnfNRZ3KTQAA4Y1Da0Uy5d5FyCztI0qIyUZNQVGXJq43nGC0JHlGLypt7zXHNHg4w"/>
+</div>
+</body></html>
