@@ -404,22 +404,22 @@ export function renderReport() {
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-6)">
           <div class="card hover-lift reveal" data-delay="0" style="padding:var(--space-8);text-align:center">
             <span class="material-symbols-outlined" style="font-size:2.5rem;color:var(--color-primary);margin-bottom:var(--space-3);display:block">radar</span>
-            <span style="font-size:2rem;font-weight:var(--fw-bold);display:block;margin-bottom:var(--space-1)" class="counter" data-target="2847">0</span>
+            <span id="impact-reports" style="font-size:2rem;font-weight:var(--fw-bold);display:block;margin-bottom:var(--space-1)">–</span>
             <span style="font-size:0.65rem;color:var(--color-slate-500);text-transform:uppercase;letter-spacing:0.08em;font-weight:var(--fw-bold)">Reports Filed</span>
           </div>
           <div class="card hover-lift reveal" data-delay="100" style="padding:var(--space-8);text-align:center">
             <span class="material-symbols-outlined" style="font-size:2.5rem;color:#f59e0b;margin-bottom:var(--space-3);display:block">warning</span>
-            <span style="font-size:2rem;font-weight:var(--fw-bold);display:block;margin-bottom:var(--space-1)" class="counter" data-target="186">0</span>
+            <span id="impact-outbreaks" style="font-size:2rem;font-weight:var(--fw-bold);display:block;margin-bottom:var(--space-1)">–</span>
             <span style="font-size:0.65rem;color:var(--color-slate-500);text-transform:uppercase;letter-spacing:0.08em;font-weight:var(--fw-bold)">Outbreaks Flagged</span>
           </div>
           <div class="card hover-lift reveal" data-delay="200" style="padding:var(--space-8);text-align:center">
             <span class="material-symbols-outlined" style="font-size:2.5rem;color:#22c55e;margin-bottom:var(--space-3);display:block">public</span>
-            <span style="font-size:2rem;font-weight:var(--fw-bold);display:block;margin-bottom:var(--space-1)" class="counter" data-target="24">0</span>
+            <span id="impact-countries" style="font-size:2rem;font-weight:var(--fw-bold);display:block;margin-bottom:var(--space-1)">–</span>
             <span style="font-size:0.65rem;color:var(--color-slate-500);text-transform:uppercase;letter-spacing:0.08em;font-weight:var(--fw-bold)">Countries Active</span>
           </div>
           <div class="card hover-lift reveal" data-delay="300" style="padding:var(--space-8);text-align:center">
             <span class="material-symbols-outlined" style="font-size:2.5rem;color:#ef4444;margin-bottom:var(--space-3);display:block">eco</span>
-            <span style="font-size:2rem;font-weight:var(--fw-bold);display:block;margin-bottom:var(--space-1)" class="counter" data-target="142">0</span>
+            <span id="impact-species" style="font-size:2rem;font-weight:var(--fw-bold);display:block;margin-bottom:var(--space-1)">–</span>
             <span style="font-size:0.65rem;color:var(--color-slate-500);text-transform:uppercase;letter-spacing:0.08em;font-weight:var(--fw-bold)">Species Tracked</span>
           </div>
         </div>
@@ -493,6 +493,68 @@ export function renderReport() {
           console.log('[TerraShield] Date Observed selected:', dateInput.value); // yyyy-mm-dd confirmed
         });
       }
+
+      // ── Impact stats — fetch real user data then animate ────────────────────
+      (async () => {
+        const animateCount = (el, target) => {
+          const duration = 1600;
+          const start = performance.now();
+          const tick = (now) => {
+            const p = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - p, 3);
+            el.textContent = Math.floor(eased * target).toLocaleString();
+            if (p < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        };
+
+        const ids = {
+          reports: document.getElementById('impact-reports'),
+          outbreaks: document.getElementById('impact-outbreaks'),
+          countries: document.getElementById('impact-countries'),
+          species: document.getElementById('impact-species'),
+        };
+
+        try {
+          const tok = await getSessionToken();
+          const res = await fetch('/api/user-stats', {
+            headers: tok ? { Authorization: `Bearer ${tok}` } : {},
+          });
+          const d = await res.json();
+
+          if (d.success) {
+            const values = {
+              reports: d.total_reports,
+              outbreaks: d.outbreaks_flagged,
+              countries: d.countries_active,
+              species: d.species_tracked,
+            };
+
+            // Trigger animation when section scrolls into view
+            const section = document.querySelector('[data-impact-section]') ||
+              ids.reports?.closest('section');
+            const trigger = () => {
+              Object.entries(values).forEach(([key, val]) => {
+                if (ids[key]) animateCount(ids[key], val);
+              });
+            };
+
+            if (section) {
+              const obs = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting) { trigger(); obs.disconnect(); }
+              }, { threshold: 0.2 });
+              obs.observe(section);
+            } else {
+              trigger();
+            }
+          } else {
+            // Not logged in or no data yet — show 0s
+            Object.values(ids).forEach(el => { if (el) el.textContent = '0'; });
+          }
+        } catch {
+          Object.values(ids).forEach(el => { if (el) el.textContent = '0'; });
+        }
+      })();
       // Check auth status immediately
       const user = await getUser();
       const form = document.getElementById('report-form');
