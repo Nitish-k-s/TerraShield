@@ -43,6 +43,31 @@ function getGemini() {
     return new GoogleGenerativeAI(key);
 }
 
+// ─── Retry helper (handles Gemini 429 / RESOURCE_EXHAUSTED) ──────────────────
+function parseRetryDelay(err: unknown, defaultDelay = 60): number {
+    const msg = err instanceof Error ? err.message : String(err);
+    const match = msg.match(/retryDelay.*?(\d+)s/i) ?? msg.match(/retry.*?(\d+)/i);
+    return match ? Math.min(120, parseInt(match[1], 10)) : defaultDelay;
+}
+
+async function withRetry<T>(fn: () => Promise<T>, maxAttempts = 3): Promise<T> {
+    let lastErr: unknown;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            return await fn();
+        } catch (err: unknown) {
+            lastErr = err;
+            const msg = err instanceof Error ? err.message : String(err);
+            const is429 = msg.includes("429") || msg.includes("Too Many Requests") || msg.includes("RESOURCE_EXHAUSTED");
+            if (!is429 || attempt === maxAttempts) throw err;
+            const delay = parseRetryDelay(err, 60 * attempt);
+            console.warn(`[analyse-exif] Rate-limited (attempt ${attempt}/${maxAttempts}). Retrying in ${delay}s…`);
+            await new Promise(r => setTimeout(r, delay * 1000));
+        }
+    }
+    throw lastErr;
+}
+
 // ─── External Context Fetcher (Sentinel Hub Statistical API) ──────────────────────
 /**
  * Uses Sentinel Hub OAuth2 to fetch an access token, then posts a Statistical API 
@@ -246,17 +271,21 @@ async function analyseWithGemini(record: ExifRecord): Promise<AnalysisMetadata> 
         };
 
         // Order: [image, text] — model sees the image first, then instructions
-        result = await model.generateContent({
-            contents: [{ role: "user", parts: [imagePart, { text: textPrompt }] }],
-            generationConfig,
-        });
+        result = await withRetry(() =>
+            model.generateContent({
+                contents: [{ role: "user", parts: [imagePart, { text: textPrompt }] }],
+                generationConfig,
+            })
+        );
     } else {
         // ── Text-only fallback for records uploaded before image_data was added ─
         console.warn(`[analyse-exif] Record ${record.id} has no stored image — falling back to metadata-only analysis.`);
-        result = await model.generateContent({
-            contents: [{ role: "user", parts: [{ text: textPrompt }] }],
-            generationConfig,
-        });
+        result = await withRetry(() =>
+            model.generateContent({
+                contents: [{ role: "user", parts: [{ text: textPrompt }] }],
+                generationConfig,
+            })
+        );
     }
 
     const text = result.response.text().trim();

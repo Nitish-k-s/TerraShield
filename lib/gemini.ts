@@ -39,7 +39,7 @@ export interface ReportSections {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const MODEL_NAME = "gemini-2.0-flash";
+const MODEL_NAME = "gemini-2.5-flash";
 
 const SECTION_HEADINGS = [
     "Species Overview",
@@ -107,10 +107,11 @@ function parseSections(text: string): ReportSections {
 
     function extractSection(start: number, end: number): string {
         if (start === -1) return "";
-        // Skip past the heading line
-        const afterHeading = text.indexOf("\n", start);
-        const snippet = text.slice(afterHeading + 1, end === -1 ? undefined : end);
-        return snippet.trim();
+        // Skip past the heading line (handle both LF and CRLF)
+        const newlinePos = text.indexOf("\n", start);
+        const contentStart = newlinePos === -1 ? start : newlinePos + 1;
+        const contentEnd = end === -1 ? undefined : end;
+        return text.slice(contentStart, contentEnd).trim();
     }
 
     return {
@@ -123,10 +124,45 @@ function parseSections(text: string): ReportSections {
     };
 }
 
+// ─── Retry helper ─────────────────────────────────────────────────────────────
+
+/**
+ * Extracts the retryDelay (in seconds) from a Gemini 429 error message.
+ * Falls back to `defaultDelay` if the value cannot be parsed.
+ */
+function parseRetryDelay(err: unknown, defaultDelay = 60): number {
+    const msg = err instanceof Error ? err.message : String(err);
+    const match = msg.match(/retryDelay.*?(\d+)s/i) ?? msg.match(/retry.*?(\d+)/i);
+    return match ? Math.min(120, parseInt(match[1], 10)) : defaultDelay;
+}
+
+/**
+ * Calls `fn` up to `maxAttempts` times, waiting the API-advised retryDelay
+ * (or exponential backoff) between attempts on 429 quota errors.
+ */
+async function withRetry<T>(fn: () => Promise<T>, maxAttempts = 3): Promise<T> {
+    let lastErr: unknown;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            return await fn();
+        } catch (err: unknown) {
+            lastErr = err;
+            const msg = err instanceof Error ? err.message : String(err);
+            const is429 = msg.includes("429") || msg.includes("Too Many Requests") || msg.includes("RESOURCE_EXHAUSTED");
+            if (!is429 || attempt === maxAttempts) throw err;
+            const delay = parseRetryDelay(err, 60 * attempt);
+            console.warn(`[gemini] Rate-limited (attempt ${attempt}/${maxAttempts}). Retrying in ${delay}s…`);
+            await new Promise(r => setTimeout(r, delay * 1000));
+        }
+    }
+    throw lastErr;
+}
+
 // ─── Main Export ──────────────────────────────────────────────────────────────
 
 /**
  * Calls Gemini API server-side and returns a structured ecological risk report.
+ * Automatically retries on 429 quota errors with the API-advised delay.
  * API key is sourced exclusively from process.env.GEMINI_API_KEY.
  */
 export async function generateEcologicalReport(
@@ -145,13 +181,15 @@ export async function generateEcologicalReport(
 
     const prompt = buildPrompt(input);
 
-    const result = await model.generateContent({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-            temperature: 0.3,   // low = reproducible, factual
-            maxOutputTokens: 2048,
-        },
-    });
+    const result = await withRetry(() =>
+        model.generateContent({
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            generationConfig: {
+                temperature: 0.3,   // low = reproducible, factual
+                maxOutputTokens: 8192, // 6 detailed sections need more than 2048
+            },
+        })
+    );
 
     const fullText = result.response.text();
 
