@@ -707,10 +707,30 @@ export function renderReport() {
           // Merge GPS into analysed result for convenience
           const ai = { ...aiData.analysed[0], ai_tags: aiData.analysed[0].ai_tags || [] };
 
+          // ── TerraPoints: read from API response ──────────────────────────────
+          const pointsAwarded = ai.points_awarded ?? 0;
+          const updatedUser = ai.updated_user ?? null;
+
+          // Persist updated terra_points locally so the profile page is current
+          if (updatedUser) {
+            try {
+              const stored = JSON.parse(localStorage.getItem('terrashield_user_meta') || '{}');
+              localStorage.setItem('terrashield_user_meta', JSON.stringify({ ...stored, ...updatedUser }));
+            } catch (_) { /* storage unavailable */ }
+          }
+
+          // Build points badge HTML
+          const pointsBadge = pointsAwarded > 0
+            ? `<span style="display:inline-flex;align-items:center;gap:4px;margin-top:4px;padding:2px 10px;background:rgba(74,222,128,0.12);border-radius:999px;font-size:0.8rem;font-weight:700;color:#22c55e">
+                🌿 +${pointsAwarded} TerraPoints earned
+               </span>`
+            : '';
+
           // Update status message to full success
           showMsg(`
             <strong>✓ Report submitted &amp; analysed (ID: ${recordId})</strong>
             <span style="display:block;margin-top:2px;font-size:0.8125rem;opacity:0.85">AI classification complete — results below</span>
+            ${pointsBadge}
           `, 'success');
 
           // Reset form inputs

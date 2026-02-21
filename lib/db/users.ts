@@ -132,3 +132,109 @@ export function addTerraPoints(userId: string, amount: number, reason: string): 
     });
     tx();
 }
+
+export function getUserMetaById(userId: string): UserMeta | undefined {
+    return getUsersDb()
+        .prepare("SELECT * FROM users_meta WHERE user_id = ?")
+        .get(userId) as UserMeta | undefined;
+}
+
+/**
+ * Calculates how many TerraPoints to award based on confidence tier.
+ * Returns 0 if criteria not met (confidence <= 0.70 or not invasive).
+ */
+export function calcPoints(aiLabel: string, aiConfidence: number): number {
+    const isInvasive = aiLabel === 'invasive-plant' || aiLabel === 'invasive-animal';
+    if (!isInvasive || aiConfidence <= 0.70) return 0;
+    if (aiConfidence >= 0.95) return 30;
+    if (aiConfidence >= 0.85) return 20;
+    return 10; // 0.70 < confidence < 0.85
+}
+
+/**
+ * Atomically awards TerraPoints for a single analysed report.
+ *
+ * Guards:
+ *  - Checks points_history for an existing entry matching this exif record
+ *    to prevent double-awarding on re-analysis.
+ *  - Skips if user_id does not exist in users_meta.
+ *  - Uses a transaction so all four writes are atomic.
+ *
+ * @param userId       Supabase user UUID
+ * @param exifRecordId The exif_data.id being rewarded
+ * @param aiLabel      e.g. 'invasive-plant'
+ * @param aiConfidence 0.0–1.0
+ * @param isVerified   Whether this report has been expert-verified
+ * @returns { pointsAwarded, updatedUser } — pointsAwarded is 0 if not eligible
+ */
+export function awardReportPoints(
+    userId: string,
+    exifRecordId: number,
+    aiLabel: string,
+    aiConfidence: number,
+    isVerified = false
+): { pointsAwarded: number; updatedUser: UserMeta | null } {
+    const db = getUsersDb();
+
+    // Idempotency key stored as reason in points_history
+    const idempotencyKey = `report:${exifRecordId}`;
+
+    let pointsAwarded = 0;
+    let updatedUser: UserMeta | null = null;
+
+    const tx = db.transaction(() => {
+        // 1. Guard — ensure user exists
+        const user = db
+            .prepare("SELECT * FROM users_meta WHERE user_id = ?")
+            .get(userId) as UserMeta | undefined;
+
+        if (!user) return; // user_id not found, bail silently
+
+        // 2. Guard — check if points already awarded for this exact report
+        const alreadyAwarded = db
+            .prepare("SELECT id FROM points_history WHERE user_id = ? AND reason = ?")
+            .get(userId, idempotencyKey);
+
+        if (alreadyAwarded) return; // prevent double-award
+
+        // 3. Calculate points
+        const pts = calcPoints(aiLabel, aiConfidence);
+        pointsAwarded = pts;
+
+        // 4. Always increment reports_count
+        db.prepare(
+            "UPDATE users_meta SET reports_count = reports_count + 1 WHERE user_id = ?"
+        ).run(userId);
+
+        // 5. If eligible for points, update terra_points and add history entry
+        if (pts > 0) {
+            db.prepare(
+                "UPDATE users_meta SET terra_points = terra_points + ? WHERE user_id = ?"
+            ).run(pts, userId);
+
+            db.prepare(
+                "INSERT INTO points_history (user_id, amount, reason) VALUES (?, ?, ?)"
+            ).run(userId, pts, idempotencyKey);
+        } else {
+            // Still record 0-point submission in history so idempotency works
+            db.prepare(
+                "INSERT INTO points_history (user_id, amount, reason) VALUES (?, ?, ?)"
+            ).run(userId, 0, idempotencyKey);
+        }
+
+        // 6. If verified, increment verified_reports counter
+        if (isVerified) {
+            db.prepare(
+                "UPDATE users_meta SET verified_reports = verified_reports + 1 WHERE user_id = ?"
+            ).run(userId);
+        }
+
+        // 7. Re-fetch updated user
+        updatedUser = db
+            .prepare("SELECT * FROM users_meta WHERE user_id = ?")
+            .get(userId) as UserMeta;
+    });
+
+    tx();
+    return { pointsAwarded, updatedUser };
+}

@@ -28,6 +28,7 @@ import {
     updateAiAnalysis,
     ExifRecord,
 } from "@/lib/db/exif";
+import { getUserMeta, awardReportPoints } from "@/lib/db/users";
 
 export const runtime = "nodejs";
 
@@ -329,6 +330,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                 satellite_context_json: externalContext ? JSON.stringify(externalContext) : null,
             });
 
+            // ── Award TerraPoints ─────────────────────────────────────────────
+            // Ensure the user exists in users_meta (auto-creates with welcome bonus)
+            getUserMeta(user.id, user.email ?? "");
+
+            const { pointsAwarded, updatedUser } = awardReportPoints(
+                user.id,
+                record.id,
+                ai.ai_label,
+                ai.ai_confidence
+            );
+
             analysed.push({
                 id: record.id,
                 filename: record.filename,
@@ -339,6 +351,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                 ai_tags: ai.ai_tags,
                 ai_analysed_at,
                 used_vision: !!record.image_data,   // helpful debug flag
+                points_awarded: pointsAwarded,
+                updated_user: updatedUser,
             });
         } catch (e: unknown) {
             const msg = e instanceof Error ? e.message : "Unknown error";
