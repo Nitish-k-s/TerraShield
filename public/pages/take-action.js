@@ -1005,6 +1005,9 @@ export function renderReport() {
             ${pointsBadge}
           `, 'success');
 
+          // Capture species name BEFORE form.reset() clears the input
+          const typedSpecies = (document.getElementById('report-species')?.value || '').trim();
+
           // Reset form inputs
           form.reset();
           uploadText.textContent = 'Click to upload image';
@@ -1021,7 +1024,11 @@ export function renderReport() {
           // ── Step 4: Show PDF download button ─────────────────────────────
           // Store data needed for PDF generation on window so the button handler can read it
           window._reportPayload = {
-            species: ai.ai_label || 'Unknown Species',
+            // Best species name: user-typed > first AI tag > ai_label
+            species: typedSpecies
+              || (Array.isArray(ai.ai_tags) && ai.ai_tags.length ? ai.ai_tags[0] : '')
+              || ai.ai_label
+              || 'Unknown Species',
             ai_confidence: ai.ai_confidence || 0,
             latitude: gps?.latitude ?? 0,
             longitude: gps?.longitude ?? 0,

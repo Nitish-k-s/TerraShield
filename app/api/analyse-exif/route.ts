@@ -158,6 +158,12 @@ function buildPrompt(record: ExifRecord, externalContext: any = null): string {
 You are TerraShield's ecological AI analyst. You are viewing a field image submitted
 by a citizen observer for invasive species early-warning detection.
 
+IMPORTANT — CLASSIFICATION INDEPENDENCE:
+The observer may have selected an observation type (e.g. "Invasive Plant") before submitting.
+You MUST ignore any such user-supplied classification entirely.
+Your analysis must be based SOLELY on what you visually observe in the image and the
+esatellite context below. Correct the user if their self-reported type is wrong.
+
 ## Capture Context (extracted prior to this call — do not re-parse metadata)
 - Location  : ${record.latitude != null ? `${record.latitude}°, ${record.longitude}°` : "GPS not available"}
 - Altitude  : ${record.altitude != null ? `${record.altitude} m above sea level` : "unknown"}
@@ -177,6 +183,7 @@ Visually analyse the image above, taking into account the Capture Context and th
 External Environmental Context. Identify any plants, animals, or ecological conditions visible. 
 Determine whether any species may be invasive or whether the landscape shows signs of 
 ecological disturbance consistent with invasive spread.
+Do NOT let the observer's self-selected category influence your label or risk score.
 
 You MUST respond with ONLY valid JSON matching this exact schema.
 No markdown fences, no extra text — raw JSON only:
@@ -207,7 +214,9 @@ interface AnalysisMetadata {
 async function analyseWithGemini(record: ExifRecord): Promise<AnalysisMetadata> {
     const genAI = getGemini();
     // The user's API key provisions Gemini 2.5 and 2.0 models, so we use gemini-2.5-flash
+    // temperature: 0 → deterministic output so the same image always yields the same score
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const generationConfig = { temperature: 0, maxOutputTokens: 1024 };
 
     // Fetch external geographical context if GPS coordinates exist
     let externalContext = null;
@@ -233,11 +242,17 @@ async function analyseWithGemini(record: ExifRecord): Promise<AnalysisMetadata> 
         };
 
         // Order: [image, text] — model sees the image first, then instructions
-        result = await model.generateContent([imagePart, { text: textPrompt }]);
+        result = await model.generateContent({
+            contents: [{ role: "user", parts: [imagePart, { text: textPrompt }] }],
+            generationConfig,
+        });
     } else {
         // ── Text-only fallback for records uploaded before image_data was added ─
         console.warn(`[analyse-exif] Record ${record.id} has no stored image — falling back to metadata-only analysis.`);
-        result = await model.generateContent(textPrompt);
+        result = await model.generateContent({
+            contents: [{ role: "user", parts: [{ text: textPrompt }] }],
+            generationConfig,
+        });
     }
 
     const text = result.response.text().trim();
