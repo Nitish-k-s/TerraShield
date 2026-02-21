@@ -98,8 +98,24 @@ function buildMapsUrl(lat: number, lng: number): string {
 export async function POST(req: NextRequest): Promise<NextResponse<ExifResponse>> {
     try {
         // 0. Auth guard — reject unauthenticated requests
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const authHeader = req.headers.get('authorization');
+        let user = null;
+
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.substring(7);
+            const supabase = await createClient();
+
+            // Supabase API requires `getUser(jwt)` for custom tokens
+            const { data, error } = await supabase.auth.getUser(token);
+            if (error) console.error("[extract-exif] Token validation error:", error);
+            user = data?.user || null;
+        } else {
+            // Fallback to cookie-based session
+            const supabase = await createClient();
+            const { data } = await supabase.auth.getUser();
+            user = data?.user || null;
+        }
+
         if (!user) {
             return NextResponse.json(
                 {

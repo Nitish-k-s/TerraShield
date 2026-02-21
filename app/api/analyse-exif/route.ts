@@ -134,7 +134,7 @@ async function analyseWithGemini(record: ExifRecord): Promise<GeminiResult> {
 // ─── Route handler ────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest): Promise<NextResponse> {
     // 1. Auth guard
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
         return NextResponse.json({ success: false, error: "Unauthorized." }, { status: 401 });

@@ -25,10 +25,19 @@ export async function middleware(request: NextRequest) {
         }
     );
 
-    // Refresh session — do NOT remove this
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
+    // Extract token from header if it exists
+    const authHeader = request.headers.get('authorization');
+    let user = null;
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        const { data } = await supabase.auth.getUser(token);
+        user = data?.user || null;
+    } else {
+        // Refresh session from cookies — do NOT remove this
+        const { data } = await supabase.auth.getUser();
+        user = data?.user || null;
+    }
 
     // Protect all /api routes except public endpoints if any exist later
     const isApiRoute = request.nextUrl.pathname.startsWith("/api");
@@ -37,7 +46,7 @@ export async function middleware(request: NextRequest) {
     if (!user && isApiRoute) {
         return new NextResponse(
             JSON.stringify({ error: "Unauthorized access: Please sign in." }),
-            { status: 401, headers: { "Content-Type": "application/json" } }
+            { status: 401, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
         );
     }
 

@@ -56,6 +56,12 @@ export async function signOut() {
     await getSupabase().auth.signOut();
 }
 
+/** Get the raw JWT access token for API requests */
+export async function getSessionToken() {
+    const session = await getSession();
+    return session?.access_token || null;
+}
+
 /** Subscribe to auth state changes. Returns the unsubscribe function. */
 export function onAuthChange(callback) {
     const { data: { subscription } } = getSupabase().auth.onAuthStateChange((_event, session) => {
