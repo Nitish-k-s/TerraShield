@@ -51,7 +51,7 @@ export function renderReport() {
                 <label class="form-label">Species Name (if known)</label>
                 <div class="form-input-icon">
                   <span class="material-symbols-outlined">eco</span>
-                  <input class="form-input" id="report-species" type="text" placeholder="e.g., Japanese Knotweed">
+                  <input class="form-input" id="report-species" type="text" placeholder="e.g., Lantana camara">
                 </div>
               </div>
               <div class="form-group">
