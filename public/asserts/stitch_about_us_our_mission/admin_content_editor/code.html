@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin Content Management | SDG Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1dacc9",
+                        "background-light": "#f9f7f2",
+                        "background-dark": "#111e21",
+                        "stone-earth": "#e7e2d8",
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>.paper-texture {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuBOpquj_q1fQKk84w5IXX0VSA77_S_3phMu84D-4WOBPmLNxuOuHk7aNA2d3D_QADzI48nt0gSz2jMoMDLYSVofJ_Ki0qXSibE3dKugPrTZZbuQWt5Y1bEflHox-38qsdAbLsVgLic9kFqaKQXUpjhfN_PM6rFr14cDzKwJBG_eM_WFH1NZEcb2f1Q9SFytKZbvEGojJQmfubI0AH_AJnpzBGy8y2qngoRuydNqlFS-u_K-nKlC59bzaPzfu6WSmF_eaADGcYqAwIRh)
+    }
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px
+    }
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent
+    }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 10px
+    }</style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="flex h-screen overflow-hidden paper-texture">
+<!-- Sidebar Navigation -->
+<aside class="w-72 bg-white dark:bg-slate-900 border-r border-stone-earth dark:border-slate-800 flex flex-col shrink-0">
+<div class="p-6 flex items-center gap-3">
+<div class="size-10 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">eco</span>
+</div>
+<div>
+<h1 class="font-bold text-lg leading-tight">EcoAdmin</h1>
+<p class="text-xs text-slate-500 dark:text-slate-400">Sustainability CMS</p>
+</div>
+</div>
+<nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto custom-scrollbar">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-300 hover:bg-stone-earth/50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-medium">Dashboard</span>
+</a>
+<div class="pt-4 pb-2 px-4">
+<span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Content</span>
+</div>
+<a class="flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-primary">public</span>
+<span class="font-medium">SDG Pages</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-300 hover:bg-stone-earth/50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">volunteer_activism</span>
+<span class="font-medium">Take Action Items</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-300 hover:bg-stone-earth/50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">image</span>
+<span class="font-medium">Media Library</span>
+</a>
+<div class="pt-4 pb-2 px-4">
+<span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">System</span>
+</div>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-300 hover:bg-stone-earth/50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-medium">Settings</span>
+</a>
+</nav>
+<div class="p-4 mt-auto border-t border-stone-earth dark:border-slate-800">
+<div class="flex items-center gap-3 p-2 bg-stone-earth/30 dark:bg-slate-800/50 rounded-xl">
+<div class="size-10 rounded-full bg-cover bg-center" data-alt="User profile picture of administrator" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAk1ZUAO2yvIw2nQtDRkVs2dg59Qywf3fHSU5Nin8ExD9_s0VqLGS2Tgwh_T1ZsVgvAUZjaQsTmH-ly3RWG-yp-Fbm4q56U53mvgbEgI50bc_UCUyDx7MpN9awHdchrP0jH2bMJTJp4ojkfGgYoGbukF13sIEE55aQRwC2-3wsraf2qWFLi1G8sKw8VdOpm5zw7ivzD4OTeKSFLSsm5ciDjqy6jtXCJ_Dyx6CSejAxIFB2yxbWhswU1GlZAd_H8QNOXHbfe7g_UR3-4')"></div>
+<div class="flex flex-col min-w-0">
+<span class="text-sm font-semibold truncate">Alex River</span>
+<span class="text-xs text-slate-500 truncate">Senior Editor</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col overflow-hidden relative">
+<!-- Header Bar -->
+<header class="h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-stone-earth dark:border-slate-800 flex items-center justify-between px-8 shrink-0 z-10">
+<div class="flex items-center gap-4">
+<nav class="flex text-sm text-slate-500 font-medium">
+<a class="hover:text-primary" href="#">Admin</a>
+<span class="mx-2 text-slate-300">/</span>
+<span class="text-slate-900 dark:text-slate-100">Content Management</span>
+</nav>
+</div>
+<div class="flex items-center gap-4 w-1/3">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+<input class="w-full bg-stone-earth/30 dark:bg-slate-800 border-none rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/50 transition-all" placeholder="Search pages, actions, media..." type="text"/>
+</div>
+<button class="p-2 text-slate-500 hover:bg-stone-earth/50 dark:hover:bg-slate-800 rounded-full relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+</button>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-8 space-y-8">
+<!-- Quick Stats -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-stone-earth dark:border-slate-800 shadow-sm flex items-center gap-4">
+<div class="size-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">description</span>
+</div>
+<div>
+<p class="text-sm text-slate-500 font-medium">Total SDG Pages</p>
+<h3 class="text-2xl font-bold">24 <span class="text-xs font-normal text-emerald-500 ml-1">+2%</span></h3>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-stone-earth dark:border-slate-800 shadow-sm flex items-center gap-4">
+<div class="size-12 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600">
+<span class="material-symbols-outlined text-3xl">rate_review</span>
+</div>
+<div>
+<p class="text-sm text-slate-500 font-medium">Pending Reviews</p>
+<h3 class="text-2xl font-bold">5 <span class="text-xs font-normal text-slate-400 ml-1">Stable</span></h3>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-stone-earth dark:border-slate-800 shadow-sm flex items-center gap-4">
+<div class="size-12 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600">
+<span class="material-symbols-outlined text-3xl">bolt</span>
+</div>
+<div>
+<p class="text-sm text-slate-500 font-medium">Live Actions</p>
+<h3 class="text-2xl font-bold">12 <span class="text-xs font-normal text-red-500 ml-1">-1%</span></h3>
+</div>
+</div>
+</div>
+<!-- Content Table Container -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-stone-earth dark:border-slate-800 shadow-sm overflow-hidden">
+<!-- Table Toolbar -->
+<div class="p-6 border-b border-stone-earth dark:border-slate-800 flex flex-wrap items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<h2 class="text-xl font-bold">Content Inventory</h2>
+<div class="flex border border-stone-earth dark:border-slate-700 rounded-lg overflow-hidden p-1 bg-stone-earth/20 dark:bg-slate-800">
+<button class="px-4 py-1.5 text-xs font-bold rounded-md bg-white dark:bg-slate-700 shadow-sm">SDG Pages</button>
+<button class="px-4 py-1.5 text-xs font-bold text-slate-500 dark:text-slate-400">Take Action</button>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<select class="bg-white dark:bg-slate-800 border-stone-earth dark:border-slate-700 rounded-lg text-sm px-4 py-2 focus:ring-primary focus:border-primary">
+<option>Status: All</option>
+<option>Published</option>
+<option>Draft</option>
+<option>Archived</option>
+</select>
+<button class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg font-bold text-sm transition-all shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-lg">add</span>
+                                Create New Page
+                            </button>
+</div>
+</div>
+<!-- Table Area -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-stone-earth/10 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-bold">
+<th class="px-6 py-4">Title</th>
+<th class="px-6 py-4">SDG Goal</th>
+<th class="px-6 py-4">Category</th>
+<th class="px-6 py-4">Last Modified</th>
+<th class="px-6 py-4">Status</th>
+<th class="px-6 py-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-stone-earth dark:divide-slate-800">
+<!-- Row 1 -->
+<tr class="group hover:bg-stone-earth/10 dark:hover:bg-slate-800/40 transition-colors">
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-slate-900 dark:text-slate-100">Clean Water &amp; Sanitation Initiatives</span>
+<span class="text-xs text-slate-400">/pages/sdg-6-clean-water</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="size-8 bg-[#26bde2] rounded flex items-center justify-center text-white text-xs font-bold">6</div>
+<span class="text-sm font-medium">Clean Water</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm">Environmental</td>
+<td class="px-6 py-4 text-sm text-slate-500">Oct 24, 2023</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary">Published</span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-2 text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">visibility</span></button>
+<button class="p-2 text-slate-400 hover:text-red-500 transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="group hover:bg-stone-earth/10 dark:hover:bg-slate-800/40 transition-colors">
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-slate-900 dark:text-slate-100">Zero Hunger: Local Food Systems</span>
+<span class="text-xs text-slate-400">/pages/sdg-2-zero-hunger</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="size-8 bg-[#dda63a] rounded flex items-center justify-center text-white text-xs font-bold">2</div>
+<span class="text-sm font-medium">Zero Hunger</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm">Social</td>
+<td class="px-6 py-4 text-sm text-slate-500">Oct 21, 2023</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-stone-earth dark:bg-slate-700 text-slate-600 dark:text-slate-300">Draft</span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-2 text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">visibility</span></button>
+<button class="p-2 text-slate-400 hover:text-red-500 transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="group hover:bg-stone-earth/10 dark:hover:bg-slate-800/40 transition-colors">
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-slate-900 dark:text-slate-100">Life on Land: Forest Conservation</span>
+<span class="text-xs text-slate-400">/pages/sdg-15-life-on-land</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="size-8 bg-[#56db26] rounded flex items-center justify-center text-white text-xs font-bold">15</div>
+<span class="text-sm font-medium">Life on Land</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm">Environmental</td>
+<td class="px-6 py-4 text-sm text-slate-500">Oct 19, 2023</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary">Published</span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-2 text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">visibility</span></button>
+<button class="p-2 text-slate-400 hover:text-red-500 transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="group hover:bg-stone-earth/10 dark:hover:bg-slate-800/40 transition-colors">
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-slate-900 dark:text-slate-100">Quality Education for Rural Communities</span>
+<span class="text-xs text-slate-400">/pages/sdg-4-quality-education</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="size-8 bg-[#c5192d] rounded flex items-center justify-center text-white text-xs font-bold">4</div>
+<span class="text-sm font-medium">Education</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm">Social</td>
+<td class="px-6 py-4 text-sm text-slate-500">Oct 15, 2023</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary">Published</span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-2 text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">visibility</span></button>
+<button class="p-2 text-slate-400 hover:text-red-500 transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="group hover:bg-stone-earth/10 dark:hover:bg-slate-800/40 transition-colors">
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-slate-900 dark:text-slate-100">Partnership for the Goals: Annual Report</span>
+<span class="text-xs text-slate-400">/pages/sdg-17-partnerships</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="size-8 bg-[#19486a] rounded flex items-center justify-center text-white text-xs font-bold">17</div>
+<span class="text-sm font-medium">Partnerships</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm">Strategic</td>
+<td class="px-6 py-4 text-sm text-slate-500">Oct 12, 2023</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-stone-earth dark:bg-slate-700 text-slate-600 dark:text-slate-300">Draft</span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-2 text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">visibility</span></button>
+<button class="p-2 text-slate-400 hover:text-red-500 transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="p-6 border-t border-stone-earth dark:border-slate-800 flex items-center justify-between">
+<span class="text-sm text-slate-500">Showing <span class="font-bold">1-5</span> of <span class="font-bold">24</span> pages</span>
+<div class="flex items-center gap-2">
+<button class="p-2 text-slate-400 hover:text-primary disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<div class="flex gap-1">
+<button class="size-8 flex items-center justify-center rounded-lg bg-primary text-white font-bold text-sm">1</button>
+<button class="size-8 flex items-center justify-center rounded-lg hover:bg-stone-earth/30 dark:hover:bg-slate-800 text-sm font-medium">2</button>
+<button class="size-8 flex items-center justify-center rounded-lg hover:bg-stone-earth/30 dark:hover:bg-slate-800 text-sm font-medium">3</button>
+<span class="px-1 py-1">...</span>
+<button class="size-8 flex items-center justify-center rounded-lg hover:bg-stone-earth/30 dark:hover:bg-slate-800 text-sm font-medium">5</button>
+</div>
+<button class="p-2 text-slate-400 hover:text-primary">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Secondary Section (Take Action Preview) -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 pb-12">
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-stone-earth dark:border-slate-800 p-6 flex flex-col">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">trending_up</span>
+                                Content Health Score
+                            </h3>
+<span class="text-xs font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-900/40 px-2 py-1 rounded">Excellent</span>
+</div>
+<div class="space-y-4">
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="text-slate-500">SEO Completion</span>
+<span class="font-bold">92%</span>
+</div>
+<div class="w-full bg-stone-earth/40 dark:bg-slate-800 rounded-full h-2">
+<div class="bg-primary h-2 rounded-full" style="width: 92%"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="text-slate-500">Image Alt Text Coverage</span>
+<span class="font-bold">78%</span>
+</div>
+<div class="w-full bg-stone-earth/40 dark:bg-slate-800 rounded-full h-2">
+<div class="bg-amber-400 h-2 rounded-full" style="width: 78%"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-primary/5 dark:bg-primary/10 rounded-xl border border-primary/20 p-6 flex items-center justify-between">
+<div class="max-w-[70%]">
+<h3 class="font-bold text-lg mb-1">New "Take Action" Suggestion</h3>
+<p class="text-sm text-slate-600 dark:text-slate-400 mb-4">A community member proposed a new "Beach Cleanup" event in Bali.</p>
+<button class="text-primary font-bold text-sm flex items-center gap-1 group">
+                                Review Suggestion
+                                <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+<div class="size-20 rounded-xl bg-cover bg-center shadow-md rotate-3" data-alt="Beach with plastic pollution and ocean waves" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAvbDttLKY4Vhe2xkY9M3qBgPquPlyrgWsy2B5FtOK659THG8yg0StVr1b1-fafjOi9bKkAg8ycwW46NrM-gjQ7fq67wCFK688WdeF5hLABlF8SvVsbgCjyiwQ3CoiCRR-DY0vxaqAHSTEuilay1a-0xGlE1j6sraUJaN7-EnlCoTnXe-Fy3PikOunDWJSXJwHr1NI8koEOZRU9jS6aMGR6Sfg6z9xdJKLiLld6NGEBNK_qTmWka4Ns9JCeX6bzV6vO3EdtjY8OoNon')"></div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
