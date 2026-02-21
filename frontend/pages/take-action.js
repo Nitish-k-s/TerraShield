@@ -92,7 +92,7 @@ export function renderReport() {
           <span class="material-symbols-outlined" style="font-size:2.5rem;color:rgba(29,172,201,0.3);display:block;margin-bottom:var(--space-4)">science</span>
           <h2 style="font-weight:var(--fw-bold);margin-bottom:var(--space-3);font-size:1.5rem;color:var(--color-slate-900)">Request Expert Validation</h2>
           <p style="color:var(--color-slate-600);margin-bottom:var(--space-6);line-height:1.7">Unsure about a species? Submit your observation for expert review and containment recommendations.</p>
-          <a href="mailto:experts@terrashield.org" class="btn btn-lg btn-micro" style="border:1px solid var(--color-primary);color:var(--color-primary);background:rgba(29,172,201,0.06)">
+          <a href="https://docs.google.com/forms/d/e/1FAIpQLSe-I2Ebso1LPhh4mPHetvJXRMBkVqK73gtSxA9aZ_Ty109mkg/viewform?usp=header" target="_blank" rel="noopener noreferrer" class="btn btn-lg btn-micro" style="border:1px solid var(--color-primary);color:var(--color-primary);background:rgba(29,172,201,0.06)">
             <span class="material-symbols-outlined" style="font-size:1.125rem">contact_mail</span> Contact an Expert
           </a>
         </div>
