@@ -1,60 +1,59 @@
 /* =============================================
-   TerraShield Design Tokens
-   Extracted from Stitch exports
+   TerraShield Design Tokens — Dark Forest
    ============================================= */
 
 :root {
-  /* Primary */
-  --color-primary: #1dacc9;
-  --color-primary-dark: #178fa7;
-  --color-primary-light: #e0f7fa;
-  --color-primary-10: rgba(29, 172, 201, 0.1);
-  --color-primary-20: rgba(29, 172, 201, 0.2);
-  --color-primary-30: rgba(29, 172, 201, 0.3);
+  /* Primary — emerald glow */
+  --color-primary: #4ade80;
+  --color-primary-dark: #22c55e;
+  --color-primary-light: #0d2818;
+  --color-primary-10: rgba(74, 222, 128, 0.1);
+  --color-primary-20: rgba(74, 222, 128, 0.2);
+  --color-primary-30: rgba(74, 222, 128, 0.3);
 
-  /* Paper-cut palette */
-  --color-paper-cream: #fdfbf7;
-  --color-paper-sage: #d1d9cf;
-  --color-paper-forest: #4a5d4e;
-  --color-paper-clay: #c2a38e;
+  /* Dark forest palette */
+  --color-paper-cream: #0a1a0f;
+  --color-paper-sage: #1a3324;
+  --color-paper-forest: #4ade80;
+  --color-paper-clay: #a08060;
 
-  /* Earth tones */
-  --color-forest-green: #2d5a4c;
-  --color-earth-sage: #7a9a8c;
-  --color-earth-sand: #e8e1d5;
-  --color-earth-clay: #d4a373;
-  --color-cream-bg: #fcfaf2;
+  /* Earth tones (dark) */
+  --color-forest-green: #22c55e;
+  --color-earth-sage: #3a6a4a;
+  --color-earth-sand: #1a2a1f;
+  --color-earth-clay: #8a6a40;
+  --color-cream-bg: #0a1a0f;
 
   /* Backgrounds */
-  --color-bg-light: #fdfbf7;
-  --color-bg-dark: #111e21;
-  --color-bg-dashboard: #f6f8f8;
+  --color-bg-light: #0a1a0f;
+  --color-bg-dark: #060e08;
+  --color-bg-dashboard: #0d1f14;
 
-  /* Neutrals */
-  --color-slate-900: #0f172a;
-  --color-slate-800: #1e293b;
-  --color-slate-700: #334155;
-  --color-slate-600: #475569;
-  --color-slate-500: #64748b;
-  --color-slate-400: #94a3b8;
-  --color-slate-300: #cbd5e1;
-  --color-slate-200: #e2e8f0;
-  --color-slate-100: #f1f5f9;
-  --color-slate-50: #f8fafc;
+  /* Neutrals — inverted for dark */
+  --color-slate-900: #e8f0e0;
+  --color-slate-800: #d0dac8;
+  --color-slate-700: #b0c4a0;
+  --color-slate-600: #8faa80;
+  --color-slate-500: #6b8a5e;
+  --color-slate-400: #4a6a3e;
+  --color-slate-300: #2a4a28;
+  --color-slate-200: #1a3a1e;
+  --color-slate-100: #132a16;
+  --color-slate-50: #0d1f12;
 
   /* Status */
-  --color-emerald: #10b981;
-  --color-emerald-50: #ecfdf5;
-  --color-red: #ef4444;
-  --color-red-50: #fef2f2;
-  --color-amber: #f59e0b;
-  --color-amber-50: #fffbeb;
+  --color-emerald: #4ade80;
+  --color-emerald-50: #0d2818;
+  --color-red: #f87171;
+  --color-red-50: #2a1010;
+  --color-amber: #fbbf24;
+  --color-amber-50: #2a2010;
 
-  /* SDG Colors */
-  --sdg-green: #4C9F38;
-  --sdg-red: #EB1C2D;
-  --sdg-yellow: #FFB735;
-  --sdg-cyan: #00AEC7;
+  /* SDG Colors (slightly brighter for dark bg) */
+  --sdg-green: #5cb848;
+  --sdg-red: #f5404f;
+  --sdg-yellow: #ffc948;
+  --sdg-cyan: #22d3ee;
 
   /* Typography */
   --font-display: 'Work Sans', sans-serif;
@@ -88,18 +87,18 @@
   --radius-xl: 1.5rem;
   --radius-full: 9999px;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-  --shadow: 0 4px 12px rgba(0,0,0,0.08);
-  --shadow-md: 0 8px 24px rgba(0,0,0,0.1);
-  --shadow-lg: 0 10px 30px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
-  --shadow-xl: 0 20px 40px -10px rgba(0,0,0,0.15);
-  --shadow-primary: 0 8px 24px rgba(29, 172, 201, 0.2);
+  /* Shadows — deeper for dark */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 10px 30px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+  --shadow-primary: 0 8px 24px rgba(74, 222, 128, 0.15);
 
-  /* Paper layers */
-  --paper-layer-1: drop-shadow(0 4px 6px rgba(0,0,0,0.05));
-  --paper-layer-2: drop-shadow(0 8px 12px rgba(0,0,0,0.1));
-  --paper-layer-3: drop-shadow(0 12px 24px rgba(0,0,0,0.15));
+  /* Paper layers — darker */
+  --paper-layer-1: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+  --paper-layer-2: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.3));
+  --paper-layer-3: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.4));
 
   /* Transitions */
   --transition-fast: 150ms ease;
