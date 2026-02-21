@@ -1,5 +1,5 @@
 // Home Page – TerraShield: Nature Journey (Sky → Forest → Pond → Waterfall → Deep Sea)
-import { renderNavbar } from '../components/navbar.js';
+import { renderNavbar, initNavbarAuth } from '../components/navbar.js';
 import { renderFooter } from '../components/footer.js';
 
 export function renderHome() {
@@ -736,7 +736,7 @@ export function renderHome() {
               <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:var(--space-6);display:block">Request Expert Validation</span>
               <h3 style="font-weight:var(--fw-bold);margin-bottom:var(--space-3);font-size:1.25rem;color:#fff">Unsure about a species?</h3>
               <p style="color:rgba(255,255,255,0.5);font-size:0.875rem;line-height:1.7;margin-bottom:var(--space-6)">Submit your observation for expert review and containment recommendations.</p>
-              <a href="#/about" class="btn btn-lg btn-micro" style="border:1px solid rgba(109,190,75,0.3);color:#6dbe4b;background:rgba(109,190,75,0.08);width:100%;justify-content:center">
+              <a href="https://docs.google.com/forms/d/e/1FAIpQLSe-I2Ebso1LPhh4mPHetvJXRMBkVqK73gtSxA9aZ_Ty109mkg/viewform?usp=header" target="_blank" rel="noopener noreferrer" class="btn btn-lg btn-micro" style="border:1px solid rgba(109,190,75,0.3);color:#6dbe4b;background:rgba(109,190,75,0.08);width:100%;justify-content:center">
                 <span class="material-symbols-outlined" style="font-size:1.125rem">science</span> Contact an Expert
               </a>
             </div>
@@ -769,6 +769,7 @@ export function renderHome() {
   </main>
   ${renderFooter()}`,
     init() {
+      initNavbarAuth();
       const hero = document.getElementById('hero-section');
       if (!hero) return;
 

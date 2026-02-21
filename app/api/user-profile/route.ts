@@ -26,9 +26,18 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
             return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
         }
 
-        // 2. Fetch data from SQLite
+        // 2. Fetch / auto-create user meta in SQLite
+        //    Pass the name from Supabase user_metadata so it's seeded on first creation
+        const metaName: string = (user.user_metadata?.full_name as string) || '';
         const profile = getUserMeta(user.id, user.email || '');
         const history = getPointHistory(user.id);
+
+        // Backfill name if it's missing in SQLite but present in Supabase user_metadata
+        if (!profile.name && metaName) {
+            const { updateProfileContent } = await import('@/lib/db/users');
+            updateProfileContent(user.id, { name: metaName });
+            profile.name = metaName;
+        }
 
         return NextResponse.json({
             success: true,

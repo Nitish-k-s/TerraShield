@@ -182,7 +182,8 @@ export function renderSignup() {
         btnText.textContent = 'Creating account…';
         msg.style.display = 'none';
 
-        const { error } = await signUp(email, password);
+        const name = document.getElementById('signup-name').value.trim();
+        const { error } = await signUp(email, password, name);
 
         if (error) {
           msg.style.display = 'block';

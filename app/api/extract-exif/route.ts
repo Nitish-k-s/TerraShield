@@ -135,7 +135,13 @@ export async function POST(req: NextRequest): Promise<NextResponse<ExifResponse>
         const nodeReq = await requestToNodeIncoming(req);
 
         // 2. Parse the multipart body
-        const { files } = await parseForm(nodeReq);
+        const { fields, files } = await parseForm(nodeReq);
+
+        // Read the optional manually-entered observation date (ISO yyyy-mm-dd)
+        const rawObservedDate = fields['observed_date'];
+        const observedDate: string | null = Array.isArray(rawObservedDate)
+            ? (rawObservedDate[0] ?? null)
+            : (rawObservedDate ?? null);
 
         // 3. Pull out the uploaded file (field name: "image")
         const rawFile = files["image"];
@@ -209,7 +215,10 @@ export async function POST(req: NextRequest): Promise<NextResponse<ExifResponse>
             make: (allTags["Make"] as string) ?? null,
             model: (allTags["Model"] as string) ?? null,
             software: (allTags["Software"] as string) ?? null,
-            date_time: (allTags["DateTimeOriginal"] as string) ?? (allTags["DateTime"] as string) ?? null,
+            date_time: (allTags["DateTimeOriginal"] as string)
+                ?? (allTags["DateTime"] as string)
+                ?? observedDate   // ← user-picked date from the form as last resort
+                ?? null,
             exposure_time: (allTags["ExposureTime"] as string) ?? null,
             f_number: (allTags["FNumber"] as number) ?? null,
             iso: (allTags["ISO"] as number) ?? null,
