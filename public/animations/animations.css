@@ -1,0 +1,489 @@
+/* =============================================
+   Animations & Scroll Reveals
+   ============================================= */
+
+/* Keyframes */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+@keyframes pulse-glow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(29, 172, 201, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 0 12px rgba(29, 172, 201, 0);
+    }
+}
+
+/* Scroll Reveal base state */
+.reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+}
+
+.reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Reveal variants */
+.reveal-left {
+    opacity: 0;
+    transform: translateX(-30px);
+    transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal-left.revealed {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.reveal-right {
+    opacity: 0;
+    transform: translateX(30px);
+    transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal-right.revealed {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.reveal-scale {
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal-scale.revealed {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Stagger delays via data-delay or CSS classes */
+.delay-100 {
+    transition-delay: 100ms;
+}
+
+.delay-200 {
+    transition-delay: 200ms;
+}
+
+.delay-300 {
+    transition-delay: 300ms;
+}
+
+.delay-400 {
+    transition-delay: 400ms;
+}
+
+.delay-500 {
+    transition-delay: 500ms;
+}
+
+/* Parallax layer hint */
+.parallax-layer {
+    will-change: transform;
+    transition: none;
+}
+
+/* Hero entry animation */
+.hero-animate {
+    animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-animate-delay {
+    animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+}
+
+.hero-animate-delay-2 {
+    animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both;
+}
+
+/* Button micro-interaction */
+.btn-micro {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-micro:hover {
+    transform: translateY(-2px);
+}
+
+.btn-micro:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Card hover lift */
+.hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Floating animation for decorative elements */
+.float {
+    animation: float 4s ease-in-out infinite;
+}
+
+/* Counter number animation handled in JS */
+.counter-animate {
+    display: inline-block;
+}
+
+/* Logo hover */
+.ts-logo {
+    transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.ts-logo:hover {
+    transform: scale(1.1);
+    filter: drop-shadow(0 4px 12px rgba(29, 172, 201, 0.3));
+}
+
+/* Hero cloud drifts */
+@keyframes drift-right {
+    from {
+        transform: translateX(-20%);
+    }
+
+    to {
+        transform: translateX(120vw);
+    }
+}
+
+@keyframes drift-left {
+    from {
+        transform: translateX(20%);
+    }
+
+    to {
+        transform: translateX(-120vw);
+    }
+}
+
+/* Floating nature particles */
+@keyframes particle-float {
+
+    0%,
+    100% {
+        transform: translate(0, 0) rotate(0deg);
+        opacity: 0.2;
+    }
+
+    25% {
+        transform: translate(15px, -20px) rotate(45deg);
+        opacity: 0.35;
+    }
+
+    50% {
+        transform: translate(-10px, -35px) rotate(90deg);
+        opacity: 0.2;
+    }
+
+    75% {
+        transform: translate(20px, -15px) rotate(135deg);
+        opacity: 0.3;
+    }
+}
+
+/* Tree sway in wind */
+@keyframes tree-sway {
+
+    0%,
+    100% {
+        transform: rotate(0deg);
+        transform-origin: bottom center;
+    }
+
+    25% {
+        transform: rotate(2deg);
+    }
+
+    75% {
+        transform: rotate(-2deg);
+    }
+}
+
+/* Sun glow ring pulse */
+@keyframes pulse-ring {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.15);
+        opacity: 0.4;
+    }
+}
+
+/* Terrain layer wave — back mountains (subtle) */
+@keyframes layer-wave-1 {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-6px);
+    }
+}
+
+/* Terrain layer wave — mid valley */
+@keyframes layer-wave-2 {
+
+    0%,
+    100% {
+        transform: translateY(0) translateX(0);
+    }
+
+    30% {
+        transform: translateY(-10px) translateX(3px);
+    }
+
+    70% {
+        transform: translateY(-4px) translateX(-3px);
+    }
+}
+
+/* Terrain layer wave — front forest (most movement) */
+@keyframes layer-wave-3 {
+
+    0%,
+    100% {
+        transform: translateY(0) translateX(0);
+    }
+
+    25% {
+        transform: translateY(-12px) translateX(4px);
+    }
+
+    50% {
+        transform: translateY(-6px) translateX(-2px);
+    }
+
+    75% {
+        transform: translateY(-14px) translateX(2px);
+    }
+}
+
+/* Scroll indicator bounce */
+@keyframes bounce-slow {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(8px);
+    }
+}
+
+/* Radar sweep rotation */
+@keyframes radar-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Alert dot blink */
+.alert-dot {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ef4444;
+    z-index: 2;
+    animation: alert-blink 3s ease-in-out infinite;
+}
+
+.alert-dot.warning {
+    background: #f59e0b;
+}
+
+@keyframes alert-blink {
+
+    0%,
+    100% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Map dots with ripple */
+.map-dot {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.map-dot::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    animation: map-ripple 2s ease-out infinite;
+}
+
+.map-dot.critical {
+    background: #ef4444;
+}
+
+.map-dot.critical::before {
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.map-dot.elevated {
+    background: #f59e0b;
+}
+
+.map-dot.elevated::before {
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.map-dot.monitoring {
+    background: #1dacc9;
+}
+
+.map-dot.monitoring::before {
+    border: 1px solid rgba(29, 172, 201, 0.3);
+}
+
+@keyframes map-ripple {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(3);
+        opacity: 0;
+    }
+}
+
+/* Red pulse glow for live indicators */
+@keyframes pulse-glow-red {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+    }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .reveal,
+    .reveal-left,
+    .reveal-right,
+    .reveal-scale {
+        opacity: 1;
+        transform: none;
+    }
+}

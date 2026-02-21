@@ -84,12 +84,17 @@ function initSchema(db: Database.Database): void {
             orientation     INTEGER,                        -- EXIF orientation tag (1-8)
             color_space     TEXT,
 
+            -- ── Image Binary ─────────────────────────────────────────────────
+            -- Raw image bytes stored so Gemini Vision can analyse the actual
+            -- pixels, not just the EXIF metadata text.
+            image_data      BLOB,                           -- original image bytes
+
             -- ── AI Analysis Fields ───────────────────────────────────────────
             -- These columns are LEFT NULL at insert time and filled in by the
             -- AI analysis pipeline later.
-            ai_label        TEXT,                           -- top-level classification, e.g. "deforestation"
+            ai_label        TEXT,                           -- top-level classification, e.g. "invasive-plant"
             ai_confidence   REAL,                           -- 0.0 – 1.0
-            ai_tags         TEXT,                           -- JSON array: ["fire","smoke","dry-land"]
+            ai_tags         TEXT,                           -- JSON array: ["kudzu","riparian","high-spread"]
             ai_summary      TEXT,                           -- free-text description from model
             ai_risk_score   REAL,                           -- 0.0 – 10.0  (environmental risk)
             ai_analysed_at  TEXT,                           -- ISO-8601 datetime of analysis run
@@ -118,6 +123,11 @@ function initSchema(db: Database.Database): void {
         -- Index for AI result searches
         CREATE INDEX IF NOT EXISTS idx_exif_data_ai_label  ON exif_data (ai_label);
     `);
+
+    // ── Safe migration for existing databases ────────────────────────────────
+    // SQLite does not support IF NOT EXISTS on ALTER TABLE, so we catch the
+    // duplicate-column error and ignore it.
+    try { db.exec("ALTER TABLE exif_data ADD COLUMN image_data BLOB"); } catch { /* already exists */ }
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -156,6 +166,9 @@ export interface InsertExifRecord {
 
     // Raw
     all_tags_json: string; // JSON.stringify(allTags)
+
+    // Image binary (stored as BLOB; typed as Buffer in Node.js)
+    image_data?: Buffer | null;
 }
 
 /** AI analysis fields applied via updateAiAnalysis(). */
@@ -191,14 +204,14 @@ export function insertExifRecord(data: InsertExifRecord): number {
             make, model, software, date_time, exposure_time,
             f_number, iso, focal_length, flash,
             image_width, image_height, orientation, color_space,
-            all_tags_json
+            all_tags_json, image_data
         ) VALUES (
             @user_id, @filename, @mime_type, @file_size_bytes,
             @latitude, @longitude, @altitude, @latitude_ref, @longitude_ref, @maps_url,
             @make, @model, @software, @date_time, @exposure_time,
             @f_number, @iso, @focal_length, @flash,
             @image_width, @image_height, @orientation, @color_space,
-            @all_tags_json
+            @all_tags_json, @image_data
         )
     `);
 
