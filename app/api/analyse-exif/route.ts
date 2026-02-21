@@ -133,9 +133,22 @@ async function analyseWithGemini(record: ExifRecord): Promise<GeminiResult> {
 
 // ─── Route handler ────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest): Promise<NextResponse> {
-    // 1. Auth guard
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    // 1. Auth guard — supports both Bearer token (SPA / localStorage) and cookie-based sessions
+    const authHeader = req.headers.get("authorization");
+    let user = null;
+
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+        const token = authHeader.substring(7);
+        const supabase = await createClient();
+        const { data, error } = await supabase.auth.getUser(token);
+        if (error) console.error("[analyse-exif] Token validation error:", error);
+        user = data?.user || null;
+    } else {
+        const supabase = await createClient();
+        const { data } = await supabase.auth.getUser();
+        user = data?.user || null;
+    }
+
     if (!user) {
         return NextResponse.json({ success: false, error: "Unauthorized." }, { status: 401 });
     }

@@ -12,6 +12,7 @@ import { renderReport } from '../pages/take-action.js';
 import { renderLogin } from '../pages/login.js';
 import { renderSignup } from '../pages/signup.js';
 import { renderForgotPassword } from '../pages/forgot-password.js';
+import { renderProfile } from '../pages/profile.js';
 
 const routes = {
     '/': renderHome,
@@ -21,6 +22,7 @@ const routes = {
     '/login': renderLogin,
     '/signup': renderSignup,
     '/forgot-password': renderForgotPassword,
+    '/profile': renderProfile,
 };
 
 const app = document.getElementById('app');

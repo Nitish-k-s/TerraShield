@@ -168,8 +168,8 @@ export function renderHome() {
               <span style="width:0.5rem;height:0.5rem;border-radius:50%;background:#ef4444"></span>
               <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:#ef4444;text-transform:uppercase;letter-spacing:0.08em">Critical</span>
             </div>
-            <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2)">Japanese Knotweed Cluster</h4>
-            <p style="color:var(--color-slate-500);font-size:0.8125rem;line-height:1.6;margin-bottom:var(--space-4)">142 geo-tagged reports within 8 km radius. Satellite NDVI confirms vegetation anomaly.</p>
+            <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2)">Lantana camara Outbreak</h4>
+            <p style="color:var(--color-slate-500);font-size:0.8125rem;line-height:1.6;margin-bottom:var(--space-4)">142 geo-tagged reports within 8 km radius. Satellite NDVI confirms vegetation anomaly in Western Ghats.</p>
             <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--color-slate-400)">
               <span>Risk Score: <strong style="color:#ef4444">94/100</strong></span>
               <span>2h ago</span>
@@ -181,8 +181,8 @@ export function renderHome() {
               <span style="width:0.5rem;height:0.5rem;border-radius:50%;background:#f59e0b"></span>
               <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:#f59e0b;text-transform:uppercase;letter-spacing:0.08em">Elevated</span>
             </div>
-            <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2)">Asian Longhorn Beetle</h4>
-            <p style="color:var(--color-slate-500);font-size:0.8125rem;line-height:1.6;margin-bottom:var(--space-4)">28 citizen reports. AI confidence 87%. Satellite canopy analysis pending.</p>
+            <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2)">Water Hyacinth Surge</h4>
+            <p style="color:var(--color-slate-500);font-size:0.8125rem;line-height:1.6;margin-bottom:var(--space-4)">28 citizen reports. AI confidence 87%. Satellite surface analysis pending — Kerala Backwaters.</p>
             <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--color-slate-400)">
               <span>Risk Score: <strong style="color:#f59e0b">67/100</strong></span>
               <span>6h ago</span>
@@ -194,8 +194,8 @@ export function renderHome() {
               <span style="width:0.5rem;height:0.5rem;border-radius:50%;background:var(--color-primary)"></span>
               <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:var(--color-primary);text-transform:uppercase;letter-spacing:0.08em">Monitoring</span>
             </div>
-            <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2)">Giant Hogweed Spread</h4>
-            <p style="color:var(--color-slate-500);font-size:0.8125rem;line-height:1.6;margin-bottom:var(--space-4)">15 reports across 3 counties. Satellite verification in progress.</p>
+            <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2)">Parthenium Spread</h4>
+            <p style="color:var(--color-slate-500);font-size:0.8125rem;line-height:1.6;margin-bottom:var(--space-4)">15 reports across 3 districts. Satellite verification in progress — Rajasthan Plains.</p>
             <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--color-slate-400)">
               <span>Risk Score: <strong style="color:var(--color-primary)">42/100</strong></span>
               <span>1d ago</span>
@@ -261,7 +261,7 @@ export function renderHome() {
               <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:var(--color-slate-400);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:var(--space-6);display:block">Request Expert Validation</span>
               <h3 style="font-weight:var(--fw-bold);margin-bottom:var(--space-3);font-size:1.25rem">Unsure about a species?</h3>
               <p style="color:var(--color-slate-600);font-size:0.875rem;line-height:1.7;margin-bottom:var(--space-6)">Submit your observation for expert review and containment recommendations.</p>
-              <a href="#/about" class="btn btn-lg btn-micro" style="border:1px solid var(--color-primary);color:var(--color-primary);background:rgba(29,172,201,0.06);width:100%;justify-content:center">
+              <a href="https://docs.google.com/forms/d/e/1FAIpQLSe-I2Ebso1LPhh4mPHetvJXRMBkVqK73gtSxA9aZ_Ty109mkg/viewform?usp=header" target="_blank" rel="noopener noreferrer" class="btn btn-lg btn-micro" style="border:1px solid var(--color-primary);color:var(--color-primary);background:rgba(29,172,201,0.06);width:100%;justify-content:center">
                 <span class="material-symbols-outlined" style="font-size:1.125rem">science</span> Contact an Expert
               </a>
             </div>

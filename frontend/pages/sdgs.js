@@ -3,7 +3,42 @@ import { renderNavbar } from '../components/navbar.js';
 import { renderFooter } from '../components/footer.js';
 
 export function renderAlerts() {
+<<<<<<< HEAD
   return `
+=======
+  const alerts = [
+    { species: 'Lantana camara', region: 'Western Ghats Corridor', reports: 142, confidence: 94, satellite: 'NDVI anomaly confirmed', level: 'critical', color: '#ef4444', time: '2h ago' },
+    { species: 'Water Hyacinth', region: 'Kerala Backwaters', reports: 28, confidence: 87, satellite: 'Canopy analysis pending', level: 'elevated', color: '#f59e0b', time: '6h ago' },
+    { species: 'Parthenium weed', region: 'Rajasthan Plains', reports: 15, confidence: 72, satellite: 'Verification in progress', level: 'elevated', color: '#f59e0b', time: '1d ago' },
+    { species: 'Prosopis juliflora', region: 'Gujarat Dryland', reports: 64, confidence: 91, satellite: 'Crown dieback detected', level: 'critical', color: '#ef4444', time: '4h ago' },
+    { species: 'Chromolaena odorata', region: 'Northeast India', reports: 8, confidence: 56, satellite: 'No anomaly detected', level: 'monitoring', color: '#1dacc9', time: '3d ago' },
+    { species: 'Mikania micrantha', region: 'Assam Wetlands', reports: 33, confidence: 79, satellite: 'Water surface change detected', level: 'elevated', color: '#f59e0b', time: '12h ago' },
+  ];
+
+  const alertCards = alerts.map((a, i) => `
+    <div class="card hover-lift reveal" data-delay="${i * 80}" style="padding:var(--space-6);border-left:3px solid ${a.color}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3)">
+        <div style="display:flex;align-items:center;gap:var(--space-2)">
+          <span style="width:0.5rem;height:0.5rem;border-radius:50%;background:${a.color}"></span>
+          <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:${a.color};text-transform:uppercase;letter-spacing:0.08em">${a.level}</span>
+        </div>
+        <span style="font-size:0.7rem;color:var(--color-slate-400)">${a.time}</span>
+      </div>
+      <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-1)">${a.species}</h4>
+      <p style="font-size:0.75rem;color:var(--color-slate-400);margin-bottom:var(--space-4)">${a.region}</p>
+      <div style="display:flex;flex-direction:column;gap:var(--space-2);font-size:0.75rem;color:var(--color-slate-500)">
+        <div style="display:flex;justify-content:space-between"><span>Citizen Reports</span><strong style="color:var(--color-slate-800)">${a.reports}</strong></div>
+        <div style="display:flex;justify-content:space-between"><span>AI Confidence</span><strong style="color:var(--color-slate-800)">${a.confidence}%</strong></div>
+        <div style="display:flex;justify-content:space-between"><span>Satellite</span><span style="color:${a.color};font-size:0.7rem">${a.satellite}</span></div>
+      </div>
+      <div style="margin-top:var(--space-4)">
+        <div class="progress-bar" style="height:4px"><div class="progress-bar-fill" style="width:${a.confidence}%;background:${a.color}"></div></div>
+      </div>
+    </div>`).join('');
+
+  return {
+    html: `
+>>>>>>> 34cb9df1be9513923501b0d36d44c3d033a743fa
   ${renderNavbar('alerts')}
   <main style="padding-top:var(--nav-height)">
 
@@ -103,6 +138,7 @@ export function renderAlerts() {
     <!-- ═══ LIVE STATUS BAR ═══ -->
     <section style="background:#0d1f14;border-bottom:1px solid rgba(74,222,128,0.08);padding:var(--space-4) 0">
       <div class="container">
+<<<<<<< HEAD
         <div class="reveal" style="display:flex;align-items:center;justify-content:center;gap:var(--space-8);flex-wrap:wrap">
           <div style="display:flex;align-items:center;gap:var(--space-2)">
             <span style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;animation:pulse-ring 2s ease-in-out infinite"></span>
@@ -119,6 +155,14 @@ export function renderAlerts() {
           <div style="display:flex;align-items:center;gap:var(--space-2)">
             <span class="material-symbols-outlined" style="font-size:1rem;color:#ef4444">notifications_active</span>
             <span style="font-size:0.8125rem;color:var(--color-slate-600)"><strong>23</strong> new alerts today</span>
+=======
+        <div class="reveal" style="position:relative;border-radius:var(--radius-lg);overflow:hidden;background:rgba(74,93,78,0.05);border:1px solid var(--color-slate-200);min-height:20rem">
+          <div id="alerts-map" style="width:100%;height:100%;min-height:20rem;"></div>
+          <div style="position:absolute;bottom:var(--space-4);left:50%;transform:translateX(-50%);display:flex;gap:var(--space-6);font-size:0.7rem;color:var(--color-slate-400);z-index:1000;background:rgba(255,255,255,0.85);padding:4px 12px;border-radius:999px;pointer-events:none">
+            <span style="display:flex;align-items:center;gap:var(--space-1)"><span style="width:6px;height:6px;border-radius:50%;background:#ef4444"></span>Critical</span>
+            <span style="display:flex;align-items:center;gap:var(--space-1)"><span style="width:6px;height:6px;border-radius:50%;background:#f59e0b"></span>Elevated</span>
+            <span style="display:flex;align-items:center;gap:var(--space-1)"><span style="width:6px;height:6px;border-radius:50%;background:#1dacc9"></span>Monitoring</span>
+>>>>>>> 34cb9df1be9513923501b0d36d44c3d033a743fa
           </div>
         </div>
       </div>
@@ -269,5 +313,65 @@ export function renderAlerts() {
     </section>
 
   </main>
-  ${renderFooter()}`;
+  ${renderFooter()}`,
+
+    init() {
+      function bootMap() {
+        const mapEl = document.getElementById('alerts-map');
+        if (!mapEl || !window.L) return;
+
+        const map = window.L.map('alerts-map', {
+          center: [20.5937, 78.9629],
+          zoom: 5,
+          zoomControl: true,
+        });
+
+        window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 18,
+        }).addTo(map);
+
+        const markers = [
+          { lat: 18.5204, lng: 73.8567, type: 'critical', label: 'Lantana camara – Western Ghats' },
+          { lat: 23.0225, lng: 72.5714, type: 'critical', label: 'Prosopis juliflora – Gujarat Dryland' },
+          { lat: 26.9124, lng: 75.7873, type: 'elevated', label: 'Parthenium weed – Rajasthan Plains' },
+          { lat: 9.9312, lng: 76.2673, type: 'elevated', label: 'Water Hyacinth – Kerala Backwaters' },
+          { lat: 26.1445, lng: 91.7362, type: 'elevated', label: 'Chromolaena odorata – Northeast India' },
+          { lat: 22.5726, lng: 88.3639, type: 'monitoring', label: 'Mikania micrantha – Assam Wetlands' },
+        ];
+
+        const colorMap = { critical: '#ef4444', elevated: '#f59e0b', monitoring: '#1dacc9' };
+
+        markers.forEach(m => {
+          const color = colorMap[m.type];
+          window.L.circleMarker([m.lat, m.lng], {
+            radius: 10,
+            fillColor: color,
+            color: '#fff',
+            weight: 2,
+            fillOpacity: 0.85,
+          }).bindTooltip(m.label, { permanent: false, direction: 'top' }).addTo(map);
+        });
+
+        mapEl._leafletMap = map;
+      }
+
+      if (window.L) {
+        bootMap();
+      } else {
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        script.onload = bootMap;
+        document.head.appendChild(script);
+      }
+    },
+
+    cleanup() {
+      const mapEl = document.getElementById('alerts-map');
+      if (mapEl && mapEl._leafletMap) {
+        mapEl._leafletMap.remove();
+        mapEl._leafletMap = null;
+      }
+    },
+  };
 }

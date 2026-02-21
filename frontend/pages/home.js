@@ -451,9 +451,15 @@ export function renderHome() {
               <span style="width:0.5rem;height:0.5rem;border-radius:50%;background:#ef4444"></span>
               <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:#ef4444;text-transform:uppercase;letter-spacing:0.08em">Critical</span>
             </div>
+<<<<<<< HEAD
             <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2);color:#fff">Japanese Knotweed Cluster</h4>
             <p style="color:rgba(255,255,255,0.5);font-size:0.8125rem;line-height:1.6;margin-bottom:var(--space-4)">142 geo-tagged reports within 8 km radius. Satellite NDVI confirms vegetation anomaly.</p>
             <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:rgba(255,255,255,0.35)">
+=======
+            <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2)">Lantana camara Outbreak</h4>
+            <p style="color:var(--color-slate-500);font-size:0.8125rem;line-height:1.6;margin-bottom:var(--space-4)">142 geo-tagged reports within 8 km radius. Satellite NDVI confirms vegetation anomaly in Western Ghats.</p>
+            <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--color-slate-400)">
+>>>>>>> 34cb9df1be9513923501b0d36d44c3d033a743fa
               <span>Risk Score: <strong style="color:#ef4444">94/100</strong></span>
               <span>2h ago</span>
             </div>
@@ -464,9 +470,15 @@ export function renderHome() {
               <span style="width:0.5rem;height:0.5rem;border-radius:50%;background:#f59e0b"></span>
               <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:#f59e0b;text-transform:uppercase;letter-spacing:0.08em">Elevated</span>
             </div>
+<<<<<<< HEAD
             <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2);color:#fff">Asian Longhorn Beetle</h4>
             <p style="color:rgba(255,255,255,0.5);font-size:0.8125rem;line-height:1.6;margin-bottom:var(--space-4)">28 citizen reports. AI confidence 87%. Satellite canopy analysis pending.</p>
             <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:rgba(255,255,255,0.35)">
+=======
+            <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2)">Water Hyacinth Surge</h4>
+            <p style="color:var(--color-slate-500);font-size:0.8125rem;line-height:1.6;margin-bottom:var(--space-4)">28 citizen reports. AI confidence 87%. Satellite surface analysis pending — Kerala Backwaters.</p>
+            <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--color-slate-400)">
+>>>>>>> 34cb9df1be9513923501b0d36d44c3d033a743fa
               <span>Risk Score: <strong style="color:#f59e0b">67/100</strong></span>
               <span>6h ago</span>
             </div>
@@ -477,10 +489,17 @@ export function renderHome() {
               <span style="width:0.5rem;height:0.5rem;border-radius:50%;background:#6dbe4b"></span>
               <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:#6dbe4b;text-transform:uppercase;letter-spacing:0.08em">Monitoring</span>
             </div>
+<<<<<<< HEAD
             <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2);color:#fff">Giant Hogweed Spread</h4>
             <p style="color:rgba(255,255,255,0.5);font-size:0.8125rem;line-height:1.6;margin-bottom:var(--space-4)">15 reports across 3 counties. Satellite verification in progress.</p>
             <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:rgba(255,255,255,0.35)">
               <span>Risk Score: <strong style="color:#6dbe4b">42/100</strong></span>
+=======
+            <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2)">Parthenium Spread</h4>
+            <p style="color:var(--color-slate-500);font-size:0.8125rem;line-height:1.6;margin-bottom:var(--space-4)">15 reports across 3 districts. Satellite verification in progress — Rajasthan Plains.</p>
+            <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--color-slate-400)">
+              <span>Risk Score: <strong style="color:var(--color-primary)">42/100</strong></span>
+>>>>>>> 34cb9df1be9513923501b0d36d44c3d033a743fa
               <span>1d ago</span>
             </div>
           </div>
@@ -668,11 +687,19 @@ export function renderHome() {
           </div>
 
           <div class="reveal" data-delay="200">
+<<<<<<< HEAD
             <div style="padding:var(--space-8);background:rgba(255,255,255,0.04);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius-xl)">
               <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:var(--space-6);display:block">Request Expert Validation</span>
               <h3 style="font-weight:var(--fw-bold);margin-bottom:var(--space-3);font-size:1.25rem;color:#fff">Unsure about a species?</h3>
               <p style="color:rgba(255,255,255,0.5);font-size:0.875rem;line-height:1.7;margin-bottom:var(--space-6)">Submit your observation for expert review and containment recommendations.</p>
               <a href="#/about" class="btn btn-lg btn-micro" style="border:1px solid rgba(109,190,75,0.3);color:#6dbe4b;background:rgba(109,190,75,0.08);width:100%;justify-content:center">
+=======
+            <div class="card" style="padding:var(--space-8)">
+              <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:var(--color-slate-400);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:var(--space-6);display:block">Request Expert Validation</span>
+              <h3 style="font-weight:var(--fw-bold);margin-bottom:var(--space-3);font-size:1.25rem">Unsure about a species?</h3>
+              <p style="color:var(--color-slate-600);font-size:0.875rem;line-height:1.7;margin-bottom:var(--space-6)">Submit your observation for expert review and containment recommendations.</p>
+              <a href="https://docs.google.com/forms/d/e/1FAIpQLSe-I2Ebso1LPhh4mPHetvJXRMBkVqK73gtSxA9aZ_Ty109mkg/viewform?usp=header" target="_blank" rel="noopener noreferrer" class="btn btn-lg btn-micro" style="border:1px solid var(--color-primary);color:var(--color-primary);background:rgba(29,172,201,0.06);width:100%;justify-content:center">
+>>>>>>> 34cb9df1be9513923501b0d36d44c3d033a743fa
                 <span class="material-symbols-outlined" style="font-size:1.125rem">science</span> Contact an Expert
               </a>
             </div>

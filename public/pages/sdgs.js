@@ -4,12 +4,12 @@ import { renderFooter } from '../components/footer.js';
 
 export function renderAlerts() {
   const alerts = [
-    { species: 'Japanese Knotweed', region: 'North Atlantic Corridor', reports: 142, confidence: 94, satellite: 'NDVI anomaly confirmed', level: 'critical', color: '#ef4444', time: '2h ago' },
-    { species: 'Asian Longhorn Beetle', region: 'Great Lakes Region', reports: 28, confidence: 87, satellite: 'Canopy analysis pending', level: 'elevated', color: '#f59e0b', time: '6h ago' },
-    { species: 'Giant Hogweed', region: 'Pacific Northwest', reports: 15, confidence: 72, satellite: 'Verification in progress', level: 'elevated', color: '#f59e0b', time: '1d ago' },
-    { species: 'Emerald Ash Borer', region: 'Upper Midwest', reports: 64, confidence: 91, satellite: 'Crown dieback detected', level: 'critical', color: '#ef4444', time: '4h ago' },
-    { species: 'Spotted Lanternfly', region: 'Mid-Atlantic', reports: 8, confidence: 56, satellite: 'No anomaly detected', level: 'monitoring', color: '#1dacc9', time: '3d ago' },
-    { species: 'Water Hyacinth', region: 'Gulf Coast Waterways', reports: 33, confidence: 79, satellite: 'Water surface change detected', level: 'elevated', color: '#f59e0b', time: '12h ago' },
+    { species: 'Lantana camara', region: 'Western Ghats Corridor', reports: 142, confidence: 94, satellite: 'NDVI anomaly confirmed', level: 'critical', color: '#ef4444', time: '2h ago' },
+    { species: 'Water Hyacinth', region: 'Kerala Backwaters', reports: 28, confidence: 87, satellite: 'Canopy analysis pending', level: 'elevated', color: '#f59e0b', time: '6h ago' },
+    { species: 'Parthenium weed', region: 'Rajasthan Plains', reports: 15, confidence: 72, satellite: 'Verification in progress', level: 'elevated', color: '#f59e0b', time: '1d ago' },
+    { species: 'Prosopis juliflora', region: 'Gujarat Dryland', reports: 64, confidence: 91, satellite: 'Crown dieback detected', level: 'critical', color: '#ef4444', time: '4h ago' },
+    { species: 'Chromolaena odorata', region: 'Northeast India', reports: 8, confidence: 56, satellite: 'No anomaly detected', level: 'monitoring', color: '#1dacc9', time: '3d ago' },
+    { species: 'Mikania micrantha', region: 'Assam Wetlands', reports: 33, confidence: 79, satellite: 'Water surface change detected', level: 'elevated', color: '#f59e0b', time: '12h ago' },
   ];
 
   const alertCards = alerts.map((a, i) => `
@@ -33,7 +33,8 @@ export function renderAlerts() {
       </div>
     </div>`).join('');
 
-  return `
+  return {
+    html: `
   ${renderNavbar('alerts')}
   <main style="padding-top:var(--nav-height)">
 
@@ -52,19 +53,9 @@ export function renderAlerts() {
     <!-- Map -->
     <section style="background:#fff;padding:var(--space-12) 0;border-bottom:1px solid var(--color-slate-200)">
       <div class="container">
-        <div class="reveal" style="position:relative;border-radius:var(--radius-lg);overflow:hidden;background:rgba(74,93,78,0.05);border:1px solid var(--color-slate-200);min-height:20rem;display:flex;align-items:center;justify-content:center">
-          <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(29,172,201,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(29,172,201,0.04) 1px,transparent 1px);background-size:25px 25px"></div>
-          <div class="map-dot critical" style="top:25%;left:22%"></div>
-          <div class="map-dot critical" style="top:35%;right:35%"></div>
-          <div class="map-dot elevated" style="top:50%;left:45%"></div>
-          <div class="map-dot elevated" style="top:40%;left:65%"></div>
-          <div class="map-dot monitoring" style="bottom:30%;left:55%"></div>
-          <div class="map-dot elevated" style="bottom:35%;right:25%"></div>
-          <div style="text-align:center;position:relative;z-index:2">
-            <span class="material-symbols-outlined" style="font-size:3rem;color:rgba(29,172,201,0.2);display:block;margin-bottom:var(--space-3)">public</span>
-            <p style="color:var(--color-slate-400);font-size:0.8125rem">Interactive risk map – visualization placeholder</p>
-          </div>
-          <div style="position:absolute;bottom:var(--space-4);left:50%;transform:translateX(-50%);display:flex;gap:var(--space-6);font-size:0.7rem;color:var(--color-slate-400)">
+        <div class="reveal" style="position:relative;border-radius:var(--radius-lg);overflow:hidden;background:rgba(74,93,78,0.05);border:1px solid var(--color-slate-200);min-height:20rem">
+          <div id="alerts-map" style="width:100%;height:100%;min-height:20rem;"></div>
+          <div style="position:absolute;bottom:var(--space-4);left:50%;transform:translateX(-50%);display:flex;gap:var(--space-6);font-size:0.7rem;color:var(--color-slate-400);z-index:1000;background:rgba(255,255,255,0.85);padding:4px 12px;border-radius:999px;pointer-events:none">
             <span style="display:flex;align-items:center;gap:var(--space-1)"><span style="width:6px;height:6px;border-radius:50%;background:#ef4444"></span>Critical</span>
             <span style="display:flex;align-items:center;gap:var(--space-1)"><span style="width:6px;height:6px;border-radius:50%;background:#f59e0b"></span>Elevated</span>
             <span style="display:flex;align-items:center;gap:var(--space-1)"><span style="width:6px;height:6px;border-radius:50%;background:#1dacc9"></span>Monitoring</span>
@@ -88,5 +79,65 @@ export function renderAlerts() {
       </div>
     </section>
   </main>
-  ${renderFooter()}`;
+  ${renderFooter()}`,
+
+    init() {
+      function bootMap() {
+        const mapEl = document.getElementById('alerts-map');
+        if (!mapEl || !window.L) return;
+
+        const map = window.L.map('alerts-map', {
+          center: [20.5937, 78.9629],
+          zoom: 5,
+          zoomControl: true,
+        });
+
+        window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 18,
+        }).addTo(map);
+
+        const markers = [
+          { lat: 18.5204, lng: 73.8567, type: 'critical', label: 'Lantana camara – Western Ghats' },
+          { lat: 23.0225, lng: 72.5714, type: 'critical', label: 'Prosopis juliflora – Gujarat Dryland' },
+          { lat: 26.9124, lng: 75.7873, type: 'elevated', label: 'Parthenium weed – Rajasthan Plains' },
+          { lat: 9.9312, lng: 76.2673, type: 'elevated', label: 'Water Hyacinth – Kerala Backwaters' },
+          { lat: 26.1445, lng: 91.7362, type: 'elevated', label: 'Chromolaena odorata – Northeast India' },
+          { lat: 22.5726, lng: 88.3639, type: 'monitoring', label: 'Mikania micrantha – Assam Wetlands' },
+        ];
+
+        const colorMap = { critical: '#ef4444', elevated: '#f59e0b', monitoring: '#1dacc9' };
+
+        markers.forEach(m => {
+          const color = colorMap[m.type];
+          window.L.circleMarker([m.lat, m.lng], {
+            radius: 10,
+            fillColor: color,
+            color: '#fff',
+            weight: 2,
+            fillOpacity: 0.85,
+          }).bindTooltip(m.label, { permanent: false, direction: 'top' }).addTo(map);
+        });
+
+        mapEl._leafletMap = map;
+      }
+
+      if (window.L) {
+        bootMap();
+      } else {
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        script.onload = bootMap;
+        document.head.appendChild(script);
+      }
+    },
+
+    cleanup() {
+      const mapEl = document.getElementById('alerts-map');
+      if (mapEl && mapEl._leafletMap) {
+        mapEl._leafletMap.remove();
+        mapEl._leafletMap = null;
+      }
+    },
+  };
 }

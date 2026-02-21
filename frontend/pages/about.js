@@ -131,14 +131,14 @@ export function renderAbout() {
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-16);align-items:center">
           <div class="reveal">
             <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:var(--color-primary);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:var(--space-4);display:block">The Problem</span>
-            <h2 style="font-size:clamp(1.5rem,3.5vw,2.25rem);font-weight:var(--fw-bold);margin-bottom:var(--space-4);line-height:1.3">Invasive species cost global economies $423 billion annually</h2>
+            <h2 style="font-size:clamp(1.5rem,3.5vw,2.25rem);font-weight:var(--fw-bold);margin-bottom:var(--space-4);line-height:1.3">Invasive species cost India over ₹35,000 crore annually</h2>
             <p style="color:var(--color-slate-600);line-height:1.8;margin-bottom:var(--space-4)">Traditional field surveys detect invasive outbreaks 12–24 months after establishment. By then, containment costs increase exponentially and ecological damage becomes irreversible.</p>
-            <p style="color:var(--color-slate-600);line-height:1.8">TerraShield reduces this detection gap to 6–12 months through correlated AI and satellite intelligence.</p>
+            <p style="color:var(--color-slate-600);line-height:1.8">TerraShield reduces this detection gap to 6–12 months through correlated AI and satellite intelligence tailored for India's diverse ecosystems.</p>
           </div>
           <div class="reveal" data-delay="200" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)">
             <div class="card hover-lift" style="padding:var(--space-6);text-align:center">
-              <span style="font-size:2rem;font-weight:var(--fw-bold);color:#ef4444">$423B</span>
-              <p style="font-size:0.75rem;color:var(--color-slate-500);margin-top:var(--space-1)">Annual Global Cost</p>
+              <span style="font-size:2rem;font-weight:var(--fw-bold);color:#ef4444">₹35K Cr</span>
+              <p style="font-size:0.75rem;color:var(--color-slate-500);margin-top:var(--space-1)">Annual Cost to India</p>
             </div>
             <div class="card hover-lift" style="padding:var(--space-6);text-align:center">
               <span style="font-size:2rem;font-weight:var(--fw-bold);color:#f59e0b">12–24</span>
