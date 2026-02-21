@@ -1,38 +1,8 @@
-// Alerts Page – Live Risk Map & Active Alerts
+// Alerts Page – Live Risk Map & Active Alerts — all data from /api/public-reports
 import { renderNavbar, initNavbarAuth } from '../components/navbar.js';
 import { renderFooter } from '../components/footer.js';
 
 export function renderAlerts() {
-  const alerts = [
-    { species: 'Lantana camara', region: 'Western Ghats Corridor', reports: 142, confidence: 94, satellite: 'NDVI anomaly confirmed', level: 'critical', color: '#ef4444', time: '2h ago' },
-    { species: 'Water Hyacinth', region: 'Kerala Backwaters', reports: 28, confidence: 87, satellite: 'Canopy analysis pending', level: 'elevated', color: '#f59e0b', time: '6h ago' },
-    { species: 'Parthenium weed', region: 'Rajasthan Plains', reports: 15, confidence: 72, satellite: 'Verification in progress', level: 'elevated', color: '#f59e0b', time: '1d ago' },
-    { species: 'Prosopis juliflora', region: 'Gujarat Dryland', reports: 64, confidence: 91, satellite: 'Crown dieback detected', level: 'critical', color: '#ef4444', time: '4h ago' },
-    { species: 'Chromolaena odorata', region: 'Northeast India', reports: 8, confidence: 56, satellite: 'No anomaly detected', level: 'monitoring', color: '#1dacc9', time: '3d ago' },
-    { species: 'Mikania micrantha', region: 'Assam Wetlands', reports: 33, confidence: 79, satellite: 'Water surface change detected', level: 'elevated', color: '#f59e0b', time: '12h ago' },
-  ];
-
-  const alertCards = alerts.map((a, i) => `
-    <div class="card hover-lift reveal" data-delay="${i * 80}" style="padding:var(--space-6);border-left:3px solid ${a.color}">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3)">
-        <div style="display:flex;align-items:center;gap:var(--space-2)">
-          <span style="width:0.5rem;height:0.5rem;border-radius:50%;background:${a.color}"></span>
-          <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:${a.color};text-transform:uppercase;letter-spacing:0.08em">${a.level}</span>
-        </div>
-        <span style="font-size:0.7rem;color:var(--color-slate-400)">${a.time}</span>
-      </div>
-      <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-1)">${a.species}</h4>
-      <p style="font-size:0.75rem;color:var(--color-slate-400);margin-bottom:var(--space-4)">${a.region}</p>
-      <div style="display:flex;flex-direction:column;gap:var(--space-2);font-size:0.75rem;color:var(--color-slate-500)">
-        <div style="display:flex;justify-content:space-between"><span>Citizen Reports</span><strong style="color:var(--color-slate-800)">${a.reports}</strong></div>
-        <div style="display:flex;justify-content:space-between"><span>AI Confidence</span><strong style="color:var(--color-slate-800)">${a.confidence}%</strong></div>
-        <div style="display:flex;justify-content:space-between"><span>Satellite</span><span style="color:${a.color};font-size:0.7rem">${a.satellite}</span></div>
-      </div>
-      <div style="margin-top:var(--space-4)">
-        <div class="progress-bar" style="height:4px"><div class="progress-bar-fill" style="width:${a.confidence}%;background:${a.color}"></div></div>
-      </div>
-    </div>`).join('');
-
   return {
     html: `
   ${renderNavbar('alerts')}
@@ -55,12 +25,18 @@ export function renderAlerts() {
       <div class="container">
         <div class="reveal" style="position:relative;border-radius:var(--radius-lg);overflow:hidden;background:rgba(74,93,78,0.05);border:1px solid var(--color-slate-200);min-height:20rem">
           <div id="alerts-map" style="width:100%;height:100%;min-height:20rem;"></div>
+          <!-- Legend -->
           <div style="position:absolute;bottom:var(--space-4);left:50%;transform:translateX(-50%);display:flex;gap:var(--space-6);font-size:0.7rem;color:var(--color-slate-400);z-index:1000;background:rgba(255,255,255,0.85);padding:4px 12px;border-radius:999px;pointer-events:none">
-            <span style="display:flex;align-items:center;gap:var(--space-1)"><span style="width:6px;height:6px;border-radius:50%;background:#ef4444"></span>Critical</span>
-            <span style="display:flex;align-items:center;gap:var(--space-1)"><span style="width:6px;height:6px;border-radius:50%;background:#f59e0b"></span>Elevated</span>
-            <span style="display:flex;align-items:center;gap:var(--space-1)"><span style="width:6px;height:6px;border-radius:50%;background:#1dacc9"></span>Monitoring</span>
+            <span style="display:flex;align-items:center;gap:var(--space-1)"><span style="width:6px;height:6px;border-radius:50%;background:#ef4444"></span>Critical (≥7)</span>
+            <span style="display:flex;align-items:center;gap:var(--space-1)"><span style="width:6px;height:6px;border-radius:50%;background:#f59e0b"></span>Elevated (4–7)</span>
+            <span style="display:flex;align-items:center;gap:var(--space-1)"><span style="width:6px;height:6px;border-radius:50%;background:#1dacc9"></span>Monitoring (&lt;4)</span>
+          </div>
+          <!-- Map loading indicator -->
+          <div id="map-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.7);z-index:999;pointer-events:none">
+            <span style="font-size:0.85rem;color:var(--color-slate-500)">Loading live reports…</span>
           </div>
         </div>
+        <p id="map-count" style="text-align:center;font-size:0.75rem;color:var(--color-slate-400);margin-top:var(--space-3)"></p>
       </div>
     </section>
 
@@ -68,14 +44,18 @@ export function renderAlerts() {
     <section style="background:var(--color-bg-light);padding:var(--space-16) 0">
       <div class="container">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-8);flex-wrap:wrap;gap:var(--space-4)">
-          <h2 style="font-weight:var(--fw-bold);color:var(--color-slate-900)">Current Alerts</h2>
-          <div style="display:flex;gap:var(--space-3)">
-            <button class="btn btn-sm" style="background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.2)">Critical</button>
-            <button class="btn btn-sm" style="background:rgba(245,158,11,0.1);color:#f59e0b;border:1px solid rgba(245,158,11,0.2)">Elevated</button>
-            <button class="btn btn-sm" style="background:rgba(29,172,201,0.1);color:var(--color-primary);border:1px solid rgba(29,172,201,0.2)">All</button>
-          </div>
+          <h2 style="font-weight:var(--fw-bold);color:var(--color-slate-900)">Outbreak Clusters</h2>
+          <span id="cluster-count" style="font-size:0.75rem;color:var(--color-slate-500)"></span>
         </div>
-        <div class="three-col-grid">${alertCards}</div>
+        <div id="alerts-grid" class="three-col-grid">
+          <!-- Skeleton cards -->
+          ${[1, 2, 3].map(() => `
+            <div class="card" style="padding:var(--space-6);opacity:0.5">
+              <div style="height:0.75rem;background:var(--color-slate-200);border-radius:4px;margin-bottom:var(--space-3);width:40%"></div>
+              <div style="height:1rem;background:var(--color-slate-200);border-radius:4px;margin-bottom:var(--space-2);width:80%"></div>
+              <div style="height:0.75rem;background:var(--color-slate-200);border-radius:4px;width:60%"></div>
+            </div>`).join('')}
+        </div>
       </div>
     </section>
   </main>
@@ -83,6 +63,65 @@ export function renderAlerts() {
 
     init() {
       initNavbarAuth();
+
+      // ── Colour helpers ──────────────────────────────────────────────────────
+      function riskColor(score) {
+        if (score >= 7) return '#ef4444';
+        if (score >= 4) return '#f59e0b';
+        return '#1dacc9';
+      }
+      function riskLabel(score) {
+        if (score >= 7) return 'critical';
+        if (score >= 4) return 'elevated';
+        return 'monitoring';
+      }
+
+      // ── Render alert cards from cluster data ────────────────────────────────
+      function renderAlertCards(clusters) {
+        const grid = document.getElementById('alerts-grid');
+        const counter = document.getElementById('cluster-count');
+        if (!grid) return;
+
+        if (!clusters || clusters.length === 0) {
+          grid.innerHTML = `
+            <div style="grid-column:1/-1;padding:var(--space-16);text-align:center;color:var(--color-slate-400);background:var(--color-slate-50);border-radius:var(--radius-lg);border:1px dashed var(--color-slate-300)">
+              <span class="material-symbols-outlined" style="font-size:2.5rem;opacity:0.4;display:block;margin-bottom:var(--space-3)">sensors</span>
+              <p style="font-weight:var(--fw-bold);margin-bottom:var(--space-2)">No outbreak clusters detected</p>
+              <p style="font-size:0.85rem">Clusters appear when ≥3 invasive reports are within 5 km in the last 7 days.</p>
+            </div>`;
+          if (counter) counter.textContent = '';
+          return;
+        }
+
+        if (counter) counter.textContent = `${clusters.length} active cluster${clusters.length === 1 ? '' : 's'}`;
+
+        grid.innerHTML = clusters.map((c, i) => {
+          const color = riskColor(c.avg_risk);
+          const label = riskLabel(c.avg_risk);
+          const confPct = Math.round(c.avg_risk * 10);
+          return `
+            <div class="card hover-lift reveal" data-delay="${i * 80}" style="padding:var(--space-6);border-left:3px solid ${color}">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3)">
+                <div style="display:flex;align-items:center;gap:var(--space-2)">
+                  <span style="width:0.5rem;height:0.5rem;border-radius:50%;background:${color}"></span>
+                  <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:${color};text-transform:uppercase;letter-spacing:0.08em">${label}</span>
+                </div>
+                <span style="font-size:0.7rem;color:var(--color-slate-400)">${c.count} report${c.count === 1 ? '' : 's'}</span>
+              </div>
+              <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-1);font-style:italic">${c.species}</h4>
+              <p style="font-size:0.75rem;color:var(--color-slate-400);margin-bottom:var(--space-4)">${c.lat.toFixed(4)}, ${c.lon.toFixed(4)}</p>
+              <div style="display:flex;flex-direction:column;gap:var(--space-2);font-size:0.75rem;color:var(--color-slate-500)">
+                <div style="display:flex;justify-content:space-between"><span>Risk Score</span><strong style="color:${color}">${c.avg_risk}/10</strong></div>
+                <div style="display:flex;justify-content:space-between"><span>Citizen Reports</span><strong style="color:var(--color-slate-800)">${c.count}</strong></div>
+              </div>
+              <div style="margin-top:var(--space-4)">
+                <div class="progress-bar" style="height:4px"><div class="progress-bar-fill" style="width:${confPct}%;background:${color}"></div></div>
+              </div>
+            </div>`;
+        }).join('');
+      }
+
+      // ── Map boot ────────────────────────────────────────────────────────────
       function bootMap() {
         const mapEl = document.getElementById('alerts-map');
         if (!mapEl || !window.L) return;
@@ -98,31 +137,68 @@ export function renderAlerts() {
           maxZoom: 18,
         }).addTo(map);
 
-        const markers = [
-          { lat: 18.5204, lng: 73.8567, type: 'critical', label: 'Lantana camara – Western Ghats' },
-          { lat: 23.0225, lng: 72.5714, type: 'critical', label: 'Prosopis juliflora – Gujarat Dryland' },
-          { lat: 26.9124, lng: 75.7873, type: 'elevated', label: 'Parthenium weed – Rajasthan Plains' },
-          { lat: 9.9312, lng: 76.2673, type: 'elevated', label: 'Water Hyacinth – Kerala Backwaters' },
-          { lat: 26.1445, lng: 91.7362, type: 'elevated', label: 'Chromolaena odorata – Northeast India' },
-          { lat: 22.5726, lng: 88.3639, type: 'monitoring', label: 'Mikania micrantha – Assam Wetlands' },
-        ];
-
-        const colorMap = { critical: '#ef4444', elevated: '#f59e0b', monitoring: '#1dacc9' };
-
-        markers.forEach(m => {
-          const color = colorMap[m.type];
-          window.L.circleMarker([m.lat, m.lng], {
-            radius: 10,
-            fillColor: color,
-            color: '#fff',
-            weight: 2,
-            fillOpacity: 0.85,
-          }).bindTooltip(m.label, { permanent: false, direction: 'top' }).addTo(map);
-        });
-
         mapEl._leafletMap = map;
+
+        // ── Fetch live data ────────────────────────────────────────────────
+        fetch('/api/public-reports')
+          .then(r => r.json())
+          .then(data => {
+            const loading = document.getElementById('map-loading');
+            if (loading) loading.style.display = 'none';
+
+            const reports = data.reports || [];
+            const clusters = data.clusters || [];
+
+            // Plot individual report markers
+            reports.forEach(r => {
+              const color = riskColor(r.risk_score);
+              const dateStr = r.created_at;
+              const confPct = Math.round(r.confidence * 100);
+              window.L.circleMarker([r.lat, r.lon], {
+                radius: 8,
+                fillColor: color,
+                color: '#fff',
+                weight: 2,
+                fillOpacity: 0.85,
+              }).bindPopup(`
+                <div style="min-width:160px;font-family:inherit">
+                  <strong style="font-style:italic">${r.species}</strong><br>
+                  <span style="color:${color};font-weight:bold">Risk: ${r.risk_score}/10</span><br>
+                  <span style="font-size:0.75rem;color:#64748b">Confidence: ${confPct}%</span><br>
+                  <span style="font-size:0.75rem;color:#64748b">Reported: ${dateStr}</span>
+                </div>
+              `).addTo(map);
+            });
+
+            // Count display
+            const countEl = document.getElementById('map-count');
+            if (countEl) {
+              countEl.textContent = reports.length > 0
+                ? `${reports.length} invasive report${reports.length === 1 ? '' : 's'} from the last 30 days`
+                : 'No invasive reports yet — submit one via the Report page';
+            }
+
+            // Render alert cards
+            renderAlertCards(clusters);
+
+            // Auto-fit bounds if there are markers
+            if (reports.length > 0) {
+              const latLngs = reports.map(r => [r.lat, r.lon]);
+              try { map.fitBounds(latLngs, { padding: [40, 40], maxZoom: 10 }); } catch (_) { /* ignore */ }
+            }
+          })
+          .catch(err => {
+            console.error('[TerraShield] Failed to load public reports:', err);
+            const loading = document.getElementById('map-loading');
+            if (loading) {
+              loading.innerHTML = '<span style="color:#ef4444;font-size:0.85rem">Failed to load live data</span>';
+              loading.style.pointerEvents = 'none';
+            }
+            renderAlertCards([]);
+          });
       }
 
+      // ── Load Leaflet if not already present ─────────────────────────────
       if (window.L) {
         bootMap();
       } else {
