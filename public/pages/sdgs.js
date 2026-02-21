@@ -4,12 +4,12 @@ import { renderFooter } from '../components/footer.js';
 
 export function renderAlerts() {
   const alerts = [
-    { species: 'Japanese Knotweed', region: 'North Atlantic Corridor', reports: 142, confidence: 94, satellite: 'NDVI anomaly confirmed', level: 'critical', color: '#ef4444', time: '2h ago' },
-    { species: 'Asian Longhorn Beetle', region: 'Great Lakes Region', reports: 28, confidence: 87, satellite: 'Canopy analysis pending', level: 'elevated', color: '#f59e0b', time: '6h ago' },
-    { species: 'Giant Hogweed', region: 'Pacific Northwest', reports: 15, confidence: 72, satellite: 'Verification in progress', level: 'elevated', color: '#f59e0b', time: '1d ago' },
-    { species: 'Emerald Ash Borer', region: 'Upper Midwest', reports: 64, confidence: 91, satellite: 'Crown dieback detected', level: 'critical', color: '#ef4444', time: '4h ago' },
-    { species: 'Spotted Lanternfly', region: 'Mid-Atlantic', reports: 8, confidence: 56, satellite: 'No anomaly detected', level: 'monitoring', color: '#1dacc9', time: '3d ago' },
-    { species: 'Water Hyacinth', region: 'Gulf Coast Waterways', reports: 33, confidence: 79, satellite: 'Water surface change detected', level: 'elevated', color: '#f59e0b', time: '12h ago' },
+    { species: 'Lantana camara', region: 'Western Ghats Corridor', reports: 142, confidence: 94, satellite: 'NDVI anomaly confirmed', level: 'critical', color: '#ef4444', time: '2h ago' },
+    { species: 'Water Hyacinth', region: 'Kerala Backwaters', reports: 28, confidence: 87, satellite: 'Canopy analysis pending', level: 'elevated', color: '#f59e0b', time: '6h ago' },
+    { species: 'Parthenium weed', region: 'Rajasthan Plains', reports: 15, confidence: 72, satellite: 'Verification in progress', level: 'elevated', color: '#f59e0b', time: '1d ago' },
+    { species: 'Prosopis juliflora', region: 'Gujarat Dryland', reports: 64, confidence: 91, satellite: 'Crown dieback detected', level: 'critical', color: '#ef4444', time: '4h ago' },
+    { species: 'Chromolaena odorata', region: 'Northeast India', reports: 8, confidence: 56, satellite: 'No anomaly detected', level: 'monitoring', color: '#1dacc9', time: '3d ago' },
+    { species: 'Mikania micrantha', region: 'Assam Wetlands', reports: 33, confidence: 79, satellite: 'Water surface change detected', level: 'elevated', color: '#f59e0b', time: '12h ago' },
   ];
 
   const alertCards = alerts.map((a, i) => `
@@ -82,14 +82,13 @@ export function renderAlerts() {
   ${renderFooter()}`,
 
     init() {
-      // Leaflet is loaded from CDN as window.L
       function bootMap() {
         const mapEl = document.getElementById('alerts-map');
         if (!mapEl || !window.L) return;
 
         const map = window.L.map('alerts-map', {
-          center: [39.5, -98.35],
-          zoom: 4,
+          center: [20.5937, 78.9629],
+          zoom: 5,
           zoomControl: true,
         });
 
@@ -99,12 +98,12 @@ export function renderAlerts() {
         }).addTo(map);
 
         const markers = [
-          { lat: 40.7128, lng: -74.0060, type: 'critical', label: 'Japanese Knotweed – North Atlantic' },
-          { lat: 41.8781, lng: -87.6298, type: 'critical', label: 'Emerald Ash Borer – Upper Midwest' },
-          { lat: 39.9526, lng: -75.1652, type: 'elevated', label: 'Spotted Lanternfly – Mid-Atlantic' },
-          { lat: 47.6062, lng: -122.3321, type: 'elevated', label: 'Giant Hogweed – Pacific Northwest' },
-          { lat: 45.5051, lng: -122.6750, type: 'elevated', label: 'Water Hyacinth – Gulf Coast' },
-          { lat: 29.7604, lng: -95.3698, type: 'monitoring', label: 'Asian Longhorn Beetle – Great Lakes' },
+          { lat: 18.5204, lng: 73.8567, type: 'critical', label: 'Lantana camara – Western Ghats' },
+          { lat: 23.0225, lng: 72.5714, type: 'critical', label: 'Prosopis juliflora – Gujarat Dryland' },
+          { lat: 26.9124, lng: 75.7873, type: 'elevated', label: 'Parthenium weed – Rajasthan Plains' },
+          { lat: 9.9312, lng: 76.2673, type: 'elevated', label: 'Water Hyacinth – Kerala Backwaters' },
+          { lat: 26.1445, lng: 91.7362, type: 'elevated', label: 'Chromolaena odorata – Northeast India' },
+          { lat: 22.5726, lng: 88.3639, type: 'monitoring', label: 'Mikania micrantha – Assam Wetlands' },
         ];
 
         const colorMap = { critical: '#ef4444', elevated: '#f59e0b', monitoring: '#1dacc9' };
@@ -120,14 +119,12 @@ export function renderAlerts() {
           }).bindTooltip(m.label, { permanent: false, direction: 'top' }).addTo(map);
         });
 
-        // Store reference for cleanup
         mapEl._leafletMap = map;
       }
 
       if (window.L) {
         bootMap();
       } else {
-        // Load Leaflet JS from CDN dynamically (CSS already in <head>)
         const script = document.createElement('script');
         script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
         script.onload = bootMap;
