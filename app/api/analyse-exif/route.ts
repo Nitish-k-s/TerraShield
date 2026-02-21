@@ -205,8 +205,8 @@ interface AnalysisMetadata {
 
 async function analyseWithGemini(record: ExifRecord): Promise<AnalysisMetadata> {
     const genAI = getGemini();
-    // gemini-1.5-flash supports multimodal (vision) input
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Use the explicit latest tag to avoid 404 errors on some v1beta API endpoints
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
     // Fetch external geographical context if GPS coordinates exist
     let externalContext = null;
