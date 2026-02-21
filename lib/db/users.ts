@@ -73,6 +73,47 @@ export interface UserMeta {
     verified_reports: number;
     role: string;
     created_at: string;
+    // Virtual — computed on read, not stored in DB
+    level?: string;
+    next_level_at?: number | null;
+    level_progress_pct?: number;
+}
+
+// ─── Level System ─────────────────────────────────────────────────────────────
+
+/** Single source of truth for level calculation. */
+export function calculateUserLevel(points: number): string {
+    if (points >= 301) return 'Guardian';
+    if (points >= 151) return 'Protector';
+    if (points >= 51) return 'Defender';
+    return 'Observer';
+}
+
+/** Points threshold for the next level, or null if already at max. */
+export function nextLevelThreshold(points: number): number | null {
+    if (points < 51) return 51;
+    if (points < 151) return 151;
+    if (points < 301) return 301;
+    return null; // Guardian — max level
+}
+
+/** Progress (0–100) towards the next level threshold. */
+export function levelProgressPct(points: number): number {
+    if (points >= 301) return 100;
+    if (points >= 151) return Math.round(((points - 151) / (301 - 151)) * 100);
+    if (points >= 51) return Math.round(((points - 51) / (151 - 51)) * 100);
+    return Math.round((points / 51) * 100);
+}
+
+/** Attaches computed level fields to a UserMeta row. */
+function withLevel(user: UserMeta): UserMeta {
+    const pts = user.terra_points ?? 0;
+    return {
+        ...user,
+        level: calculateUserLevel(pts),
+        next_level_at: nextLevelThreshold(pts),
+        level_progress_pct: levelProgressPct(pts),
+    };
 }
 
 export interface PointHistory {
@@ -95,7 +136,7 @@ export function getUserMeta(userId: string, email: string): UserMeta {
         tx();
         user = db.prepare("SELECT * FROM users_meta WHERE user_id = ?").get(userId) as UserMeta;
     }
-    return user;
+    return withLevel(user);
 }
 
 export function updateProfileContent(userId: string, data: Partial<UserMeta>): void {
@@ -134,9 +175,10 @@ export function addTerraPoints(userId: string, amount: number, reason: string): 
 }
 
 export function getUserMetaById(userId: string): UserMeta | undefined {
-    return getUsersDb()
+    const user = getUsersDb()
         .prepare("SELECT * FROM users_meta WHERE user_id = ?")
         .get(userId) as UserMeta | undefined;
+    return user ? withLevel(user) : undefined;
 }
 
 /**
@@ -229,10 +271,11 @@ export function awardReportPoints(
             ).run(userId);
         }
 
-        // 7. Re-fetch updated user
-        updatedUser = db
+        // 7. Re-fetch updated user — attach computed level
+        const raw = db
             .prepare("SELECT * FROM users_meta WHERE user_id = ?")
             .get(userId) as UserMeta;
+        updatedUser = withLevel(raw);
     });
 
     tx();
