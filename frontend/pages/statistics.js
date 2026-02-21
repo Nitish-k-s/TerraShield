@@ -4,8 +4,8 @@ import { renderFooter } from '../components/footer.js';
 import { getSessionToken } from '../utils/auth.js';
 
 export function renderStatistics() {
-    return {
-        html: `
+  return {
+    html: `
   ${renderNavbar('statistics')}
   <main style="padding-top:var(--nav-height);min-height:100vh;background:linear-gradient(160deg,#03140c 0%,#051a0f 50%,#03140c 100%)">
 
@@ -144,12 +144,16 @@ export function renderStatistics() {
 
         </div>
 
-        <!-- ── Top Species ──────────────────────────────────────────────── -->
+        <!-- ── Top Species Line Graph ────────────────────────────────────── -->
         <div class="card" style="padding:var(--space-8);background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);backdrop-filter:blur(12px);margin-bottom:var(--space-8)">
-          <div style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.15em;text-transform:uppercase;color:var(--color-slate-500);margin-bottom:var(--space-8)">Most Reported Invasive Species</div>
-          <div id="species-bars" style="display:flex;flex-direction:column;gap:var(--space-5)">
-            <div style="color:var(--color-slate-500);font-size:0.85rem">Loading species data…</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-6)">
+            <div style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.15em;text-transform:uppercase;color:var(--color-slate-500)">Most Reported Invasive Species</div>
+            <div style="font-size:0.65rem;color:var(--color-slate-500)">Report count by species</div>
           </div>
+          <div id="species-line-graph" style="width:100%;min-height:18rem;position:relative">
+            <div style="color:var(--color-slate-500);font-size:0.85rem;text-align:center;padding:var(--space-8)">Loading species data…</div>
+          </div>
+          <div id="species-legend" style="display:flex;flex-wrap:wrap;gap:var(--space-4);margin-top:var(--space-5);justify-content:center"></div>
         </div>
 
         <!-- ── Outbreak Clusters Table ─────────────────────────────────── -->
@@ -191,123 +195,256 @@ export function renderStatistics() {
   </main>
   ${renderFooter()}`,
 
-        async init() {
-            initNavbarAuth();
+    async init() {
+      initNavbarAuth();
 
-            // Add shimmer keyframe if not already present
-            if (!document.getElementById('stats-shimmer-style')) {
-                const s = document.createElement('style');
-                s.id = 'stats-shimmer-style';
-                s.textContent = `@keyframes shimmer{0%{opacity:0.6}50%{opacity:0.3}100%{opacity:0.6}}`;
-                document.head.appendChild(s);
+      // Add shimmer keyframe if not already present
+      if (!document.getElementById('stats-shimmer-style')) {
+        const s = document.createElement('style');
+        s.id = 'stats-shimmer-style';
+        s.textContent = `@keyframes shimmer{0%{opacity:0.6}50%{opacity:0.3}100%{opacity:0.6}}`;
+        document.head.appendChild(s);
+      }
+
+      try {
+        const token = await getSessionToken();
+        const res = await fetch('/api/statistics', {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const d = await res.json();
+
+        if (!d.success || d.total_reports === 0) {
+          document.getElementById('stats-skeleton').style.display = 'none';
+          document.getElementById('stats-empty').style.display = 'block';
+          return;
+        }
+
+        // ── Show content ────────────────────────────────────────────────
+        document.getElementById('stats-skeleton').style.display = 'none';
+        document.getElementById('stats-content').style.display = 'block';
+
+        // Metric cards
+        document.getElementById('stat-total').textContent = d.total_reports.toLocaleString();
+        document.getElementById('stat-clusters').textContent = d.active_clusters;
+        document.getElementById('stat-30d').textContent = d.total_reports_30d.toLocaleString();
+        document.getElementById('stat-invasive-pct').textContent = d.invasive_pct;
+
+        const riskEl = document.getElementById('stat-risk');
+        const riskDot = document.getElementById('stat-risk-dot');
+        riskEl.textContent = d.system_risk;
+        const riskColors = { Critical: '#ef4444', Elevated: '#f59e0b', Monitoring: '#2edd82' };
+        riskDot.style.background = riskColors[d.system_risk] || '#2edd82';
+        riskEl.style.color = riskColors[d.system_risk] || '#fff';
+
+        // ── Donut chart ─────────────────────────────────────────────────
+        const circ = 2 * Math.PI * 38; // 238.8
+        const invasiveFrac = d.invasive_pct / 100;
+        const nonInvasiveFrac = 1 - invasiveFrac;
+
+        // Red arc = invasive (starts at top, goes clockwise)
+        const redLen = circ * invasiveFrac;
+        const redGap = circ - redLen;
+        const greenLen = circ * nonInvasiveFrac;
+        const greenGap = circ - greenLen;
+
+        // Green arc offset: starts after the red arc
+        const greenRotate = invasiveFrac * 360;
+
+        requestAnimationFrame(() => {
+          const donutRed = document.getElementById('donut-red');
+          const donutGreen = document.getElementById('donut-green');
+
+          donutRed.style.strokeDasharray = `${redLen} ${redGap}`;
+          donutRed.style.strokeDashoffset = '0';
+
+          donutGreen.style.strokeDasharray = `${greenLen} ${greenGap}`;
+          donutGreen.style.strokeDashoffset = `${-invasiveFrac * circ}`; // rotate green start
+          donutGreen.style.transform = `rotate(${greenRotate}deg)`;
+          donutGreen.style.transformOrigin = '50% 50%';
+
+          document.getElementById('donut-label-pct').textContent = `${d.invasive_pct}%`;
+        });
+
+        // ── Bar chart ───────────────────────────────────────────────────
+        const maxCount = Math.max(...d.daily_reports.map(r => r.count), 1);
+        const totalWeek = d.daily_reports.reduce((s, r) => s + r.count, 0);
+        document.getElementById('bar-total-label').textContent = `${totalWeek} this week`;
+
+        d.daily_reports.forEach((r, i) => {
+          const pct = Math.round((r.count / maxCount) * 100);
+          const fill = document.querySelector(`.bar-fill-${i}`);
+          const dayEl = document.querySelector(`.bar-day-${i}`);
+          if (fill) setTimeout(() => { fill.style.height = pct + '%'; }, 50);
+          if (dayEl) dayEl.textContent = r.day;
+        });
+
+        // ── Species line graph ───────────────────────────────────────────
+        const graphCont = document.getElementById('species-line-graph');
+        const legendCont = document.getElementById('species-legend');
+        if (d.top_species.length === 0) {
+          graphCont.innerHTML = `<p style="color:var(--color-slate-500);font-size:0.85rem;text-align:center;padding:var(--space-8)">No invasive species identified yet.</p>`;
+        } else {
+          const species = d.top_species; // [{species,count,pct},...]
+          const colors = ['#2edd82', '#ef4444', '#f59e0b', '#38bdf8', '#a78bfa', '#fb7185', '#34d399', '#fbbf24'];
+          const maxCount = Math.max(...species.map(s => s.count), 1);
+          const n = species.length;
+
+          // SVG dimensions
+          const W = 800, H = 300;
+          const pad = { top: 30, right: 30, bottom: 50, left: 55 };
+          const chartW = W - pad.left - pad.right;
+          const chartH = H - pad.top - pad.bottom;
+
+          // Nice Y-axis ticks
+          const yMax = Math.ceil(maxCount * 1.2) || 1;
+          const tickCount = 5;
+          const yTicks = Array.from({ length: tickCount + 1 }, (_, i) => Math.round((yMax / tickCount) * i));
+
+          // Build gridlines & Y labels
+          let gridLines = '';
+          let yLabels = '';
+          yTicks.forEach(val => {
+            const y = pad.top + chartH - (val / yMax) * chartH;
+            gridLines += `<line x1="${pad.left}" y1="${y}" x2="${W - pad.right}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4"/>`;
+            yLabels += `<text x="${pad.left - 10}" y="${y + 3}" fill="rgba(255,255,255,0.35)" font-size="10" text-anchor="end" font-family="monospace">${val}</text>`;
+          });
+
+          // X positions for each species
+          const xStep = n > 1 ? chartW / (n - 1) : chartW / 2;
+          const points = species.map((s, i) => ({
+            x: pad.left + (n > 1 ? i * xStep : chartW / 2),
+            y: pad.top + chartH - (s.count / yMax) * chartH,
+            species: s.species,
+            count: s.count
+          }));
+
+          // X-axis labels
+          let xLabels = points.map((p, i) => {
+            const label = species[i].species.length > 14 ? species[i].species.substring(0, 12) + '…' : species[i].species;
+            return `<text x="${p.x}" y="${H - 8}" fill="rgba(255,255,255,0.4)" font-size="9" text-anchor="middle" font-family="sans-serif" font-weight="600" text-transform="uppercase" letter-spacing="0.05em">${label}</text>`;
+          }).join('');
+
+          // Build the smooth path (catmull-rom-like using bezier curves)
+          let pathD = '';
+          if (points.length === 1) {
+            pathD = `M${points[0].x - 20},${points[0].y} L${points[0].x + 20},${points[0].y}`;
+          } else {
+            pathD = `M${points[0].x},${points[0].y}`;
+            for (let i = 0; i < points.length - 1; i++) {
+              const cp = (points[i + 1].x - points[i].x) * 0.4;
+              pathD += ` C${points[i].x + cp},${points[i].y} ${points[i + 1].x - cp},${points[i + 1].y} ${points[i + 1].x},${points[i + 1].y}`;
             }
+          }
 
-            try {
-                const token = await getSessionToken();
-                const res = await fetch('/api/statistics', {
-                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-                });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const d = await res.json();
+          // Area fill path
+          const areaD = pathD + ` L${points[points.length - 1].x},${pad.top + chartH} L${points[0].x},${pad.top + chartH} Z`;
 
-                if (!d.success || d.total_reports === 0) {
-                    document.getElementById('stats-skeleton').style.display = 'none';
-                    document.getElementById('stats-empty').style.display = 'block';
-                    return;
-                }
+          // Calculate path length for animation
+          const totalLen = 1500; // approximate, will be updated via JS
 
-                // ── Show content ────────────────────────────────────────────────
-                document.getElementById('stats-skeleton').style.display = 'none';
-                document.getElementById('stats-content').style.display = 'block';
+          // Build dots
+          const dots = points.map((p, i) => `
+                        <circle class="species-dot" cx="${p.x}" cy="${p.y}" r="5" fill="${colors[0]}" stroke="#03140c" stroke-width="2" style="opacity:0;animation:species-dot-in 0.4s ease-out ${0.8 + i * 0.1}s forwards;cursor:pointer" data-species="${p.species}" data-count="${p.count}"/>
+                        <circle cx="${p.x}" cy="${p.y}" r="12" fill="${colors[0]}" opacity="0.15" style="animation:species-dot-in 0.4s ease-out ${0.8 + i * 0.1}s forwards;opacity:0"/>
+                    `).join('');
 
-                // Metric cards
-                document.getElementById('stat-total').textContent = d.total_reports.toLocaleString();
-                document.getElementById('stat-clusters').textContent = d.active_clusters;
-                document.getElementById('stat-30d').textContent = d.total_reports_30d.toLocaleString();
-                document.getElementById('stat-invasive-pct').textContent = d.invasive_pct;
+          // Tooltip container
+          const tooltip = `<div id="species-tooltip" style="position:absolute;display:none;background:rgba(3,20,12,0.95);border:1px solid rgba(46,221,130,0.3);border-radius:8px;padding:6px 12px;font-size:0.7rem;color:#fff;pointer-events:none;z-index:20;backdrop-filter:blur(8px);box-shadow:0 4px 20px rgba(0,0,0,0.4)"><strong id="tt-species" style="color:#2edd82"></strong><br><span id="tt-count" style="color:rgba(255,255,255,0.7)"></span></div>`;
 
-                const riskEl = document.getElementById('stat-risk');
-                const riskDot = document.getElementById('stat-risk-dot');
-                riskEl.textContent = d.system_risk;
-                const riskColors = { Critical: '#ef4444', Elevated: '#f59e0b', Monitoring: '#2edd82' };
-                riskDot.style.background = riskColors[d.system_risk] || '#2edd82';
-                riskEl.style.color = riskColors[d.system_risk] || '#fff';
+          graphCont.innerHTML = `
+                        ${tooltip}
+                        <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" preserveAspectRatio="xMidYMid meet">
+                            <defs>
+                                <linearGradient id="line-grad-area" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="#2edd82" stop-opacity="0.25"/>
+                                    <stop offset="100%" stop-color="#2edd82" stop-opacity="0.01"/>
+                                </linearGradient>
+                                <filter id="glow-line">
+                                    <feGaussianBlur stdDeviation="3" result="blur"/>
+                                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                                </filter>
+                            </defs>
 
-                // ── Donut chart ─────────────────────────────────────────────────
-                const circ = 2 * Math.PI * 38; // 238.8
-                const invasiveFrac = d.invasive_pct / 100;
-                const nonInvasiveFrac = 1 - invasiveFrac;
+                            <!-- Grid -->
+                            ${gridLines}
+                            ${yLabels}
+                            ${xLabels}
 
-                // Red arc = invasive (starts at top, goes clockwise)
-                const redLen = circ * invasiveFrac;
-                const redGap = circ - redLen;
-                const greenLen = circ * nonInvasiveFrac;
-                const greenGap = circ - greenLen;
+                            <!-- Y-axis title -->
+                            <text x="14" y="${pad.top + chartH / 2}" fill="rgba(255,255,255,0.25)" font-size="9" text-anchor="middle" transform="rotate(-90,14,${pad.top + chartH / 2})" font-family="sans-serif" font-weight="600" letter-spacing="0.1em">REPORTS</text>
 
-                // Green arc offset: starts after the red arc
-                const greenRotate = invasiveFrac * 360;
+                            <!-- Area fill -->
+                            <path d="${areaD}" fill="url(#line-grad-area)" style="opacity:0;animation:species-area-in 1s ease-out 0.5s forwards"/>
 
-                requestAnimationFrame(() => {
-                    const donutRed = document.getElementById('donut-red');
-                    const donutGreen = document.getElementById('donut-green');
+                            <!-- Main line -->
+                            <path id="species-main-line" d="${pathD}" fill="none" stroke="#2edd82" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow-line)" style="stroke-dasharray:2000;stroke-dashoffset:2000;animation:species-line-draw 1.5s ease-out 0.2s forwards"/>
 
-                    donutRed.style.strokeDasharray = `${redLen} ${redGap}`;
-                    donutRed.style.strokeDashoffset = '0';
+                            <!-- Dots -->
+                            ${dots}
 
-                    donutGreen.style.strokeDasharray = `${greenLen} ${greenGap}`;
-                    donutGreen.style.strokeDashoffset = `${-invasiveFrac * circ}`; // rotate green start
-                    donutGreen.style.transform = `rotate(${greenRotate}deg)`;
-                    donutGreen.style.transformOrigin = '50% 50%';
+                            <!-- Vertical hover lines -->
+                            ${points.map(p => `<line class="species-vline" x1="${p.x}" y1="${pad.top}" x2="${p.x}" y2="${pad.top + chartH}" stroke="rgba(46,221,130,0.15)" stroke-width="1" stroke-dasharray="3,3" style="opacity:0;transition:opacity 0.2s"/>`).join('')}
+                        </svg>
+                    `;
 
-                    document.getElementById('donut-label-pct').textContent = `${d.invasive_pct}%`;
-                });
+          // Legend
+          legendCont.innerHTML = species.map((s, i) => `
+                        <div style="display:flex;align-items:center;gap:6px;font-size:0.7rem">
+                            <span style="width:10px;height:10px;border-radius:50%;background:${colors[0]};flex-shrink:0;box-shadow:0 0 6px ${colors[0]}40"></span>
+                            <span style="color:rgba(255,255,255,0.6);font-style:italic">${s.species}</span>
+                            <span style="color:#2edd82;font-weight:var(--fw-bold)">${s.count}</span>
+                        </div>
+                    `).join('');
 
-                // ── Bar chart ───────────────────────────────────────────────────
-                const maxCount = Math.max(...d.daily_reports.map(r => r.count), 1);
-                const totalWeek = d.daily_reports.reduce((s, r) => s + r.count, 0);
-                document.getElementById('bar-total-label').textContent = `${totalWeek} this week`;
+          // Dot hover interactivity
+          const ttEl = document.getElementById('species-tooltip');
+          const ttSpecies = document.getElementById('tt-species');
+          const ttCount = document.getElementById('tt-count');
+          const vlines = graphCont.querySelectorAll('.species-vline');
 
-                d.daily_reports.forEach((r, i) => {
-                    const pct = Math.round((r.count / maxCount) * 100);
-                    const fill = document.querySelector(`.bar-fill-${i}`);
-                    const dayEl = document.querySelector(`.bar-day-${i}`);
-                    if (fill) setTimeout(() => { fill.style.height = pct + '%'; }, 50);
-                    if (dayEl) dayEl.textContent = r.day;
-                });
+          graphCont.querySelectorAll('.species-dot').forEach((dot, i) => {
+            dot.addEventListener('mouseenter', (e) => {
+              ttSpecies.textContent = dot.dataset.species;
+              ttCount.textContent = dot.dataset.count + ' report' + (dot.dataset.count == 1 ? '' : 's');
+              ttEl.style.display = 'block';
+              dot.setAttribute('r', '7');
+              if (vlines[i]) vlines[i].style.opacity = '1';
+            });
+            dot.addEventListener('mousemove', (e) => {
+              const rect = graphCont.getBoundingClientRect();
+              ttEl.style.left = (e.clientX - rect.left + 12) + 'px';
+              ttEl.style.top = (e.clientY - rect.top - 30) + 'px';
+            });
+            dot.addEventListener('mouseleave', () => {
+              ttEl.style.display = 'none';
+              dot.setAttribute('r', '5');
+              if (vlines[i]) vlines[i].style.opacity = '0';
+            });
+          });
 
-                // ── Species bars ────────────────────────────────────────────────
-                const speciesCont = document.getElementById('species-bars');
-                if (d.top_species.length === 0) {
-                    speciesCont.innerHTML = `<p style="color:var(--color-slate-500);font-size:0.85rem">No invasive species identified yet.</p>`;
-                } else {
-                    speciesCont.innerHTML = d.top_species.map(s => `
-            <div>
-              <div style="display:flex;justify-content:space-between;font-size:0.72rem;font-weight:var(--fw-bold);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-2)">
-                <span style="color:#e2e8f0;font-style:italic">${s.species}</span>
-                <span style="color:#2edd82">${s.count} report${s.count === 1 ? '' : 's'}</span>
-              </div>
-              <div style="height:4px;width:100%;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden">
-                <div style="height:100%;width:0%;background:linear-gradient(90deg,#1aab63,#2edd82);border-radius:999px;transition:width 1.2s cubic-bezier(0.4,0,0.2,1)" data-target="${s.pct}"></div>
-              </div>
-            </div>`).join('');
+          // Inject animation keyframes
+          if (!document.getElementById('species-line-style')) {
+            const ls = document.createElement('style');
+            ls.id = 'species-line-style';
+            ls.textContent = `
+                            @keyframes species-line-draw { to { stroke-dashoffset: 0; } }
+                            @keyframes species-dot-in { to { opacity: 1; } }
+                            @keyframes species-area-in { to { opacity: 1; } }
+                        `;
+            document.head.appendChild(ls);
+          }
+        }
 
-                    // Animate bars after paint
-                    requestAnimationFrame(() => {
-                        speciesCont.querySelectorAll('[data-target]').forEach(el => {
-                            setTimeout(() => { el.style.width = el.dataset.target + '%'; }, 100);
-                        });
-                    });
-                }
-
-                // ── Clusters table ──────────────────────────────────────────────
-                const tbody = document.getElementById('clusters-tbody');
-                if (!d.clusters || d.clusters.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" style="padding:var(--space-8);text-align:center;color:var(--color-slate-500);font-size:0.8rem">No active outbreak clusters detected</td></tr>`;
-                } else {
-                    const levelColor = { critical: '#ef4444', elevated: '#f59e0b', monitoring: '#2edd82' };
-                    tbody.innerHTML = d.clusters.map(c => {
-                        const col = levelColor[c.level] || '#2edd82';
-                        return `
+        // ── Clusters table ──────────────────────────────────────────────
+        const tbody = document.getElementById('clusters-tbody');
+        if (!d.clusters || d.clusters.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" style="padding:var(--space-8);text-align:center;color:var(--color-slate-500);font-size:0.8rem">No active outbreak clusters detected</td></tr>`;
+        } else {
+          const levelColor = { critical: '#ef4444', elevated: '#f59e0b', monitoring: '#2edd82' };
+          tbody.innerHTML = d.clusters.map(c => {
+            const col = levelColor[c.level] || '#2edd82';
+            return `
               <tr style="border-top:1px solid rgba(255,255,255,0.04);transition:background 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
                 <td style="padding:var(--space-4) var(--space-6)">
                   <div style="font-weight:var(--fw-bold);color:#fff;font-style:italic">${c.species}</div>
@@ -329,14 +466,14 @@ export function renderStatistics() {
                   </span>
                 </td>
               </tr>`;
-                    }).join('');
-                }
+          }).join('');
+        }
 
-            } catch (err) {
-                console.error('[TerraShield] Statistics load error:', err);
-                document.getElementById('stats-skeleton').style.display = 'none';
-                document.getElementById('stats-empty').style.display = 'block';
-            }
-        },
-    };
+      } catch (err) {
+        console.error('[TerraShield] Statistics load error:', err);
+        document.getElementById('stats-skeleton').style.display = 'none';
+        document.getElementById('stats-empty').style.display = 'block';
+      }
+    },
+  };
 }

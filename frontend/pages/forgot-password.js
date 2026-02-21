@@ -92,7 +92,7 @@ export function renderForgotPassword() {
 
       <!-- Footer -->
       <div class="hero-animate-delay-2" style="margin-top:var(--space-6);text-align:center">
-        <p style="font-size:0.65rem;color:var(--color-slate-400);text-transform:uppercase;letter-spacing:0.1em">&copy; 2024 TerraShield · Privacy · Terms</p>
+        <p style="font-size:0.65rem;color:var(--color-slate-400);text-transform:uppercase;letter-spacing:0.1em">&copy; 2026 TerraShield · Privacy · Terms</p>
       </div>
     </div>
   </div>`,

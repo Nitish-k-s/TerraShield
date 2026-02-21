@@ -44,7 +44,7 @@ export function renderFooter() {
         </div>
       </div>
       <div class="footer-bottom">
-        <p>&copy; 2024 TerraShield – Real-Time Ecological Intelligence for Early Invasive Species Detection.</p>
+        <p>&copy; 2026 TerraShield – Real-Time Ecological Intelligence for Early Invasive Species Detection.</p>
         <div class="footer-bottom-links">
           <a href="#">Privacy Policy</a>
           <a href="#">Terms of Service</a>

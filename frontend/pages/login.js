@@ -11,6 +11,8 @@ export function renderLogin() {
 
     <!-- Mountains & scenery -->
     <div id="login-scenery" style="position:absolute;inset:0;pointer-events:none;z-index:0">
+      <!-- Subtle grid pattern overlay -->
+      <div style="position:absolute;inset:0;background-image:radial-gradient(rgba(74,222,128,0.03) 1px,transparent 1px);background-size:24px 24px;pointer-events:none;z-index:0"></div>
       <!-- Moon glow -->
       <div style="position:absolute;top:2.5rem;right:15%;z-index:1">
         <svg width="100" height="100" viewBox="0 0 140 140">
@@ -82,6 +84,11 @@ export function renderLogin() {
         <circle cx="78" cy="27" r="9" fill="#e8a040" opacity="0.6"/><circle cx="78" cy="27" r="4.5" fill="#f0d080" opacity="0.8"/>
       </svg>
 
+      <!-- Fireflies -->
+      <div style="position:absolute;top:15%;left:35%;width:4px;height:4px;background:#4ade80;border-radius:50%;filter:blur(2px);animation:firefly-float 6s ease-in-out infinite;opacity:0.5"></div>
+      <div style="position:absolute;top:22%;right:28%;width:3px;height:3px;background:#4ade80;border-radius:50%;filter:blur(2px);animation:firefly-float 8s ease-in-out 2s infinite;opacity:0.4"></div>
+      <div style="position:absolute;top:10%;left:55%;width:3px;height:3px;background:#22c55e;border-radius:50%;filter:blur(1px);animation:firefly-float 7s ease-in-out 4s infinite;opacity:0.3"></div>
+
       <!-- Reactive orbs container -->
       <div id="login-orbs" style="position:absolute;inset:0;pointer-events:none;z-index:4"></div>
     </div>
@@ -92,19 +99,21 @@ export function renderLogin() {
       <!-- Logo -->
       <a href="#/" class="hero-animate" style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-8);text-decoration:none">
         <svg class="ts-logo" width="36" height="36" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <defs><linearGradient id="shield-grad-login" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1dacc9"/><stop offset="100%" stop-color="#2d5a4c"/></linearGradient></defs>
+          <defs><linearGradient id="shield-grad-login" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4ade80"/><stop offset="100%" stop-color="#22c55e"/></linearGradient></defs>
           <path d="M50 8 L88 28 L88 52 C88 74 72 90 50 96 C28 90 12 74 12 52 L12 28 Z" fill="url(#shield-grad-login)" opacity="0.9">
             <animate attributeName="opacity" values="0.85;1;0.85" dur="3s" repeatCount="indefinite"/>
           </path>
           <path d="M50 30 C50 30 36 44 36 56 C36 64 42 70 50 70 C58 70 64 64 64 56 C64 44 50 30 50 30Z" fill="#fff" opacity="0.9"/>
         </svg>
-        <span style="font-size:1.375rem;font-weight:var(--fw-bold);color:var(--color-slate-800);letter-spacing:-0.02em">TerraShield</span>
+        <span style="font-size:1.375rem;font-weight:var(--fw-bold);color:#f0f8f0;letter-spacing:-0.02em">TerraShield</span>
       </a>
 
       <!-- Card with 3D tilt -->
-      <div id="login-card" class="hero-animate-delay" style="width:100%;max-width:24rem;background:rgba(15,35,20,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:var(--radius-xl);box-shadow:0 8px 40px rgba(0,0,0,0.5),0 0 80px rgba(74,222,128,0.04);border:1px solid rgba(74,222,128,0.15);padding:var(--space-10)">
+      <div id="login-card" class="hero-animate-delay" style="width:100%;max-width:24rem;background:rgba(15,35,20,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:var(--radius-xl);box-shadow:0 8px 40px rgba(0,0,0,0.5),0 0 80px rgba(74,222,128,0.04);border:1px solid rgba(74,222,128,0.15);padding:var(--space-10);position:relative;overflow:hidden">
+        <!-- Shimmer line -->
+        <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(74,222,128,0.3),transparent);animation:login-shimmer 3s ease-in-out infinite"></div>
         <div style="text-align:center;margin-bottom:var(--space-8)">
-          <h2 class="font-serif" style="font-size:1.5rem;font-weight:var(--fw-bold);color:var(--color-slate-800)">Welcome Back</h2>
+          <h2 class="font-serif" style="font-size:1.5rem;font-weight:var(--fw-bold);color:#f0f8f0">Welcome Back</h2>
           <p style="color:var(--color-slate-500);margin-top:var(--space-2);font-size:0.8125rem">Sign in to the TerraShield detection network.</p>
         </div>
 
@@ -149,9 +158,23 @@ export function renderLogin() {
 
       <!-- Footer -->
       <div class="hero-animate-delay-2" style="margin-top:var(--space-8);text-align:center">
-        <p style="font-size:0.65rem;color:var(--color-slate-400);text-transform:uppercase;letter-spacing:0.1em">&copy; 2025 TerraShield · Privacy · Terms</p>
+        <p style="font-size:0.65rem;color:var(--color-slate-500);text-transform:uppercase;letter-spacing:0.1em">&copy; 2026 TerraShield · Privacy · Terms</p>
       </div>
     </div>
+
+    <style>
+      @keyframes firefly-float {
+        0%, 100% { transform: translate(0,0); opacity: 0.2; }
+        25% { transform: translate(15px,-20px); opacity: 0.6; }
+        50% { transform: translate(-10px,-30px); opacity: 0.3; }
+        75% { transform: translate(20px,-10px); opacity: 0.5; }
+      }
+      @keyframes login-shimmer {
+        0% { transform: translateX(-100%); opacity: 0; }
+        50% { opacity: 1; }
+        100% { transform: translateX(100%); opacity: 0; }
+      }
+    </style>
   </div>`,
 
     async init() {
