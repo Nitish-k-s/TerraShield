@@ -12,12 +12,14 @@ import { renderLogin } from '../pages/login.js';
 import { renderSignup } from '../pages/signup.js';
 import { renderForgotPassword } from '../pages/forgot-password.js';
 import { renderProfile } from '../pages/profile.js';
+import { renderStatistics } from '../pages/statistics.js';
 
 const routes = {
     '/': renderHome,
     '/about': renderAbout,
     '/alerts': renderAlerts,
     '/report': renderReport,
+    '/statistics': renderStatistics,
     '/login': renderLogin,
     '/signup': renderSignup,
     '/forgot-password': renderForgotPassword,

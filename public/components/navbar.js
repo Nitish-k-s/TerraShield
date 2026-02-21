@@ -29,6 +29,7 @@ export function renderNavbar(activePage = '') {
         <a href="#/about" class="${activePage === 'about' ? 'active' : ''}">Platform</a>
         <a href="#/alerts" class="${activePage === 'alerts' ? 'active' : ''}">Alerts</a>
         <a href="#/report" class="${activePage === 'report' ? 'active' : ''}">Report</a>
+        <a href="#/statistics" class="${activePage === 'statistics' ? 'active' : ''}">Statistics</a>
       </nav>
       <div class="navbar-actions">
         <!-- Auth slot — populated dynamically by initNavbarAuth() -->
@@ -45,6 +46,7 @@ export function renderNavbar(activePage = '') {
       <a href="#/about" onclick="document.getElementById('mobile-nav').classList.remove('open'); document.getElementById('hamburger-btn').classList.remove('open');">Platform</a>
       <a href="#/alerts" onclick="document.getElementById('mobile-nav').classList.remove('open'); document.getElementById('hamburger-btn').classList.remove('open');">Alerts</a>
       <a href="#/report" onclick="document.getElementById('mobile-nav').classList.remove('open'); document.getElementById('hamburger-btn').classList.remove('open');">Report</a>
+      <a href="#/statistics" onclick="document.getElementById('mobile-nav').classList.remove('open'); document.getElementById('hamburger-btn').classList.remove('open');">Statistics</a>
       <div id="mobile-auth-slot"></div>
     </nav>
   </header>`;
