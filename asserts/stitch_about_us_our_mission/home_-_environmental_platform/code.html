@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EcoPlatform | Restoring the Pulse of Our Planet</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&amp;family=Lora:ital,wght@0,400;0,700;1,400&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1dacc9",
+                        "background-light": "#fdfbf7",
+                        "background-dark": "#111e21",
+                        "paper-cream": "#fdfbf7",
+                        "paper-sage": "#d1d9cf",
+                        "paper-forest": "#4a5d4e",
+                        "paper-clay": "#c2a38e",
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans", "sans-serif"],
+                        "serif": ["Lora", "serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>.paper-texture {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuB2GQvKU-njiZ5j7Zp0GN8ELu1zExfyXogES3zkHLOHavrr9xriO4cU0hKYoZmd8LKwuV_DbPH3R0WssJ71jpA5XzBH5JgL4tfMlJJk6sZI_H8LgHBoevkZxJi9ksRTFfV-vR-RHINVinm03zrFM9EJh7F08vRSKz9tp8ufE1G0Jz87lsVl4MhQjjS2p63kodC5-K4v2gp_C5_qvhr-oqgll9UD65ogdbY_6I9wMhoSG53zCTxxOFMBTCPyQI63Nrs50DSpMlcv6jO-)
+    }
+.paper-shadow {
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)
+    }
+.paper-layer-1 {
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.05))
+    }
+.paper-layer-2 {
+    filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.1))
+    }
+.paper-layer-3 {
+    filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.15))
+    }
+/* Custom organic shape for paper-cut look */
+.organic-blob {
+    border-radius: 60% 40% 30% 70%/60% 30% 70% 40%
+    }</style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 selection:bg-primary/30">
+<div class="relative min-h-screen flex flex-col paper-texture">
+<!-- Navigation Bar -->
+<header class="fixed top-0 w-full z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10">
+<div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-10 bg-primary rounded-lg flex items-center justify-center text-white paper-shadow">
+<span class="material-symbols-outlined">eco</span>
+</div>
+<h2 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">EcoPlatform</h2>
+</div>
+<nav class="hidden lg:flex items-center gap-10">
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Home</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">About</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">SDGs</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Projects</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">News</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Contact</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="bg-primary text-white px-6 py-2.5 rounded-lg font-bold text-sm paper-shadow hover:brightness-105 transition-all">
+                        Login
+                    </button>
+</div>
+</div>
+</header>
+<!-- Hero Section: Paper-cut Illustration -->
+<section class="relative h-screen min-h-[700px] w-full overflow-hidden flex flex-col justify-center items-center pt-20">
+<!-- Layered Background Illustration -->
+<div class="absolute inset-0 z-0 pointer-events-none">
+<!-- Sky Layer -->
+<div class="absolute inset-0 bg-[#e0f2f1] dark:bg-slate-900"></div>
+<!-- Sun Layer -->
+<div class="absolute top-32 right-[20%] w-32 h-32 rounded-full bg-[#ffecb3] paper-layer-1"></div>
+<!-- Far Mountain Layer -->
+<div class="absolute bottom-0 w-full h-[60%] flex items-end">
+<svg class="w-full h-full text-paper-sage dark:text-slate-800 paper-layer-1" preserveaspectratio="none" viewbox="0 0 1440 320">
+<path d="M0,192L80,181.3C160,171,320,149,480,165.3C640,181,800,235,960,245.3C1120,256,1280,224,1360,208L1440,192L1440,320L1360,320C1280,320,1120,320,960,320C800,320,640,320,480,320C320,320,160,320,80,320L0,320Z" fill="currentColor"></path>
+</svg>
+</div>
+<!-- Mid Valley Layer -->
+<div class="absolute bottom-0 w-full h-[45%] flex items-end translate-y-4">
+<svg class="w-full h-full text-paper-clay/60 dark:text-slate-700 paper-layer-2" preserveaspectratio="none" viewbox="0 0 1440 320">
+<path d="M0,224L60,213.3C120,203,240,181,360,192C480,203,600,245,720,250.7C840,256,960,224,1080,202.7C1200,181,1320,171,1380,165.3L1440,160L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z" fill="currentColor"></path>
+</svg>
+</div>
+<!-- Foreground Forest Layer -->
+<div class="absolute bottom-0 w-full h-[30%] flex items-end translate-y-8">
+<svg class="w-full h-full text-paper-forest dark:text-emerald-950 paper-layer-3" preserveaspectratio="none" viewbox="0 0 1440 320">
+<path d="M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,149.3C672,149,768,203,864,224C960,245,1056,235,1152,213.3C1248,192,1344,160,1392,144L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" fill="currentColor"></path>
+</svg>
+</div>
+</div>
+<!-- Hero Content -->
+<div class="relative z-10 text-center px-6 max-w-4xl animate-fade-in">
+<h1 class="font-serif text-5xl md:text-7xl font-bold text-slate-900 dark:text-white leading-tight mb-6">
+                    Restoring the pulse <br/>of our planet.
+                </h1>
+<p class="text-lg md:text-xl text-slate-700 dark:text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed font-light">
+                    Welcome to our environmental sustainability platform. Join us in our mission to protect and restore our natural world through collective stewardship.
+                </p>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+<button class="w-full sm:w-auto min-w-[180px] bg-primary text-white px-8 py-4 rounded-xl font-bold text-base paper-shadow hover:-translate-y-1 transition-all">
+                        View Projects
+                    </button>
+<button class="w-full sm:w-auto min-w-[180px] bg-white/40 dark:bg-white/10 backdrop-blur-md border border-white/30 text-slate-900 dark:text-white px-8 py-4 rounded-xl font-bold text-base paper-shadow hover:-translate-y-1 transition-all">
+                        Take Action
+                    </button>
+</div>
+</div>
+</section>
+<!-- Mission Statement Section -->
+<section class="py-24 bg-background-light dark:bg-background-dark relative overflow-hidden">
+<div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+<div class="inline-flex items-center justify-center size-16 bg-primary/10 rounded-full mb-8">
+<span class="material-symbols-outlined text-primary text-3xl">nature_people</span>
+</div>
+<h2 class="font-serif text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-8">Our Mission</h2>
+<p class="text-xl md:text-2xl text-slate-600 dark:text-slate-400 font-light leading-relaxed italic">
+                    "Our mission is to bridge the gap between intent and impact through transparent environmental stewardship. We believe in organic growth and sustainable solutions for a better tomorrow."
+                </p>
+<div class="mt-12 h-1 w-24 bg-primary/20 mx-auto rounded-full"></div>
+</div>
+<!-- Organic Blobs decoration -->
+<div class="absolute -top-24 -left-24 size-64 bg-paper-sage/30 dark:bg-emerald-950/20 organic-blob"></div>
+<div class="absolute -bottom-24 -right-24 size-96 bg-paper-clay/20 dark:bg-orange-950/10 organic-blob"></div>
+</section>
+<!-- Entry Points: Projects & Action -->
+<section class="py-20 px-6 max-w-7xl mx-auto w-full">
+<div class="grid md:grid-cols-2 gap-12">
+<!-- Projects Entry -->
+<div class="group bg-white dark:bg-slate-800 rounded-xl p-8 md:p-12 paper-shadow transition-transform hover:-translate-y-2 relative overflow-hidden">
+<div class="relative z-10">
+<div class="size-16 bg-primary rounded-lg flex items-center justify-center text-white mb-6">
+<span class="material-symbols-outlined text-3xl">public</span>
+</div>
+<h3 class="font-serif text-2xl font-bold mb-4">Global Projects</h3>
+<p class="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
+                            Explore our portfolio of verified reforestation, biodiversity conservation, and clean energy projects across six continents.
+                        </p>
+<a class="inline-flex items-center gap-2 font-bold text-primary group-hover:gap-4 transition-all" href="#">
+                            Explore Projects <span class="material-symbols-outlined">arrow_forward</span>
+</a>
+</div>
+<div class="absolute -bottom-10 -right-10 size-40 bg-paper-sage/20 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
+</div>
+<!-- Action Entry -->
+<div class="group bg-white dark:bg-slate-800 rounded-xl p-8 md:p-12 paper-shadow transition-transform hover:-translate-y-2 relative overflow-hidden">
+<div class="relative z-10">
+<div class="size-16 bg-primary rounded-lg flex items-center justify-center text-white mb-6">
+<span class="material-symbols-outlined text-3xl">volunteer_activism</span>
+</div>
+<h3 class="font-serif text-2xl font-bold mb-4">Take Action</h3>
+<p class="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
+                            Start your sustainability journey today. Join local volunteer groups, offset your carbon footprint, or contribute to ongoing missions.
+                        </p>
+<a class="inline-flex items-center gap-2 font-bold text-primary group-hover:gap-4 transition-all" href="#">
+                            Get Involved <span class="material-symbols-outlined">arrow_forward</span>
+</a>
+</div>
+<div class="absolute -bottom-10 -right-10 size-40 bg-paper-clay/20 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
+</div>
+</div>
+</section>
+<!-- SDG Integration -->
+<section class="py-16 border-t border-primary/10">
+<div class="max-w-7xl mx-auto px-6 text-center">
+<p class="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-8">Aligned with UN Sustainable Development Goals</p>
+<div class="flex flex-wrap justify-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+<div class="flex flex-col items-center gap-2">
+<span class="material-symbols-outlined text-4xl">water_drop</span>
+<span class="text-[10px] font-bold">Goal 6</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<span class="material-symbols-outlined text-4xl">wb_sunny</span>
+<span class="text-[10px] font-bold">Goal 7</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<span class="material-symbols-outlined text-4xl">sustainability</span>
+<span class="text-[10px] font-bold">Goal 11</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<span class="material-symbols-outlined text-4xl">thermostat</span>
+<span class="text-[10px] font-bold">Goal 13</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<span class="material-symbols-outlined text-4xl">waves</span>
+<span class="text-[10px] font-bold">Goal 14</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<span class="material-symbols-outlined text-4xl">forest</span>
+<span class="text-[10px] font-bold">Goal 15</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer: Paper-cut Mini Landscape -->
+<footer class="mt-auto relative bg-paper-forest text-white pt-24 pb-12 overflow-hidden">
+<div class="absolute top-0 left-0 w-full overflow-hidden leading-none rotate-180">
+<svg class="relative block w-full h-[60px]" data-name="Layer 1" preserveaspectratio="none" viewbox="0 0 1200 120" xmlns="http://www.w3.org/2000/svg">
+<path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V120c43.51-17.44,88-42.36,133.22-58.67C175.75,46.29,249.26,69.66,321.39,56.44Z" fill="#fdfbf7"></path>
+</svg>
+</div>
+<div class="max-w-7xl mx-auto px-6 relative z-10">
+<div class="grid md:grid-cols-4 gap-12 mb-16">
+<div class="col-span-2">
+<div class="flex items-center gap-3 mb-6">
+<div class="size-8 bg-white rounded flex items-center justify-center text-paper-forest">
+<span class="material-symbols-outlined text-xl">eco</span>
+</div>
+<h2 class="text-2xl font-bold tracking-tight">EcoPlatform</h2>
+</div>
+<p class="text-paper-sage/80 max-w-sm mb-6 font-light">
+                            Leading the charge in transparent, impact-driven environmental conservation through technology and community action.
+                        </p>
+<div class="flex gap-4">
+<a class="size-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">share</span>
+</a>
+<a class="size-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">mail</span>
+</a>
+</div>
+</div>
+<div>
+<h4 class="font-bold mb-6">Explore</h4>
+<ul class="space-y-4 text-paper-sage text-sm font-light">
+<li><a class="hover:text-white transition-colors" href="#">Our Projects</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Impact Reports</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Partnerships</a></li>
+<li><a class="hover:text-white transition-colors" href="#">SDG Targets</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold mb-6">Company</h4>
+<ul class="space-y-4 text-paper-sage text-sm font-light">
+<li><a class="hover:text-white transition-colors" href="#">About Us</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Careers</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Newsroom</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Contact</a></li>
+</ul>
+</div>
+</div>
+<div class="pt-8 border-t border-white/10 flex flex-col md:row items-center justify-between gap-4 text-xs text-paper-sage/60">
+<p>© 2024 EcoPlatform Environmental Stewardship. All rights reserved.</p>
+<div class="flex gap-6">
+<a class="hover:text-white" href="#">Privacy Policy</a>
+<a class="hover:text-white" href="#">Terms of Service</a>
+</div>
+</div>
+</div>
+<!-- Footer Graphic: Tiny paper cutouts -->
+<div class="absolute bottom-0 left-0 w-full h-24 flex items-end justify-between opacity-30 pointer-events-none">
+<div class="size-12 bg-white/20 organic-blob mb-4 ml-8"></div>
+<div class="size-24 bg-white/10 organic-blob -mb-8 mr-12"></div>
+<div class="size-16 bg-white/15 organic-blob mb-2 mr-[20%]"></div>
+</div>
+</footer>
+</div>
+</body></html>
