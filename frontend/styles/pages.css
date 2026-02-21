@@ -712,3 +712,104 @@
     border-radius: var(--radius-full);
     transition: width 1s ease;
 }
+
+/* ─── AI Analysis Result Card ─────────────────────────────────────────────── */
+.ai-result-card {
+    background: #fff;
+    border: 1px solid var(--color-slate-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-8);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+}
+
+.ai-result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-5);
+    border-bottom: 1px solid var(--color-slate-100);
+}
+
+/* Label badge */
+.ai-label-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: var(--fw-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 4px 12px;
+    border-radius: 999px;
+}
+
+.ai-label-invasive {
+    background: rgba(239,68,68,0.1);
+    color: #dc2626;
+    border: 1px solid rgba(239,68,68,0.2);
+}
+
+.ai-label-critical {
+    background: rgba(239,68,68,0.08);
+    color: #b91c1c;
+    border: 1px solid rgba(239,68,68,0.18);
+}
+
+.ai-label-elevated {
+    background: rgba(245,158,11,0.1);
+    color: #b45309;
+    border: 1px solid rgba(245,158,11,0.2);
+}
+
+.ai-label-normal {
+    background: rgba(16,185,129,0.1);
+    color: #047857;
+    border: 1px solid rgba(16,185,129,0.2);
+}
+
+.ai-label-unknown {
+    background: rgba(100,116,139,0.1);
+    color: var(--color-slate-600);
+    border: 1px solid rgba(100,116,139,0.15);
+}
+
+/* Risk score bar */
+.risk-bar-track {
+    height: 6px;
+    width: 100%;
+    background: var(--color-slate-100);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-top: var(--space-2);
+}
+
+.risk-bar-fill {
+    height: 100%;
+    border-radius: var(--radius-full);
+    transition: width 0.8s cubic-bezier(0.4,0,0.2,1), background 0.4s ease;
+}
+
+/* Tag chips */
+.ai-tag-chip {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: var(--fw-medium);
+    color: var(--color-primary);
+    background: rgba(29,172,201,0.08);
+    border: 1px solid rgba(29,172,201,0.2);
+    border-radius: 999px;
+    padding: 3px 10px;
+}
+
+/* Leaflet map container */
+#report-map {
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    z-index: 0;
+}
+
+/* Leaflet popup font override */
+.leaflet-popup-content {
+    font-family: inherit;
+    line-height: 1.6;
+}

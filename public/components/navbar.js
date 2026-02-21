@@ -74,11 +74,14 @@ function _applyAuthState(user) {
     const short = email.length > 18 ? email.slice(0, 16) + '…' : email;
 
     slot.innerHTML = `
-      <span style="font-size:0.75rem;color:var(--color-slate-500);max-width:10rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${email}">
-        <span class="material-symbols-outlined" style="font-size:0.875rem;vertical-align:middle;margin-right:2px;color:var(--color-primary)">account_circle</span>${short}
-      </span>
+      <a href="#/profile" title="View Profile" style="display:flex;align-items:center;gap:0.5rem;text-decoration:none;padding:0.25rem 0.75rem 0.25rem 0.25rem;border-radius:100px;background:var(--color-primary-10);transition:background 0.2s">
+        <div style="width:2rem;height:2rem;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:0.875rem">
+          ${email.charAt(0).toUpperCase()}
+        </div>
+        <span style="font-size:0.875rem;font-weight:var(--fw-bold);color:var(--color-slate-800);max-width:6rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${short}</span>
+      </a>
       <button id="navbar-signout" class="btn btn-sm"
-        style="border:1px solid var(--color-slate-300);color:var(--color-slate-600);background:transparent;font-size:0.75rem;">
+        style="border:1px solid var(--color-slate-300);color:var(--color-slate-600);background:transparent;font-size:0.75rem;padding:0.25rem 0.5rem">
         Sign Out
       </button>`;
 
