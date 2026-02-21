@@ -42,46 +42,101 @@ function getGemini() {
     return new GoogleGenerativeAI(key);
 }
 
-// ─── External Context Fetcher (Sentinel/Weather/Terrain) ──────────────────────
+// ─── External Context Fetcher (Sentinel Hub Statistical API) ──────────────────────
 /**
- * Uses the SENTINAL_API_KEY to fetch live ecological and satellite context
- * for a specific GPS location. Fails gracefully to ensure the AI pipeline
- * continues even if the external API is unreachable.
+ * Uses Sentinel Hub OAuth2 to fetch an access token, then posts a Statistical API 
+ * request to calculate the NDVI (Normalized Difference Vegetation Index) for a 500m 
+ * bounding box around the provided GPS coordinates over the last 30 days.
  */
 async function fetchLocationContext(lat: number, lng: number): Promise<any> {
-    const key = process.env.SENTINAL_API_KEY;
-    if (!key) {
-        console.warn("[analyse-exif] No SENTINAL_API_KEY found in environment.");
+    const sentinelClientId = process.env.SENTINEL_CLIENT_ID;
+    const sentinelSecret = process.env.SENTINEL_CLIENT_SECRET || process.env.SENTINAL_API_KEY;
+
+    if (!sentinelClientId || !sentinelSecret) {
+        console.warn("[analyse-exif] Missing Sentinel Hub credentials (SENTINEL_CLIENT_ID or SENTINEL_CLIENT_SECRET).");
         return null;
     }
 
     try {
-        // Example integration point for Sentinel/Location API
-        // This is a placeholder mock for the specific Sentinel endpoint since Sentinel Hub
-        // requires complex OAuth flows. We simulate the ecological payload Gemini would receive.
-        // In reality, this would be an axios.get() to the appropriate endpoint using the key.
+        console.log(`[analyse-exif] Authenticating with Sentinel Hub OAuth...`);
+        const tokenParams = new URLSearchParams();
+        tokenParams.append("grant_type", "client_credentials");
+        tokenParams.append("client_id", sentinelClientId);
+        tokenParams.append("client_secret", sentinelSecret);
 
-        // await axios.get(`https://api.sentinel-hub.com/api/v1/statistics...`, { headers: { Authorization: `Bearer ${key}` } })
+        const tokenRes = await axios.post(
+            "https://services.sentinel-hub.com/oauth/token",
+            tokenParams.toString(),
+            { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+        );
+        const accessToken = tokenRes.data.access_token;
 
-        console.log(`[analyse-exif] Fetching Sentinel context for GPS: ${lat}, ${lng}...`);
+        console.log(`[analyse-exif] Fetching Statistical NDVI data for GPS: ${lat}, ${lng}...`);
 
-        // Simulating a fast 300ms network request
-        await new Promise(r => setTimeout(r, 300));
+        // 500m x 500m bounding box (~0.005 degrees) around the exact sighting
+        const bbox = [lng - 0.005, lat - 0.005, lng + 0.005, lat + 0.005];
+
+        const now = new Date();
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+        const statPayload = {
+            input: {
+                bounds: { bbox },
+                data: [{ type: "sentinel-2-l2a", dataFilter: { mosaickingOrder: "leastCC" } }]
+            },
+            aggregation: {
+                timeRange: { from: thirtyDaysAgo.toISOString(), to: now.toISOString() },
+                aggregationInterval: { of: "P30D" },
+                evalscript: `
+                    //VERSION=3
+                    function setup() {
+                        return {
+                            input: [{ bands: ["B04", "B08", "dataMask"] }],
+                            output: [
+                                { id: "ndvi", bands: 1, sampleType: "FLOAT32" },
+                                { id: "dataMask", bands: 1 }
+                            ]
+                        };
+                    }
+                    function evaluatePixel(samples) {
+                        let ndvi = (samples.B08 - samples.B04) / (samples.B08 + samples.B04);
+                        return { data: [ndvi], dataMask: [samples.dataMask] };
+                    }
+                `,
+                resx: 10,
+                resy: 10
+            }
+        };
+
+        const statRes = await axios.post(
+            "https://services.sentinel-hub.com/api/v1/statistics",
+            statPayload,
+            { headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" } }
+        );
+
+        // Parse mean NDVI from the Sentinel Hub response
+        // Sentinel Hub Statistical API returns historical intervals; we look at the most recent successful one
+        const intervals = statRes.data?.data;
+        if (!intervals || intervals.length === 0) throw new Error("No data returned from Sentinel Hub.");
+
+        const latestStats = intervals[intervals.length - 1]?.outputs?.ndvi?.bands?.B0?.stats;
+        const meanNdvi = latestStats?.mean ?? null;
 
         return {
-            source: "Sentinel Satellite Data (Simulated)",
+            source: "Sentinel Hub Statistical API (Sentinel-2 L2A)",
             coordinate: [lat, lng],
-            recent_precipitation_mm: 12.4,
-            avg_temperature_c: 24.5,
-            vegetation_index_ndvi: 0.68,
-            land_cover: "Mixed forest / riparian zone",
-            known_ecological_alerts: [
-                "High risk of invasive aquatic plants downstream",
-                "Recent urbanization 2km north"
-            ]
+            vegetation_index_ndvi_30d_avg: meanNdvi ? Number(meanNdvi.toFixed(3)) : "Data cloudy/unavailable",
+            ecological_note: meanNdvi && meanNdvi > 0.6
+                ? "High vegetative density currently detected via satellite; high capacity for invasive plant spread or fuel loading."
+                : "Low vegetative density or barren season detected."
         };
+
     } catch (err: unknown) {
-        console.warn("[analyse-exif] Failed to fetch external location context:", err);
+        if (axios.isAxiosError(err)) {
+            console.warn("[analyse-exif] Sentinel Hub API Error:", err.response?.data || err.message);
+        } else {
+            console.warn("[analyse-exif] Failed to fetch external location context:", err);
+        }
         return null;
     }
 }
