@@ -1,9 +1,10 @@
 // About – TerraShield Platform & Technology
-import { renderNavbar } from '../components/navbar.js';
+import { renderNavbar, initNavbarAuth } from '../components/navbar.js';
 import { renderFooter } from '../components/footer.js';
 
 export function renderAbout() {
-  return `
+  return {
+    html: `
   ${renderNavbar('about')}
   <main style="padding-top:var(--nav-height)">
 
@@ -112,5 +113,9 @@ export function renderAbout() {
     </section>
 
   </main>
-  ${renderFooter()}`;
+  ${renderFooter()}`,
+    init() {
+      initNavbarAuth();
+    }
+  };
 }
