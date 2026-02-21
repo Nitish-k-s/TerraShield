@@ -205,8 +205,8 @@ interface AnalysisMetadata {
 
 async function analyseWithGemini(record: ExifRecord): Promise<AnalysisMetadata> {
     const genAI = getGemini();
-    // Use the explicit latest tag to avoid 404 errors on some v1beta API endpoints
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+    // The user's API key provisions Gemini 2.5 and 2.0 models, so we use gemini-2.5-flash
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     // Fetch external geographical context if GPS coordinates exist
     let externalContext = null;
