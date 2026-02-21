@@ -173,10 +173,8 @@ export async function POST(req: NextRequest): Promise<NextResponse<ExifResponse>
                 ? buildMapsUrl(gps.latitude, gps.longitude)
                 : null;
 
-        // 7. Clean up the temp file created by formidable
-        fs.unlinkSync(file.filepath);
-
-        // 8. Persist to local SQLite database
+        // 7. Persist to local SQLite database (includes raw image buffer as BLOB)
+        //    We delete the temp file AFTER the insert so the buffer is safely saved.
         const recordId = insertExifRecord({
             user_id: user.id,
             filename: file.originalFilename ?? "unknown",
@@ -210,7 +208,14 @@ export async function POST(req: NextRequest): Promise<NextResponse<ExifResponse>
 
             // Full raw dump
             all_tags_json: JSON.stringify(allTags),
+
+            // Raw image bytes — stored as BLOB so Gemini Vision can analyse
+            // the actual pixels when /api/analyse-exif is called later.
+            image_data: buffer,
         });
+
+        // 8. Now safe to delete the temp file formidable wrote to disk
+        fs.unlinkSync(file.filepath);
 
         // 9. Return the structured response (include recordId for reference)
         return NextResponse.json(
