@@ -50,8 +50,12 @@ export function renderAbout() {
     </section>
 
     <!-- Technology Stack -->
-    <section class="section" style="background:#fff;padding:var(--space-20) 0;border-top:1px solid var(--color-slate-200)">
-      <div class="container">
+    <section class="section" style="background:linear-gradient(180deg, var(--color-bg-light) 0%, var(--color-bg-dark) 50%, var(--color-bg-light) 100%);padding:var(--space-20) 0;position:relative;overflow:hidden">
+      <!-- Decorative ambient glow -->
+      <div style="position:absolute;top:-120px;left:15%;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(74,222,128,0.06) 0%,transparent 70%);pointer-events:none;filter:blur(60px);animation:footer-orb-float 14s ease-in-out infinite"></div>
+      <div style="position:absolute;bottom:-100px;right:10%;width:350px;height:350px;border-radius:50%;background:radial-gradient(circle,rgba(34,197,94,0.05) 0%,transparent 70%);pointer-events:none;filter:blur(60px);animation:footer-orb-float 18s ease-in-out 2s infinite reverse"></div>
+
+      <div class="container" style="position:relative;z-index:2">
         <div class="section-header reveal" style="margin-bottom:var(--space-16)">
           <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:var(--color-primary);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:var(--space-3);display:inline-block">Technology</span>
           <h2 class="section-title">Detection Architecture</h2>
@@ -59,25 +63,25 @@ export function renderAbout() {
         </div>
 
         <div class="three-col-grid">
-          <div class="card hover-lift reveal" data-delay="0" style="padding:var(--space-8) var(--space-6)">
-            <div style="width:3rem;height:3rem;border-radius:var(--radius-lg);background:rgba(29,172,201,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-4)">
-              <span class="material-symbols-outlined" style="color:var(--color-primary)">smart_toy</span>
+          <div class="card hover-lift reveal" data-delay="0" style="padding:var(--space-8) var(--space-6);background:rgba(15,35,20,0.7);border:1px solid rgba(74,222,128,0.12);backdrop-filter:blur(12px)">
+            <div style="width:3.25rem;height:3.25rem;border-radius:var(--radius-lg);background:rgba(74,222,128,0.12);display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-4);box-shadow:0 0 20px rgba(74,222,128,0.08)">
+              <span class="material-symbols-outlined" style="color:var(--color-primary);font-size:1.375rem">smart_toy</span>
             </div>
-            <h3 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2)">Computer Vision AI</h3>
+            <h3 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2);color:var(--color-slate-900)">Computer Vision AI</h3>
             <p style="color:var(--color-slate-600);font-size:0.875rem;line-height:1.7">Deep learning models trained on 2M+ specimen images for species identification with confidence scoring and regional invasive status mapping.</p>
           </div>
-          <div class="card hover-lift reveal" data-delay="100" style="padding:var(--space-8) var(--space-6)">
-            <div style="width:3rem;height:3rem;border-radius:var(--radius-lg);background:rgba(29,172,201,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-4)">
-              <span class="material-symbols-outlined" style="color:var(--color-primary)">satellite_alt</span>
+          <div class="card hover-lift reveal" data-delay="100" style="padding:var(--space-8) var(--space-6);background:rgba(15,35,20,0.7);border:1px solid rgba(74,222,128,0.12);backdrop-filter:blur(12px)">
+            <div style="width:3.25rem;height:3.25rem;border-radius:var(--radius-lg);background:rgba(74,222,128,0.12);display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-4);box-shadow:0 0 20px rgba(74,222,128,0.08)">
+              <span class="material-symbols-outlined" style="color:var(--color-primary);font-size:1.375rem">satellite_alt</span>
             </div>
-            <h3 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2)">Satellite Remote Sensing</h3>
+            <h3 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2);color:var(--color-slate-900)">Satellite Remote Sensing</h3>
             <p style="color:var(--color-slate-600);font-size:0.875rem;line-height:1.7">Multi-spectral vegetation index analysis (NDVI, EVI) detects abnormal growth patterns and land-cover changes at 10m resolution.</p>
           </div>
-          <div class="card hover-lift reveal" data-delay="200" style="padding:var(--space-8) var(--space-6)">
-            <div style="width:3rem;height:3rem;border-radius:var(--radius-lg);background:rgba(29,172,201,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-4)">
-              <span class="material-symbols-outlined" style="color:var(--color-primary)">query_stats</span>
+          <div class="card hover-lift reveal" data-delay="200" style="padding:var(--space-8) var(--space-6);background:rgba(15,35,20,0.7);border:1px solid rgba(74,222,128,0.12);backdrop-filter:blur(12px)">
+            <div style="width:3.25rem;height:3.25rem;border-radius:var(--radius-lg);background:rgba(74,222,128,0.12);display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-4);box-shadow:0 0 20px rgba(74,222,128,0.08)">
+              <span class="material-symbols-outlined" style="color:var(--color-primary);font-size:1.375rem">query_stats</span>
             </div>
-            <h3 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2)">Risk Correlation Engine</h3>
+            <h3 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2);color:var(--color-slate-900)">Risk Correlation Engine</h3>
             <p style="color:var(--color-slate-600);font-size:0.875rem;line-height:1.7">Spatial clustering algorithms correlate citizen report density with satellite anomalies to produce outbreak probability scores.</p>
           </div>
         </div>
