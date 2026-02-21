@@ -99,8 +99,8 @@ async function fetchLocationContext(lat: number, lng: number): Promise<any> {
                         };
                     }
                     function evaluatePixel(samples) {
-                        let ndvi = (samples.B08 - samples.B04) / (samples.B08 + samples.B04);
-                        return { data: [ndvi], dataMask: [samples.dataMask] };
+                        let val = samples.dataMask === 1 ? (samples.B08 - samples.B04) / (samples.B08 + samples.B04) : 0;
+                        return { ndvi: [val], dataMask: [samples.dataMask] };
                     }
                 `,
                 resx: 10,
