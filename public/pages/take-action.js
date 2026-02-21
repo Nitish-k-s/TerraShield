@@ -157,7 +157,7 @@ export function renderReport() {
                   </div>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Category</label>
+                  <label class="form-label">Category *</label>
                   <select class="form-input" required>
                     <option value="">Select category...</option>
                     <option>Plant – Terrestrial</option>
@@ -185,7 +185,7 @@ export function renderReport() {
                 <div class="form-group">
                   <label class="form-label">Date Observed</label>
                   <input
-                    class="form-input"
+                    class="form-input date-input-white-icon"
                     id="report-date"
                     type="date"
                     style="cursor:pointer;padding-right:0.75rem"
@@ -244,7 +244,7 @@ export function renderReport() {
             <div class="ai-result-header">
               <div style="display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap">
                 <span class="material-symbols-outlined" style="color:var(--color-primary);font-size:1.5rem">psychology</span>
-                <h2 style="font-size:1.125rem;font-weight:var(--fw-bold);color:var(--color-slate-900);margin:0">AI Species Analysis</h2>
+                <h2 style="font-size:1.125rem;font-weight:var(--fw-bold);color:#e2f5e8;margin:0">AI Species Analysis</h2>
                 <span id="ai-used-vision-badge" style="display:none;font-size:0.6875rem;font-weight:var(--fw-bold);padding:2px 8px;border-radius:999px;background:rgba(74,222,128,0.12);color:var(--color-primary);text-transform:uppercase;letter-spacing:0.08em">Vision ✓</span>
               </div>
               <span id="ai-label-badge" class="ai-label-badge"></span>
@@ -253,7 +253,7 @@ export function renderReport() {
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);margin-bottom:var(--space-6)">
               <div>
                 <p style="font-size:0.75rem;font-weight:var(--fw-bold);text-transform:uppercase;letter-spacing:0.08em;color:var(--color-slate-500);margin-bottom:var(--space-2)">AI Confidence</p>
-                <p id="ai-confidence-val" style="font-size:1.5rem;font-weight:var(--fw-bold);color:var(--color-slate-900)"></p>
+                <p id="ai-confidence-val" style="font-size:1.5rem;font-weight:var(--fw-bold);color:#e2f5e8"></p>
               </div>
               <div>
                 <p style="font-size:0.75rem;font-weight:var(--fw-bold);text-transform:uppercase;letter-spacing:0.08em;color:var(--color-slate-500);margin-bottom:var(--space-2)">Ecological Risk Score</p>
@@ -267,9 +267,9 @@ export function renderReport() {
               <div id="ai-tags-list" style="display:flex;flex-wrap:wrap;gap:var(--space-2)"></div>
             </div>
 
-            <div style="background:rgba(74,222,128,0.04);border-left:3px solid var(--color-primary);border-radius:0 var(--radius) var(--radius) 0;padding:var(--space-4) var(--space-5)">
+            <div style="background:rgba(74,222,128,0.06);border-left:3px solid var(--color-primary);border-radius:0 var(--radius) var(--radius) 0;padding:var(--space-4) var(--space-5)">
               <p style="font-size:0.75rem;font-weight:var(--fw-bold);text-transform:uppercase;letter-spacing:0.08em;color:var(--color-primary);margin-bottom:var(--space-2)">Ecological Assessment</p>
-              <p id="ai-summary-text" style="color:var(--color-slate-700);font-size:0.9375rem;line-height:1.7;margin:0"></p>
+              <p id="ai-summary-text" style="color:#a8d5b0;font-size:0.9375rem;line-height:1.7;margin:0"></p>
             </div>
           </div>
 
@@ -278,7 +278,7 @@ export function renderReport() {
               <div style="padding:var(--space-5) var(--space-6);border-bottom:1px solid rgba(74,222,128,0.08);display:flex;align-items:center;gap:var(--space-3)">
                 <span class="material-symbols-outlined" style="color:var(--color-primary)">location_on</span>
                 <div>
-                  <h3 style="font-size:1rem;font-weight:var(--fw-bold);color:var(--color-slate-900);margin:0">Sighting Location</h3>
+                  <h3 style="font-size:1rem;font-weight:var(--fw-bold);color:#e2f5e8;margin:0">Sighting Location</h3>
                   <p id="map-coords-label" style="font-size:0.8125rem;color:var(--color-slate-500);margin:0"></p>
                 </div>
                 <a id="maps-open-link" href="#" target="_blank" rel="noopener" style="margin-left:auto;font-size:0.8125rem;font-weight:var(--fw-bold);color:var(--color-primary);text-decoration:none;display:flex;align-items:center;gap:4px">
