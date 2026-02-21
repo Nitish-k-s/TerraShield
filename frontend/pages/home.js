@@ -14,6 +14,23 @@ export function renderHome() {
       <div class="hero-bg">
         <div class="hero-sky" style="background:linear-gradient(180deg,#020804 0%,#060e08 30%,#0a1a0f 70%,#0d2818 100%)"></div>
 
+        <!-- Rain overlay container (JS-spawned drops) -->
+        <div id="hero-rain" style="position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden"></div>
+
+        <!-- Creeping invasive vine from bottom-left -->
+        <svg class="vine-corner" style="bottom:0;left:0;z-index:4;opacity:0.22;pointer-events:none" width="280" height="200" viewBox="0 0 280 200">
+          <path d="M0,200 Q40,160 80,140 Q120,120 160,100 Q200,80 240,60 Q260,50 280,40" fill="none" stroke="#2d6e3a" stroke-width="3" stroke-dasharray="1000" stroke-dashoffset="1000" style="animation:vine-grow 12s ease-out 1s forwards"/>
+          <circle cx="80" cy="140" r="6" fill="#3a8a4a" opacity="0.7"/>
+          <circle cx="160" cy="100" r="5" fill="#4a9a5a" opacity="0.6"/>
+          <circle cx="240" cy="60" r="4" fill="#3a8a4a" opacity="0.5"/>
+          <!-- Micro leaves along the vine -->
+          <ellipse cx="85" cy="134" rx="8" ry="4" fill="#2a6e3a" opacity="0.6" transform="rotate(-25 85 134)"/>
+          <ellipse cx="165" cy="94" rx="7" ry="3.5" fill="#3a7e4a" opacity="0.5" transform="rotate(-40 165 94)"/>
+        </svg>
+
+        <!-- Ground mist at hero base -->
+        <div class="mist-layer" style="height:80px;animation-duration:22s;"></div>
+
         <!-- Moon / forest night glow -->
         <div class="hero-sun" id="layer-sun" data-speed="0.03" style="z-index:1">
           <svg width="100%" height="100%" viewBox="0 0 140 140">
@@ -70,105 +87,7 @@ export function renderHome() {
         </div>
       </div>
 
-      <!-- ── INVASIVE SPECIES PLANT LAYER ── -->
-
-      <!-- Japanese Knotweed (left side) – tall bamboo-like stalks with heart-shaped leaves -->
-      <div style="position:absolute;bottom:0;left:2%;z-index:6;pointer-events:none" aria-hidden="true">
-        <svg width="130" height="320" viewBox="0 0 130 320" style="animation:stalk-sway 6s ease-in-out infinite;transform-origin:bottom center">
-          <!-- Main stalk -->
-          <line x1="65" y1="320" x2="68" y2="60" stroke="#2a6a32" stroke-width="5" stroke-linecap="round"/>
-          <!-- Node joints (knotweed characteristic) -->
-          <ellipse cx="67" cy="260" rx="7" ry="4" fill="#3a8a3a" opacity="0.8"/>
-          <ellipse cx="66" cy="200" rx="7" ry="4" fill="#3a8a3a" opacity="0.8"/>
-          <ellipse cx="67" cy="145" rx="7" ry="4" fill="#3a8a3a" opacity="0.8"/>
-          <ellipse cx="66" cy="95"  rx="6" ry="3" fill="#3a8a3a" opacity="0.8"/>
-          <!-- Leaves from nodes (heart-shaped) -->
-          <path d="M67,260 Q40,235 30,215 Q50,220 67,260" fill="#2e7d32" opacity="0.75" style="animation:leaf-flutter 4.5s ease-in-out infinite"/>
-          <path d="M67,200 Q90,175 100,158 Q80,166 67,200" fill="#388e3c" opacity="0.7" style="animation:leaf-flutter 5s ease-in-out 0.8s infinite"/>
-          <path d="M66,145 Q35,118 28,100 Q52,112 66,145" fill="#2e7d32" opacity="0.75" style="animation:leaf-flutter 4s ease-in-out 1.5s infinite"/>
-          <path d="M67,95 Q94,72 102,55 Q78,68 67,95" fill="#43a047" opacity="0.7" style="animation:leaf-flutter 5.5s ease-in-out 0.3s infinite"/>
-          <!-- Second thinner stalk -->
-          <line x1="42" y1="320" x2="45" y2="120" stroke="#2a6a32" stroke-width="3.5" stroke-linecap="round" opacity="0.7" style="animation:stalk-sway 7s ease-in-out 1s infinite;transform-origin:bottom center"/>
-          <ellipse cx="44" cy="230" rx="5" ry="3" fill="#3a8a3a" opacity="0.7"/>
-          <ellipse cx="44" cy="165" rx="5" ry="3" fill="#3a8a3a" opacity="0.7"/>
-          <path d="M44,230 Q22,205 16,190 Q32,198 44,230" fill="#2e7d32" opacity="0.65" style="animation:leaf-flutter 5.5s ease-in-out 2s infinite"/>
-          <path d="M44,165 Q64,140 72,125 Q52,136 44,165" fill="#388e3c" opacity="0.65" style="animation:leaf-flutter 4.2s ease-in-out 0.6s infinite"/>
-          <!-- Third stalk (background) -->
-          <line x1="90" y1="320" x2="88" y2="160" stroke="#1e5a28" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
-          <path d="M88,220 Q110,196 118,180 Q98,192 88,220" fill="#2d6a30" opacity="0.55" style="animation:leaf-flutter 6s ease-in-out 0.9s infinite"/>
-        </svg>
-        <!-- Label badge -->
-        <div style="position:absolute;top:30px;left:28px;font-size:0.5rem;background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.4);color:#f87171;padding:2px 6px;border-radius:4px;font-weight:700;letter-spacing:0.08em;white-space:nowrap">⚠ Japanese Knotweed</div>
-      </div>
-
-      <!-- Kudzu vine (right side) – sprawling vine with trifoliate leaves climbing up -->
-      <div style="position:absolute;bottom:0;right:1.5%;z-index:6;pointer-events:none" aria-hidden="true">
-        <svg width="180" height="380" viewBox="0 0 180 380" style="animation:vine-sway 8s ease-in-out 0.5s infinite">
-          <!-- Main climbing vine stems -->
-          <path d="M160,380 Q145,320 150,270 Q162,230 148,185 Q138,150 155,110 Q162,80 145,45" fill="none" stroke="#2a6a32" stroke-width="4" stroke-linecap="round"/>
-          <path d="M120,380 Q108,310 118,260 Q130,215 112,170 Q100,138 118,95" fill="none" stroke="#236026" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
-          <!-- Kudzu trifoliate leaves (3 leaflets on each stem) -->
-          <!-- Cluster 1 (bottom) -->
-          <ellipse cx="135" cy="320" rx="18" ry="12" fill="#33691e" opacity="0.8" transform="rotate(-20 135 320)" style="animation:leaf-flutter 4s ease-in-out infinite"/>
-          <ellipse cx="155" cy="308" rx="15" ry="10" fill="#558b2f" opacity="0.7" transform="rotate(10 155 308)" style="animation:leaf-flutter 4.3s ease-in-out 0.4s infinite"/>
-          <ellipse cx="148" cy="335" rx="14" ry="9"  fill="#33691e" opacity="0.75" transform="rotate(-35 148 335)" style="animation:leaf-flutter 3.8s ease-in-out 0.7s infinite"/>
-          <!-- Cluster 2 -->
-          <ellipse cx="122" cy="250" rx="16" ry="11" fill="#33691e" opacity="0.75" transform="rotate(15 122 250)" style="animation:leaf-flutter 5s ease-in-out 1s infinite"/>
-          <ellipse cx="140" cy="238" rx="13" ry="9"  fill="#558b2f" opacity="0.7" transform="rotate(-10 140 238)" style="animation:leaf-flutter 4.6s ease-in-out 1.4s infinite"/>
-          <!-- Cluster 3 higher -->
-          <ellipse cx="138" cy="180" rx="17" ry="11" fill="#43a047" opacity="0.7" transform="rotate(-25 138 180)" style="animation:leaf-flutter 4.8s ease-in-out 0.2s infinite"/>
-          <ellipse cx="155" cy="170" rx="14" ry="9"  fill="#388e3c" opacity="0.65" transform="rotate(5 155 170)" style="animation:leaf-flutter 5.2s ease-in-out 0.9s infinite"/>
-          <!-- Cluster 4 top -->
-          <ellipse cx="128" cy="110" rx="15" ry="10" fill="#2e7d32" opacity="0.7" transform="rotate(-30 128 110)" style="animation:leaf-flutter 4.4s ease-in-out 1.8s infinite"/>
-          <ellipse cx="142" cy="100" rx="12" ry="8"  fill="#43a047" opacity="0.65" transform="rotate(15 142 100)" style="animation:leaf-flutter 5s ease-in-out 0.5s infinite"/>
-          <!-- Hanging tendrils -->
-          <path d="M150,270 Q165,285 160,300" fill="none" stroke="#2a6a32" stroke-width="1.5" opacity="0.6"/>
-          <path d="M118,165 Q102,178 106,195" fill="none" stroke="#2a6a32" stroke-width="1.5" opacity="0.5"/>
-        </svg>
-        <div style="position:absolute;top:40px;right:10px;font-size:0.5rem;background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.4);color:#f87171;padding:2px 6px;border-radius:4px;font-weight:700;letter-spacing:0.08em;white-space:nowrap">⚠ Kudzu Vine</div>
-      </div>
-
-      <!-- Giant Hogweed (center-left) – massive umbrella flower head on thick stalk -->
-      <div style="position:absolute;bottom:0;left:18%;z-index:5;pointer-events:none;opacity:0.55" aria-hidden="true">
-        <svg width="70" height="260" viewBox="0 0 70 260" style="animation:stalk-sway 9s ease-in-out 2s infinite;transform-origin:bottom center">
-          <!-- Thick ribbed stalk with purple blotching -->
-          <line x1="35" y1="260" x2="35" y2="40" stroke="#3e6b40" stroke-width="7" stroke-linecap="round"/>
-          <line x1="35" y1="260" x2="35" y2="40" stroke="rgba(106,27,154,0.2)" stroke-width="7" stroke-linecap="round" stroke-dasharray="12 8"/>
-          <!-- Compound umbel flower head -->
-          <circle cx="35" cy="32" r="28" fill="none" stroke="#6fc06a" stroke-width="1.5" opacity="0.3"/>
-          <!-- Umbel spokes -->
-          <line x1="35" y1="40" x2="5"  y2="14" stroke="#4a9a50" stroke-width="1.5" opacity="0.8"/>
-          <line x1="35" y1="40" x2="65" y2="14" stroke="#4a9a50" stroke-width="1.5" opacity="0.8"/>
-          <line x1="35" y1="40" x2="15" y2="6"  stroke="#4a9a50" stroke-width="1.5" opacity="0.8"/>
-          <line x1="35" y1="40" x2="55" y2="6"  stroke="#4a9a50" stroke-width="1.5" opacity="0.8"/>
-          <line x1="35" y1="40" x2="35" y2="3"  stroke="#4a9a50" stroke-width="1.5" opacity="0.8"/>
-          <!-- Tiny flower clusters at tips -->
-          <circle cx="5"  cy="12" r="4" fill="#a5d6a7" opacity="0.9"/>
-          <circle cx="65" cy="12" r="4" fill="#a5d6a7" opacity="0.9"/>
-          <circle cx="15" cy="5"  r="3.5" fill="#c8e6c9" opacity="0.8"/>
-          <circle cx="55" cy="5"  r="3.5" fill="#c8e6c9" opacity="0.8"/>
-          <circle cx="35" cy="2"  r="4" fill="#a5d6a7" opacity="0.9"/>
-          <!-- Huge basal leaves -->
-          <path d="M35,160 Q5,135 -5,110 Q20,125 35,160" fill="#33691e" opacity="0.7" style="animation:leaf-flutter 6s ease-in-out infinite"/>
-          <path d="M35,160 Q65,130 75,105 Q55,122 35,160" fill="#388e3c" opacity="0.65" style="animation:leaf-flutter 5.5s ease-in-out 1.2s infinite"/>
-          <path d="M35,210 Q10,195 0,178 Q18,188 35,210" fill="#2e7d32" opacity="0.6" style="animation:leaf-flutter 7s ease-in-out 0.5s infinite"/>
-        </svg>
-      </div>
-
-      <!-- Ground ivy / creeping vine (bottom strip, spanning width) -->
-      <div style="position:absolute;bottom:28%;left:30%;z-index:6;pointer-events:none;opacity:0.4;width:38%" aria-hidden="true">
-        <svg width="100%" height="60" viewBox="0 0 400 60" preserveAspectRatio="none" style="animation:vine-sway 11s ease-in-out 3s infinite">
-          <path d="M0,45 Q30,30 60,42 Q90,54 120,38 Q150,22 180,40 Q210,58 240,38 Q270,18 300,38 Q330,58 360,40 Q380,32 400,44" fill="none" stroke="#2d6a30" stroke-width="2.5" opacity="0.8"/>
-          <!-- Small round leaves along the vine -->
-          <circle cx="55"  cy="40" r="7" fill="#2e7d32" opacity="0.8"/>
-          <circle cx="115" cy="36" r="6" fill="#388e3c" opacity="0.75"/>
-          <circle cx="175" cy="39" r="7" fill="#33691e" opacity="0.8"/>
-          <circle cx="240" cy="37" r="6" fill="#43a047" opacity="0.7"/>
-          <circle cx="298" cy="37" r="7" fill="#2e7d32" opacity="0.75"/>
-          <circle cx="358" cy="39" r="6" fill="#388e3c" opacity="0.7"/>
-        </svg>
-      </div>
-
+      <!-- Hero Content -->
       <div class="hero-content" id="hero-content-wrap" style="z-index:10">
         <div class="hero-animate" style="margin-bottom:var(--space-4)">
           <span style="font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;padding:var(--space-2) var(--space-4);background:rgba(74,122,58,0.1);border:1px solid rgba(74,122,58,0.2);border-radius:var(--radius-full);color:#4a7a3a;font-weight:var(--fw-bold);display:inline-flex;align-items:center;gap:var(--space-2)">
@@ -292,6 +211,63 @@ export function renderHome() {
       <!-- ── Falling leaves (JavaScript-spawned) ── -->
       <div id="falling-leaves" style="position:absolute;inset:0;pointer-events:none;z-index:4;overflow:hidden"></div>
 
+      <!-- ── Invasive Lantana camara flower clusters (orange/red, invasive at forest floor) ── -->
+      <svg style="position:absolute;bottom:6%;left:25%;z-index:3;opacity:0.45;pointer-events:none;animation:hyacinth-sway 5s ease-in-out infinite" width="110" height="90" viewBox="0 0 110 90">
+        <!-- Stems -->
+        <line x1="30" y1="90" x2="28" y2="50" stroke="#3a6a28" stroke-width="2"/>
+        <line x1="55" y1="90" x2="57" y2="40" stroke="#3a6a28" stroke-width="2"/>
+        <line x1="80" y1="90" x2="78" y2="55" stroke="#3a6a28" stroke-width="2"/>
+        <!-- Lantana flower clusters (small orange-red-yellow) -->
+        <g transform="translate(22,38)">
+          <circle cx="0" cy="0" r="4" fill="#ef6a20" opacity="0.85"/>
+          <circle cx="7" cy="-3" r="3.5" fill="#f0a030" opacity="0.8"/>
+          <circle cx="-6" cy="-4" r="3" fill="#e04010" opacity="0.75"/>
+          <circle cx="4" cy="6" r="3" fill="#f0c040" opacity="0.7"/>
+        </g>
+        <g transform="translate(53,28)">
+          <circle cx="0" cy="0" r="5" fill="#ef6a20" opacity="0.9"/>
+          <circle cx="8" cy="-4" r="4" fill="#f0a030" opacity="0.8"/>
+          <circle cx="-7" cy="-3" r="3.5" fill="#e04010" opacity="0.75"/>
+          <circle cx="3" cy="7" r="3.5" fill="#f0c040" opacity="0.7"/>
+        </g>
+        <g transform="translate(74,43)">
+          <circle cx="0" cy="0" r="3.5" fill="#ef6a20" opacity="0.8"/>
+          <circle cx="6" cy="-3" r="3" fill="#f0a030" opacity="0.75"/>
+          <circle cx="-5" cy="-2" r="2.5" fill="#e04010" opacity="0.7"/>
+        </g>
+        <!-- Invasive tag -->
+        <foreignObject x="0" y="-16" width="110" height="20">
+          <div xmlns="http://www.w3.org/1999/xhtml" class="invasive-tag" style="font-size:0.45rem;padding:1px 6px">Lantana camara · Invasive</div>
+        </foreignObject>
+      </svg>
+
+      <!-- ── Invasive creeping vine (Mikania micrantha) along the forest floor ── -->
+      <svg style="position:absolute;bottom:0;left:0;right:0;z-index:3;opacity:0.3;pointer-events:none" width="100%" height="80" viewBox="0 0 1440 80" preserveAspectRatio="none">
+        <path d="M0,80 Q60,40 120,60 Q200,30 280,55 Q360,25 440,50 Q520,30 600,55 Q680,35 760,50 Q840,25 920,55 Q1000,30 1080,50 Q1160,40 1240,55 Q1320,30 1380,50 Q1420,40 1440,45 L1440,80Z" fill="#1e3a18" style="animation:hyacinth-sway 8s ease-in-out infinite"/>
+        <!-- Vine tendrils -->
+        <path d="M200,55 Q210,30 230,45" fill="none" stroke="#2a5a28" stroke-width="1.5" opacity="0.6"/>
+        <path d="M500,50 Q510,25 530,40" fill="none" stroke="#2a5a28" stroke-width="1.5" opacity="0.5"/>
+        <path d="M850,55 Q860,28 880,42" fill="none" stroke="#2a5a28" stroke-width="1.5" opacity="0.6"/>
+        <path d="M1200,50 Q1210,28 1230,40" fill="none" stroke="#2a5a28" stroke-width="1.5" opacity="0.5"/>
+      </svg>
+
+      <!-- ── Dragonfly (enhanced with figure-8 path) ── -->
+      <svg style="position:absolute;top:20%;right:18%;z-index:5;opacity:0.4;animation:dragonfly-hover 7s ease-in-out infinite" width="54" height="32" viewBox="0 0 54 32">
+        <line x1="4" y1="16" x2="50" y2="16" stroke="#60b8a8" stroke-width="2" stroke-linecap="round"/>
+        <ellipse cx="50" cy="16" rx="5" ry="3.5" fill="#60b8a8"/>
+        <circle cx="50" cy="14" r="1.2" fill="#1a4a3c"/>
+        <!-- Upper wings -->
+        <ellipse cx="24" cy="8" rx="14" ry="5" fill="rgba(120,220,200,0.25)" stroke="rgba(80,180,160,0.4)" stroke-width="0.8" transform="rotate(-12 24 8)"><animate attributeName="ry" values="5;2;5" dur="0.12s" repeatCount="indefinite"/></ellipse>
+        <ellipse cx="24" cy="24" rx="14" ry="5" fill="rgba(120,220,200,0.2)" stroke="rgba(80,180,160,0.35)" stroke-width="0.8" transform="rotate(12 24 24)"><animate attributeName="ry" values="5;2;5" dur="0.12s" repeatCount="indefinite"/></ellipse>
+        <!-- Abdomen segments -->
+        <line x1="10" y1="16" x2="18" y2="16" stroke="#4a9888" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="20" y1="16" x2="28" y2="16" stroke="#5aaa98" stroke-width="2" stroke-linecap="round"/>
+        <line x1="30" y1="16" x2="38" y2="16" stroke="#4a9888" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+
+      <!-- ── Spore particles container (JS-spawned) ── -->
+      <div id="spore-particles" style="position:absolute;inset:0;pointer-events:none;z-index:4;overflow:hidden"></div>
+
       <!-- Content: How it works -->
       <div class="container" style="position:relative;z-index:10">
         <div class="section-header reveal" style="margin-bottom:var(--space-16)">
@@ -350,6 +326,16 @@ export function renderHome() {
          ════════════════════════════════════════════ -->
     <section style="position:relative;overflow:hidden;background:linear-gradient(180deg,#2a5c4e 0%,#1a4a3c 15%,#1c5f5a 40%,#175a58 60%,#135050 100%);padding:var(--space-20) 0;color:#fff">
 
+      <!-- Rain impact ripples on water surface -->
+      <div id="rain-ripples" style="position:absolute;bottom:15%;left:0;right:0;height:30%;pointer-events:none;z-index:4;overflow:hidden"></div>
+
+      <!-- River shimmer streaks -->
+      <div style="position:absolute;bottom:12%;left:0;right:0;height:90px;overflow:hidden;pointer-events:none;z-index:2">
+        <div style="position:absolute;top:20px;left:0;width:200px;height:3px;background:linear-gradient(90deg,transparent,rgba(120,210,200,0.3),transparent);animation:river-flow 8s linear infinite"></div>
+        <div style="position:absolute;top:40px;left:0;width:150px;height:2px;background:linear-gradient(90deg,transparent,rgba(100,190,180,0.25),transparent);animation:river-flow 11s linear 2s infinite"></div>
+        <div style="position:absolute;top:60px;left:0;width:180px;height:2px;background:linear-gradient(90deg,transparent,rgba(140,220,210,0.2),transparent);animation:river-flow 9.5s linear 4s infinite"></div>
+      </div>
+
       <!-- ── LILY PADS (large + visible with flowers) ── -->
       <svg style="position:absolute;bottom:18%;left:5%;z-index:2;opacity:0.35;animation:lily-bob 4s ease-in-out infinite" width="120" height="60" viewBox="0 0 120 60">
         <ellipse cx="60" cy="35" rx="55" ry="22" fill="#2a7a5e"/>
@@ -384,8 +370,49 @@ export function renderHome() {
         <ellipse cx="25" cy="33" rx="5" ry="11" fill="#3a5a3a" opacity="0.8"/>
       </svg>
 
+      <!-- ── Water hyacinth invasive mat (left side) ── -->
+      <svg style="position:absolute;bottom:10%;left:8%;z-index:3;opacity:0.5;animation:hyacinth-sway 4s ease-in-out 0.5s infinite;pointer-events:none" width="160" height="80" viewBox="0 0 160 80">
+        <!-- Bulbous floating stems -->
+        <ellipse cx="30" cy="60" rx="14" ry="8" fill="#2a7a5e"/>
+        <ellipse cx="60" cy="55" rx="16" ry="9" fill="#35906a"/>
+        <ellipse cx="90" cy="58" rx="13" ry="7" fill="#2a7a5e"/>
+        <ellipse cx="118" cy="56" rx="15" ry="8" fill="#35906a" opacity="0.9"/>
+        <ellipse cx="145" cy="60" rx="12" ry="6" fill="#2a7a5e" opacity="0.8"/>
+        <!-- Hyacinth flowers (purple, invasive signature) -->
+        <g transform="translate(28,40)">
+          <ellipse cx="0" cy="0" rx="5" ry="8" fill="#9060c0" opacity="0.8"/>
+          <ellipse cx="-6" cy="2" rx="4" ry="7" fill="#a070d0" opacity="0.7"/>
+          <ellipse cx="6" cy="2" rx="4" ry="7" fill="#8050b0" opacity="0.75"/>
+          <circle cx="0" cy="-6" r="2.5" fill="#c0a0e0" opacity="0.6"/>
+        </g>
+        <g transform="translate(60,38)">
+          <ellipse cx="0" cy="0" rx="6" ry="9" fill="#9060c0" opacity="0.85"/>
+          <ellipse cx="-7" cy="3" rx="5" ry="8" fill="#a070d0" opacity="0.75"/>
+          <ellipse cx="7" cy="3" rx="5" ry="7" fill="#8050b0" opacity="0.8"/>
+          <circle cx="0" cy="-7" r="3" fill="#c0a0e0" opacity="0.65"/>
+        </g>
+        <g transform="translate(118,40)">
+          <ellipse cx="0" cy="0" rx="5" ry="8" fill="#9060c0" opacity="0.75"/>
+          <ellipse cx="-5" cy="2" rx="4" ry="6" fill="#a070d0" opacity="0.7"/>
+          <circle cx="0" cy="-5" r="2" fill="#c0a0e0" opacity="0.6"/>
+        </g>
+        <!-- Invasive label -->
+        <foreignObject x="10" y="20" width="140" height="18">
+          <div xmlns="http://www.w3.org/1999/xhtml" class="invasive-tag" style="font-size:0.42rem;padding:1px 5px">Water Hyacinth · Invasive</div>
+        </foreignObject>
+      </svg>
+
+      <!-- ── Smaller water hyacinth mat (right) ── -->
+      <svg style="position:absolute;bottom:20%;right:5%;z-index:3;opacity:0.4;animation:hyacinth-sway 5s ease-in-out 1.5s infinite;pointer-events:none" width="110" height="60" viewBox="0 0 110 60">
+        <ellipse cx="22" cy="46" rx="12" ry="7" fill="#2a7a5e"/>
+        <ellipse cx="50" cy="42" rx="14" ry="8" fill="#35906a"/>
+        <ellipse cx="80" cy="45" rx="12" ry="6" fill="#2a7a5e" opacity="0.9"/>
+        <g transform="translate(22,28)"><ellipse cx="0" cy="0" rx="4" ry="7" fill="#9060c0" opacity="0.8"/><ellipse cx="-5" cy="2" rx="3" ry="6" fill="#a070d0" opacity="0.7"/></g>
+        <g transform="translate(50,24)"><ellipse cx="0" cy="0" rx="5" ry="8" fill="#8858b8" opacity="0.85"/><ellipse cx="6" cy="3" rx="4" ry="6" fill="#9868c8" opacity="0.75"/></g>
+      </svg>
+
       <!-- ── Water surface shimmer ── -->
-      <div style="position:absolute;bottom:0;left:0;right:0;height:40%;background:linear-gradient(180deg,transparent,rgba(20,80,90,0.3));pointer-events:none;z-index:1"></div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:40%;background:linear-gradient(180deg,transparent,rgba(20,80,90,0.3));pointer-events:none;z-index:1;animation:water-shimmer 6s ease-in-out infinite"></div>
 
       <!-- ── Animated ripple rings (more visible) ── -->
       <svg style="position:absolute;bottom:15%;left:30%;z-index:3;opacity:0.2" width="200" height="60" viewBox="0 0 200 60">
@@ -415,6 +442,25 @@ export function renderHome() {
         <!-- Wings -->
         <ellipse cx="22" cy="8" rx="12" ry="4" fill="rgba(150,220,200,0.3)" transform="rotate(-10 22 8)"><animate attributeName="ry" values="4;2;4" dur="0.15s" repeatCount="indefinite"/></ellipse>
         <ellipse cx="22" cy="22" rx="12" ry="4" fill="rgba(150,220,200,0.3)" transform="rotate(10 22 22)"><animate attributeName="ry" values="4;2;4" dur="0.15s" repeatCount="indefinite"/></ellipse>
+      </svg>
+
+      <!-- ── Frog on lily pad ── -->
+      <svg style="position:absolute;bottom:22%;left:22%;z-index:4;opacity:0.45;pointer-events:none;animation:frog-idle 3s ease-in-out infinite" width="36" height="28" viewBox="0 0 36 28">
+        <!-- Body -->
+        <ellipse cx="18" cy="18" rx="12" ry="9" fill="#2a7a3e"/>
+        <!-- Head -->
+        <ellipse cx="18" cy="10" rx="9" ry="7" fill="#3a8a4e"/>
+        <!-- Eyes -->
+        <circle cx="12" cy="8" r="3.5" fill="#4aaa5e"/><circle cx="12" cy="8" r="2" fill="#1a3a1e"/>
+        <circle cx="24" cy="8" r="3.5" fill="#4aaa5e"/><circle cx="24" cy="8" r="2" fill="#1a3a1e"/>
+        <!-- Eye shine -->
+        <circle cx="13" cy="7" r="0.8" fill="#fff" opacity="0.7"/>
+        <circle cx="25" cy="7" r="0.8" fill="#fff" opacity="0.7"/>
+        <!-- Front legs -->
+        <line x1="8" y1="20" x2="2" y2="26" stroke="#2a7a3e" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="28" y1="20" x2="34" y2="26" stroke="#2a7a3e" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Mouth line -->
+        <path d="M13,14 Q18,17 23,14" fill="none" stroke="#1a5a2e" stroke-width="1" stroke-linecap="round"/>
       </svg>
 
       <!-- ── SWIMMING FISH (large + visible) ── -->
@@ -451,15 +497,9 @@ export function renderHome() {
               <span style="width:0.5rem;height:0.5rem;border-radius:50%;background:#ef4444"></span>
               <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:#ef4444;text-transform:uppercase;letter-spacing:0.08em">Critical</span>
             </div>
-<<<<<<< HEAD
             <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2);color:#fff">Japanese Knotweed Cluster</h4>
             <p style="color:rgba(255,255,255,0.5);font-size:0.8125rem;line-height:1.6;margin-bottom:var(--space-4)">142 geo-tagged reports within 8 km radius. Satellite NDVI confirms vegetation anomaly.</p>
             <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:rgba(255,255,255,0.35)">
-=======
-            <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2)">Lantana camara Outbreak</h4>
-            <p style="color:var(--color-slate-500);font-size:0.8125rem;line-height:1.6;margin-bottom:var(--space-4)">142 geo-tagged reports within 8 km radius. Satellite NDVI confirms vegetation anomaly in Western Ghats.</p>
-            <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--color-slate-400)">
->>>>>>> 34cb9df1be9513923501b0d36d44c3d033a743fa
               <span>Risk Score: <strong style="color:#ef4444">94/100</strong></span>
               <span>2h ago</span>
             </div>
@@ -470,15 +510,9 @@ export function renderHome() {
               <span style="width:0.5rem;height:0.5rem;border-radius:50%;background:#f59e0b"></span>
               <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:#f59e0b;text-transform:uppercase;letter-spacing:0.08em">Elevated</span>
             </div>
-<<<<<<< HEAD
             <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2);color:#fff">Asian Longhorn Beetle</h4>
             <p style="color:rgba(255,255,255,0.5);font-size:0.8125rem;line-height:1.6;margin-bottom:var(--space-4)">28 citizen reports. AI confidence 87%. Satellite canopy analysis pending.</p>
             <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:rgba(255,255,255,0.35)">
-=======
-            <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2)">Water Hyacinth Surge</h4>
-            <p style="color:var(--color-slate-500);font-size:0.8125rem;line-height:1.6;margin-bottom:var(--space-4)">28 citizen reports. AI confidence 87%. Satellite surface analysis pending — Kerala Backwaters.</p>
-            <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--color-slate-400)">
->>>>>>> 34cb9df1be9513923501b0d36d44c3d033a743fa
               <span>Risk Score: <strong style="color:#f59e0b">67/100</strong></span>
               <span>6h ago</span>
             </div>
@@ -489,17 +523,10 @@ export function renderHome() {
               <span style="width:0.5rem;height:0.5rem;border-radius:50%;background:#6dbe4b"></span>
               <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:#6dbe4b;text-transform:uppercase;letter-spacing:0.08em">Monitoring</span>
             </div>
-<<<<<<< HEAD
             <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2);color:#fff">Giant Hogweed Spread</h4>
             <p style="color:rgba(255,255,255,0.5);font-size:0.8125rem;line-height:1.6;margin-bottom:var(--space-4)">15 reports across 3 counties. Satellite verification in progress.</p>
             <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:rgba(255,255,255,0.35)">
               <span>Risk Score: <strong style="color:#6dbe4b">42/100</strong></span>
-=======
-            <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2)">Parthenium Spread</h4>
-            <p style="color:var(--color-slate-500);font-size:0.8125rem;line-height:1.6;margin-bottom:var(--space-4)">15 reports across 3 districts. Satellite verification in progress — Rajasthan Plains.</p>
-            <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--color-slate-400)">
-              <span>Risk Score: <strong style="color:var(--color-primary)">42/100</strong></span>
->>>>>>> 34cb9df1be9513923501b0d36d44c3d033a743fa
               <span>1d ago</span>
             </div>
           </div>
@@ -511,6 +538,9 @@ export function renderHome() {
           </a>
         </div>
       </div>
+
+      <!-- ── Ground mist at pond edge ── -->
+      <div class="mist-layer" style="height:100px;animation-duration:20s;animation-delay:3s;background:radial-gradient(ellipse at 50% 100%, rgba(15,50,45,0.6) 0%, transparent 70%);"></div>
 
       <!-- Meadow transition -->
       <svg style="position:absolute;bottom:-1px;width:100%;z-index:5" preserveAspectRatio="none" viewBox="0 0 1440 120" height="80">
@@ -611,6 +641,21 @@ export function renderHome() {
          ════════════════════════════════════════════ -->
     <section style="position:relative;overflow:hidden;background:linear-gradient(180deg,#1e3a16 0%,#152e12 30%,#10240e 60%,#0a1a08 100%);padding:var(--space-20) 0;color:#fff">
 
+      <!-- Invasive Mikania micrantha (mile-a-minute) vine overlay on this section -->
+      <svg style="position:absolute;top:0;left:0;right:0;pointer-events:none;z-index:2;opacity:0.18" width="100%" height="200" viewBox="0 0 1440 200" preserveAspectRatio="none">
+        <path d="M0,30 Q120,0 240,20 Q360,40 480,10 Q600,30 720,5 Q840,25 960,8 Q1080,30 1200,12 Q1320,35 1440,15" fill="none" stroke="#2a5a1a" stroke-width="4" style="animation:hyacinth-sway 7s ease-in-out infinite"/>
+        <path d="M0,60 Q100,40 200,55 Q300,70 400,45 Q500,65 600,40 Q700,60 800,38 Q900,58 1000,40 Q1100,62 1200,42 Q1320,62 1440,44" fill="none" stroke="#1e4a14" stroke-width="3" style="animation:hyacinth-sway 9s ease-in-out 1s infinite reverse"/>
+        <!-- Leaf clusters along the vine -->
+        <circle cx="240" cy="20" r="8" fill="#2a6a18" opacity="0.6"/>
+        <circle cx="480" cy="10" r="6" fill="#3a7a28" opacity="0.5"/>
+        <circle cx="720" cy="5" r="7" fill="#2a6a18" opacity="0.6"/>
+        <circle cx="960" cy="8" r="5" fill="#3a7a28" opacity="0.5"/>
+        <circle cx="1200" cy="12" r="7" fill="#2a6a18" opacity="0.6"/>
+      </svg>
+
+      <!-- Ground mist in the undergrowth -->
+      <div class="mist-layer" style="height:140px;animation-duration:25s;opacity:0.5;background:radial-gradient(ellipse at 50% 100%, rgba(10,30,10,0.7) 0%, transparent 70%);"></div>
+
       <!-- ── Moonlight rays ── -->
       <div style="position:absolute;top:0;left:22%;width:180px;height:100%;background:linear-gradient(180deg,rgba(200,220,180,0.05),transparent 50%);transform:skewX(-5deg);pointer-events:none;z-index:1"></div>
       <div style="position:absolute;top:0;left:55%;width:120px;height:100%;background:linear-gradient(180deg,rgba(200,220,180,0.03),transparent 40%);transform:skewX(7deg);pointer-events:none;z-index:1"></div>
@@ -687,19 +732,11 @@ export function renderHome() {
           </div>
 
           <div class="reveal" data-delay="200">
-<<<<<<< HEAD
             <div style="padding:var(--space-8);background:rgba(255,255,255,0.04);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius-xl)">
               <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:var(--space-6);display:block">Request Expert Validation</span>
               <h3 style="font-weight:var(--fw-bold);margin-bottom:var(--space-3);font-size:1.25rem;color:#fff">Unsure about a species?</h3>
               <p style="color:rgba(255,255,255,0.5);font-size:0.875rem;line-height:1.7;margin-bottom:var(--space-6)">Submit your observation for expert review and containment recommendations.</p>
               <a href="#/about" class="btn btn-lg btn-micro" style="border:1px solid rgba(109,190,75,0.3);color:#6dbe4b;background:rgba(109,190,75,0.08);width:100%;justify-content:center">
-=======
-            <div class="card" style="padding:var(--space-8)">
-              <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:var(--color-slate-400);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:var(--space-6);display:block">Request Expert Validation</span>
-              <h3 style="font-weight:var(--fw-bold);margin-bottom:var(--space-3);font-size:1.25rem">Unsure about a species?</h3>
-              <p style="color:var(--color-slate-600);font-size:0.875rem;line-height:1.7;margin-bottom:var(--space-6)">Submit your observation for expert review and containment recommendations.</p>
-              <a href="https://docs.google.com/forms/d/e/1FAIpQLSe-I2Ebso1LPhh4mPHetvJXRMBkVqK73gtSxA9aZ_Ty109mkg/viewform?usp=header" target="_blank" rel="noopener noreferrer" class="btn btn-lg btn-micro" style="border:1px solid var(--color-primary);color:var(--color-primary);background:rgba(29,172,201,0.06);width:100%;justify-content:center">
->>>>>>> 34cb9df1be9513923501b0d36d44c3d033a743fa
                 <span class="material-symbols-outlined" style="font-size:1.125rem">science</span> Contact an Expert
               </a>
             </div>
@@ -823,7 +860,53 @@ export function renderHome() {
           deepP.appendChild(dot);
         }
       }
+
+      // ── Hero rain drops (JS-spawned) ──
+      const rainC = document.getElementById('hero-rain');
+      if (rainC) {
+        for (let i = 0; i < 60; i++) {
+          const drop = document.createElement('div');
+          const dur = (0.8 + Math.random() * 0.9).toFixed(2);
+          const delay = (Math.random() * 4).toFixed(2);
+          const left = (Math.random() * 100).toFixed(1);
+          const h = (14 + Math.random() * 12).toFixed(0);
+          drop.className = 'rain-drop';
+          drop.style.cssText = `left:${left}%;top:${(Math.random() * 30).toFixed(0)}%;height:${h}px;--dur:${dur}s;--delay:${delay}s;opacity:${0.25 + Math.random() * 0.3};transform:rotate(${8 + Math.random() * 6}deg)`;
+          rainC.appendChild(drop);
+        }
+      }
+
+      // ── Invasive spore bursts in forest biome ──
+      const sporeC = document.getElementById('spore-particles');
+      if (sporeC) {
+        for (let i = 0; i < 18; i++) {
+          const s = document.createElement('div');
+          const size = 3 + Math.random() * 5;
+          const dx = ((Math.random() - 0.5) * 80).toFixed(0);
+          const dy = -(30 + Math.random() * 50);
+          s.style.cssText = `position:absolute;width:${size}px;height:${size}px;border-radius:50%;background:rgba(239,106,32,${0.3 + Math.random() * 0.3});left:${20 + Math.random() * 60}%;bottom:${5 + Math.random() * 15}%;pointer-events:none;--dx:${dx}px;--dy:${dy}px;animation:spore-burst ${3 + Math.random() * 4}s ease-out ${Math.random() * 6}s infinite`;
+          sporeC.appendChild(s);
+        }
+      }
+
+      // ── Rain-impact ripples on pond surface ──
+      const rippleC = document.getElementById('rain-ripples');
+      if (rippleC) {
+        const spawnRipple = () => {
+          const r = document.createElement('div');
+          const w = 12 + Math.random() * 20;
+          r.style.cssText = `position:absolute;width:${w}px;height:${w * 0.35}px;border-radius:50%;border:1px solid rgba(100,200,170,0.5);left:${Math.random() * 100}%;top:${Math.random() * 80}%;animation:rain-ripple ${0.8 + Math.random() * 0.6}s ease-out forwards;pointer-events:none`;
+          rippleC.appendChild(r);
+          setTimeout(() => r.remove(), 1400);
+        };
+        // Fire initial burst then steady rate
+        for (let i = 0; i < 5; i++) setTimeout(spawnRipple, i * 200);
+        const rippleTimer = setInterval(spawnRipple, 350);
+        // Store for cleanup
+        rippleC.dataset.timer = rippleTimer;
+      }
     },
+
     cleanup() {
       // cleanup handled by router
     }

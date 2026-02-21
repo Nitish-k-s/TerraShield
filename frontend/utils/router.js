@@ -75,16 +75,26 @@ async function navigate() {
         initParallax();
         initNavbarAuth();
 
-        // Global magnet effect on cards and primary buttons
+        // Global magnet effect on all card-type elements and CTA buttons
         if (magnetCleanup) { magnetCleanup(); magnetCleanup = null; }
         const cleanups = [];
+
+        // Standard hover-lift cards (alerts, features, how-it-works steps)
         const c1 = initMagnetAll('.card.hover-lift', { padding: 80, strength: 3 });
-        const c2 = initMagnetAll('.btn-primary', { padding: 50, strength: 4 });
-        const c3 = initMagnetAll('.btn-lg', { padding: 50, strength: 4 });
-        if (c1) cleanups.push(c1);
-        if (c2) cleanups.push(c2);
-        if (c3) cleanups.push(c3);
+        // Stat cards and info panels
+        const c2 = initMagnetAll('.stat-card, [class*="stat-"], .reveal > div[style*="background:rgba"]', { padding: 60, strength: 4 });
+        // Auth / form cards (login, signup, forgot-password)
+        const c3 = initMagnetAll('#login-card, #signup-card, .hero-animate-delay[style*="border-radius"]', { padding: 50, strength: 5 });
+        // Primary CTA buttons
+        const c4 = initMagnetAll('.btn-primary', { padding: 50, strength: 4 });
+        // Large outline / secondary buttons
+        const c5 = initMagnetAll('.btn-lg:not(.btn-primary)', { padding: 40, strength: 5 });
+        // Pipeline / step cards (inline card-like elements in sdgs/about)
+        const c6 = initMagnetAll('[data-delay].card', { padding: 70, strength: 3.5 });
+
+        [c1, c2, c3, c4, c5, c6].forEach(c => { if (c) cleanups.push(c); });
         magnetCleanup = () => cleanups.forEach(fn => fn());
+
 
         // Footer effects
         initFooterEffects();

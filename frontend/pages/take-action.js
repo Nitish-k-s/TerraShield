@@ -1,10 +1,5 @@
-<<<<<<< HEAD
 // Report – Submit an Invasive Species Sighting
-import { renderNavbar } from '../components/navbar.js';
-=======
-// Report a Sighting Page
 import { renderNavbar, initNavbarAuth } from '../components/navbar.js';
->>>>>>> 34cb9df1be9513923501b0d36d44c3d033a743fa
 import { renderFooter } from '../components/footer.js';
 import { getUser, getSessionToken } from '../utils/auth.js';
 
@@ -114,7 +109,6 @@ export function renderReport() {
     <!-- ═══ REPORT FORM ═══ -->
     <section class="section" style="background:#0a1a0f;padding:var(--space-16) 0">
       <div class="container" style="max-width:48rem">
-<<<<<<< HEAD
         <div class="reveal" style="background:rgba(20,40,25,0.7);border-radius:var(--radius-xl);box-shadow:0 4px 24px rgba(0,0,0,0.3);border:1px solid rgba(74,222,128,0.1);overflow:hidden;backdrop-filter:blur(8px)">
 
           <!-- Form header -->
@@ -130,15 +124,36 @@ export function renderReport() {
 
           <!-- Form body -->
           <div style="padding:var(--space-8)">
+
+            <!-- Auth Warning -->
+            <div id="report-auth-warning" style="display:none;margin-bottom:var(--space-6);padding:var(--space-4);background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:var(--radius);color:#fbbf24;font-size:0.875rem;text-align:center">
+              <span class="material-symbols-outlined" style="vertical-align:middle;margin-right:0.5rem">warning</span>
+              You must be signed in to submit a report. <a href="#/login" style="font-weight:var(--fw-bold);text-decoration:underline;color:#fbbf24">Sign In</a>
+            </div>
+
+            <!-- Status Message -->
+            <div id="report-msg" style="display:none;margin-bottom:var(--space-6);padding:var(--space-4);border-radius:var(--radius);font-size:0.875rem"></div>
+
             <form id="report-form" style="display:flex;flex-direction:column;gap:var(--space-6)">
 
-              <!-- Species info row -->
+              <!-- Photo Upload -->
+              <div class="form-group">
+                <label class="form-label" style="font-weight:var(--fw-bold)">Upload Photo *</label>
+                <input type="file" id="report-image" name="image" accept="image/*" required style="display:none">
+                <div id="upload-dropzone" style="border:2px dashed rgba(74,222,128,0.25);border-radius:var(--radius-lg);padding:var(--space-10);text-align:center;cursor:pointer;background:rgba(74,222,128,0.02);transition:all 0.2s">
+                  <span class="material-symbols-outlined" style="font-size:2.5rem;color:var(--color-primary);display:block;margin-bottom:var(--space-3)">cloud_upload</span>
+                  <p id="upload-text" style="font-weight:var(--fw-bold);margin-bottom:var(--space-1)">Click to upload image</p>
+                  <p style="font-size:0.75rem;color:var(--color-slate-500)">PNG, JPG, WebP. Geo-tagged images required for risk mapping.</p>
+                </div>
+              </div>
+
+              <!-- Species + Category row -->
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-5)">
                 <div class="form-group">
-                  <label class="form-label">Species Name</label>
+                  <label class="form-label">Species Name (if known)</label>
                   <div class="form-input-icon">
                     <span class="material-symbols-outlined">eco</span>
-                    <input class="form-input" type="text" placeholder="e.g. Japanese Knotweed" required>
+                    <input class="form-input" id="report-species" type="text" placeholder="e.g., Lantana camara">
                   </div>
                 </div>
                 <div class="form-group">
@@ -155,61 +170,28 @@ export function renderReport() {
                     <option>Fungus / Pathogen</option>
                     <option>Unknown – Need ID</option>
                   </select>
-=======
-        <div class="card reveal" style="padding:var(--space-10)">
-          
-          <!-- Auth Warning -->
-          <div id="report-auth-warning" style="display:none;margin-bottom:var(--space-6);padding:var(--space-4);background:var(--color-amber-50);border:1px solid rgba(245,158,11,0.3);border-radius:var(--radius);color:#b45309;font-size:0.875rem;text-align:center">
-            <span class="material-symbols-outlined" style="vertical-align:middle;margin-right:0.5rem">warning</span>
-            You must be signed in to submit a report. <a href="#/login" style="font-weight:var(--fw-bold);text-decoration:underline">Sign In</a>
-          </div>
-
-          <!-- Status Message -->
-          <div id="report-msg" style="display:none;margin-bottom:var(--space-6);padding:var(--space-4);border-radius:var(--radius);font-size:0.875rem"></div>
-
-          <form id="report-form" style="display:flex;flex-direction:column;gap:var(--space-6)">
-            <!-- Photo Upload -->
-            <div class="form-group">
-              <label class="form-label" style="font-weight:var(--fw-bold)">Upload Photo *</label>
-              
-              <input type="file" id="report-image" name="image" accept="image/*" required style="display:none">
-              
-              <div id="upload-dropzone" style="border:2px dashed rgba(29,172,201,0.3);border-radius:var(--radius-lg);padding:var(--space-10);text-align:center;cursor:pointer;background:rgba(29,172,201,0.02);transition:all 0.2s">
-                <span class="material-symbols-outlined" style="font-size:2.5rem;color:var(--color-primary);display:block;margin-bottom:var(--space-3)">cloud_upload</span>
-                <p id="upload-text" style="font-weight:var(--fw-bold);margin-bottom:var(--space-1)">Click to upload image</p>
-                <p style="font-size:0.75rem;color:var(--color-slate-500)">PNG, JPG, WebP. Geo-tagged images required for risk mapping.</p>
-              </div>
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6)">
-              <div class="form-group">
-                <label class="form-label">Species Name (if known)</label>
-                <div class="form-input-icon">
-                  <span class="material-symbols-outlined">eco</span>
-                  <input class="form-input" id="report-species" type="text" placeholder="e.g., Lantana camara">
->>>>>>> 34cb9df1be9513923501b0d36d44c3d033a743fa
                 </div>
               </div>
 
-              <!-- Location row -->
+              <!-- Location + Date row -->
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-5)">
                 <div class="form-group">
                   <label class="form-label">Location</label>
                   <div class="form-input-icon">
                     <span class="material-symbols-outlined">location_on</span>
-                    <input class="form-input" type="text" placeholder="GPS or address" required>
+                    <input class="form-input" type="text" placeholder="GPS or address">
                   </div>
                 </div>
                 <div class="form-group">
                   <label class="form-label">Date Observed</label>
                   <div class="form-input-icon">
                     <span class="material-symbols-outlined">calendar_today</span>
-                    <input class="form-input" type="date" required>
+                    <input class="form-input" type="date">
                   </div>
                 </div>
               </div>
 
-              <!-- Severity & Population -->
+              <!-- Severity + Observation Type -->
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-5)">
                 <div class="form-group">
                   <label class="form-label">Severity Estimate</label>
@@ -222,89 +204,50 @@ export function renderReport() {
                   </select>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Estimated Count</label>
-                  <div class="form-input-icon">
-                    <span class="material-symbols-outlined">tag</span>
-                    <input class="form-input" type="number" placeholder="Approx. number" min="1">
-                  </div>
+                  <label class="form-label">Observation Type *</label>
+                  <select class="form-input" id="report-type" required>
+                    <option value="">Select type...</option>
+                    <option>Invasive Plant</option>
+                    <option>Invasive Animal</option>
+                    <option>Invasive Insect</option>
+                    <option>Unknown / Unsure</option>
+                  </select>
                 </div>
               </div>
 
-              <!-- Photo upload -->
+              <!-- Description -->
               <div class="form-group">
-<<<<<<< HEAD
-                <label class="form-label">Photos</label>
-                <div style="border:2px dashed var(--color-slate-200);border-radius:var(--radius-lg);padding:var(--space-8);text-align:center;transition:border-color 0.2s,background 0.2s;cursor:pointer" onmouseover="this.style.borderColor='var(--color-primary)';this.style.background='rgba(29,172,201,0.02)'" onmouseout="this.style.borderColor='var(--color-slate-200)';this.style.background='transparent'">
-                  <span class="material-symbols-outlined" style="font-size:2rem;color:var(--color-slate-300);margin-bottom:var(--space-2);display:block">cloud_upload</span>
-                  <p style="font-weight:var(--fw-bold);color:var(--color-slate-700);margin-bottom:var(--space-1)">Drop images here or click to browse</p>
-                  <p style="font-size:0.75rem;color:var(--color-slate-400)">JPG, PNG up to 10MB · Multiple photos supported</p>
-                  <input type="file" accept="image/*" multiple style="display:none">
-                </div>
-=======
-                <label class="form-label">Observation Type *</label>
-                <select class="form-input" id="report-type" required>
-                  <option value="">Select type...</option>
-                  <option>Invasive Plant</option>
-                  <option>Invasive Animal</option>
-                  <option>Invasive Insect</option>
-                  <option>Unknown / Unsure</option>
-                </select>
->>>>>>> 34cb9df1be9513923501b0d36d44c3d033a743fa
+                <label class="form-label">Description *</label>
+                <textarea class="form-input" id="report-desc" rows="4" placeholder="Describe the habitat, density, spread area, surrounding vegetation, proximity to water..." required style="resize:vertical"></textarea>
               </div>
 
-<<<<<<< HEAD
-              <!-- Notes -->
-              <div class="form-group">
-                <label class="form-label">Field Notes</label>
-                <textarea class="form-input" rows="4" placeholder="Describe the habitat, surrounding vegetation, proximity to water, spread pattern…" style="resize:vertical"></textarea>
+              <!-- Info note -->
+              <div style="background:rgba(74,222,128,0.04);border:1px solid rgba(74,222,128,0.12);border-radius:var(--radius);padding:var(--space-4);font-size:0.8125rem;color:var(--color-slate-600);display:flex;gap:var(--space-3);align-items:flex-start">
+                <span class="material-symbols-outlined" style="color:var(--color-primary);font-size:1.125rem;flex-shrink:0;margin-top:2px">info</span>
+                <span>Reports are processed by our AI classification engine. Location and timestamp are extracted automatically from image metadata.</span>
               </div>
 
               <!-- Submit -->
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);padding-top:var(--space-4);border-top:1px solid var(--color-slate-200)">
-                <p style="font-size:0.75rem;color:var(--color-slate-400);display:flex;align-items:center;gap:var(--space-2)">
-                  <span class="material-symbols-outlined" style="font-size:0.875rem">verified_user</span>
-                  Reports are reviewed by AI before publication
-                </p>
-                <button type="submit" class="btn btn-primary" style="padding:var(--space-3) var(--space-8)">
-                  <span class="material-symbols-outlined" style="font-size:1rem">send</span>
-                  Submit Report
-                </button>
-              </div>
+              <button type="submit" id="report-submit-btn" class="btn btn-primary btn-lg" style="width:100%">
+                <span class="material-symbols-outlined" style="font-size:1.125rem">send</span>
+                <span id="report-btn-text">Submit Report to Detection Network</span>
+              </button>
             </form>
           </div>
-=======
-            <div class="form-group">
-              <label class="form-label">Description *</label>
-              <textarea class="form-input" id="report-desc" rows="4" placeholder="Describe what you observed: habitat, density, spread area, and any other observations. DO NOT enter location explicitly, GPS data will be extracted automatically..." required style="resize:vertical"></textarea>
-            </div>
-
-            <div style="background:rgba(29,172,201,0.05);border:1px solid rgba(29,172,201,0.15);border-radius:var(--radius);padding:var(--space-4);font-size:0.8125rem;color:var(--color-slate-600);display:flex;gap:var(--space-3);align-items:flex-start">
-              <span class="material-symbols-outlined" style="color:var(--color-primary);font-size:1.125rem;flex-shrink:0;margin-top:2px">info</span>
-              <span>Submitted reports are processed by our AI classification engine. Location and timestamp are extracted automatically from image metadata. Image pixels and metadata are safely stored locally in SQLite linked to your ID.</span>
-            </div>
-
-            <button type="submit" id="report-submit-btn" class="btn btn-primary btn-lg" style="width:100%">
-              <span class="material-symbols-outlined" style="font-size:1.125rem">send</span> 
-              <span id="report-btn-text">Submit Report to Detection Network</span>
-            </button>
-          </form>
->>>>>>> 34cb9df1be9513923501b0d36d44c3d033a743fa
         </div>
 
         <!-- AI Analysis Result Card (hidden until analysis complete) -->
         <div id="ai-result-section" style="display:none;margin-top:var(--space-8)">
           <div class="ai-result-card">
-            <!-- Card Header -->
             <div class="ai-result-header">
               <div style="display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap">
                 <span class="material-symbols-outlined" style="color:var(--color-primary);font-size:1.5rem">psychology</span>
                 <h2 style="font-size:1.125rem;font-weight:var(--fw-bold);color:var(--color-slate-900);margin:0">AI Species Analysis</h2>
-                <span id="ai-used-vision-badge" style="display:none;font-size:0.6875rem;font-weight:var(--fw-bold);padding:2px 8px;border-radius:999px;background:rgba(29,172,201,0.12);color:var(--color-primary);text-transform:uppercase;letter-spacing:0.08em">Vision ✓</span>
+                <span id="ai-used-vision-badge" style="display:none;font-size:0.6875rem;font-weight:var(--fw-bold);padding:2px 8px;border-radius:999px;background:rgba(74,222,128,0.12);color:var(--color-primary);text-transform:uppercase;letter-spacing:0.08em">Vision ✓</span>
               </div>
               <span id="ai-label-badge" class="ai-label-badge"></span>
             </div>
 
-            <!-- Confidence + Risk -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);margin-bottom:var(--space-6)">
               <div>
                 <p style="font-size:0.75rem;font-weight:var(--fw-bold);text-transform:uppercase;letter-spacing:0.08em;color:var(--color-slate-500);margin-bottom:var(--space-2)">AI Confidence</p>
@@ -313,29 +256,24 @@ export function renderReport() {
               <div>
                 <p style="font-size:0.75rem;font-weight:var(--fw-bold);text-transform:uppercase;letter-spacing:0.08em;color:var(--color-slate-500);margin-bottom:var(--space-2)">Ecological Risk Score</p>
                 <p id="ai-risk-val" style="font-size:1.5rem;font-weight:var(--fw-bold);color:var(--color-slate-900)"></p>
-                <div class="risk-bar-track">
-                  <div id="ai-risk-bar" class="risk-bar-fill"></div>
-                </div>
+                <div class="risk-bar-track"><div id="ai-risk-bar" class="risk-bar-fill"></div></div>
               </div>
             </div>
 
-            <!-- AI Tags -->
             <div style="margin-bottom:var(--space-5)">
               <p style="font-size:0.75rem;font-weight:var(--fw-bold);text-transform:uppercase;letter-spacing:0.08em;color:var(--color-slate-500);margin-bottom:var(--space-3)">Identified Tags</p>
               <div id="ai-tags-list" style="display:flex;flex-wrap:wrap;gap:var(--space-2)"></div>
             </div>
 
-            <!-- AI Summary -->
-            <div style="background:rgba(29,172,201,0.04);border-left:3px solid var(--color-primary);border-radius:0 var(--radius) var(--radius) 0;padding:var(--space-4) var(--space-5)">
+            <div style="background:rgba(74,222,128,0.04);border-left:3px solid var(--color-primary);border-radius:0 var(--radius) var(--radius) 0;padding:var(--space-4) var(--space-5)">
               <p style="font-size:0.75rem;font-weight:var(--fw-bold);text-transform:uppercase;letter-spacing:0.08em;color:var(--color-primary);margin-bottom:var(--space-2)">Ecological Assessment</p>
               <p id="ai-summary-text" style="color:var(--color-slate-700);font-size:0.9375rem;line-height:1.7;margin:0"></p>
             </div>
           </div>
 
-          <!-- Location Map -->
           <div id="map-section" style="margin-top:var(--space-6)">
             <div class="ai-result-card" style="padding:0;overflow:hidden">
-              <div style="padding:var(--space-5) var(--space-6);border-bottom:1px solid var(--color-slate-100);display:flex;align-items:center;gap:var(--space-3)">
+              <div style="padding:var(--space-5) var(--space-6);border-bottom:1px solid rgba(74,222,128,0.08);display:flex;align-items:center;gap:var(--space-3)">
                 <span class="material-symbols-outlined" style="color:var(--color-primary)">location_on</span>
                 <div>
                   <h3 style="font-size:1rem;font-weight:var(--fw-bold);color:var(--color-slate-900);margin:0">Sighting Location</h3>
@@ -345,17 +283,15 @@ export function renderReport() {
                   <span class="material-symbols-outlined" style="font-size:1rem">open_in_new</span> Open in Google Maps
                 </a>
               </div>
-              <!-- Leaflet map goes here -->
               <div id="report-map" style="height:320px;width:100%;background:var(--color-slate-100)"></div>
             </div>
           </div>
 
-          <!-- No-GPS Warning (shown instead of map when GPS unavailable) -->
-          <div id="no-gps-warning" style="display:none;margin-top:var(--space-6);padding:var(--space-5);background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.25);border-radius:var(--radius);display:flex;align-items:flex-start;gap:var(--space-3)">
+          <div id="no-gps-warning" style="display:none;margin-top:var(--space-6);padding:var(--space-5);background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.25);border-radius:var(--radius);align-items:flex-start;gap:var(--space-3)">
             <span class="material-symbols-outlined" style="color:#d97706;flex-shrink:0">location_off</span>
             <div>
-              <p style="font-weight:var(--fw-bold);color:#b45309;margin:0 0 4px">No GPS coordinates found</p>
-              <p style="font-size:0.875rem;color:var(--color-slate-600);margin:0">Your image didn't contain GPS metadata — map pinpointing is unavailable. To enable location mapping, turn on location tagging in your camera app before capturing images.</p>
+              <p style="font-weight:var(--fw-bold);color:#fbbf24;margin:0 0 4px">No GPS coordinates found</p>
+              <p style="font-size:0.875rem;color:var(--color-slate-600);margin:0">Your image didn't contain GPS metadata. Turn on location tagging in your camera app before capturing images.</p>
             </div>
           </div>
         </div>
@@ -363,11 +299,9 @@ export function renderReport() {
       </div>
     </section>
 
-<<<<<<< HEAD
     <!-- ═══ IMPACT SECTION ═══ -->
-    <section class="section" style="background:var(--color-bg-light);padding:var(--space-20) 0;position:relative;overflow:hidden">
-      <!-- Decorative grid -->
-      <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(45,90,76,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(45,90,76,0.02) 1px,transparent 1px);background-size:80px 80px;pointer-events:none"></div>
+    <section class="section" style="background:linear-gradient(180deg,#0d2010 0%,#0a1a0f 100%);padding:var(--space-20) 0;position:relative;overflow:hidden">
+      <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(74,222,128,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(74,222,128,0.02) 1px,transparent 1px);background-size:80px 80px;pointer-events:none"></div>
 
       <div class="container" style="position:relative;z-index:2">
         <div class="section-header reveal" style="margin-bottom:var(--space-16)">
@@ -402,7 +336,7 @@ export function renderReport() {
     </section>
 
     <!-- ═══ GUIDELINES ═══ -->
-    <section class="section" style="background:#fff;padding:var(--space-16) 0;border-top:1px solid var(--color-slate-200)">
+    <section class="section" style="background:linear-gradient(180deg,#0a1a0f 0%,#0d2010 100%);padding:var(--space-16) 0;border-top:1px solid rgba(74,222,128,0.1)">
       <div class="container">
         <div class="section-header reveal" style="margin-bottom:var(--space-12)">
           <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:var(--color-primary);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:var(--space-3);display:inline-block">Field Guide</span>
@@ -412,38 +346,40 @@ export function renderReport() {
 
         <div class="three-col-grid">
           <div class="card hover-lift reveal" data-delay="0" style="padding:var(--space-8) var(--space-6)">
-            <div style="width:3rem;height:3rem;border-radius:var(--radius-lg);background:rgba(29,172,201,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-4)">
+            <div style="width:3rem;height:3rem;border-radius:var(--radius-lg);background:rgba(74,222,128,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-4)">
               <span class="material-symbols-outlined" style="color:var(--color-primary)">photo_camera</span>
             </div>
             <h3 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2)">Clear Photos</h3>
             <p style="color:var(--color-slate-600);font-size:0.8125rem;line-height:1.7">Capture multiple angles — leaves, stems, flowers, and the overall habitat. Good photos increase AI confidence from 60% to 94%.</p>
           </div>
           <div class="card hover-lift reveal" data-delay="100" style="padding:var(--space-8) var(--space-6)">
-            <div style="width:3rem;height:3rem;border-radius:var(--radius-lg);background:rgba(29,172,201,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-4)">
+            <div style="width:3rem;height:3rem;border-radius:var(--radius-lg);background:rgba(74,222,128,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-4)">
               <span class="material-symbols-outlined" style="color:var(--color-primary)">my_location</span>
             </div>
             <h3 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2)">Precise Location</h3>
             <p style="color:var(--color-slate-600);font-size:0.8125rem;line-height:1.7">Enable GPS on your device. Accurate coordinates help our satellite cross-reference system validate sightings faster.</p>
           </div>
           <div class="card hover-lift reveal" data-delay="200" style="padding:var(--space-8) var(--space-6)">
-            <div style="width:3rem;height:3rem;border-radius:var(--radius-lg);background:rgba(29,172,201,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-4)">
+            <div style="width:3rem;height:3rem;border-radius:var(--radius-lg);background:rgba(74,222,128,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-4)">
               <span class="material-symbols-outlined" style="color:var(--color-primary)">description</span>
             </div>
             <h3 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2)">Detailed Notes</h3>
             <p style="color:var(--color-slate-600);font-size:0.8125rem;line-height:1.7">Note the habitat type, water proximity, spread area, and any identifiers. Context helps researchers assess severity accurately.</p>
           </div>
-=======
-    <!-- Expert Validation -->
-    <section style="background:#fff;padding:var(--space-16) 0;border-top:1px solid var(--color-slate-200)">
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ EXPERT VALIDATION ═══ -->
+    <section style="background:linear-gradient(180deg,#0d2010 0%,#0a1a0f 100%);padding:var(--space-16) 0;border-top:1px solid rgba(74,222,128,0.08)">
       <div class="container" style="max-width:48rem;text-align:center">
         <div class="reveal">
-          <span class="material-symbols-outlined" style="font-size:2.5rem;color:rgba(29,172,201,0.3);display:block;margin-bottom:var(--space-4)">science</span>
+          <span class="material-symbols-outlined" style="font-size:2.5rem;color:rgba(74,222,128,0.3);display:block;margin-bottom:var(--space-4)">science</span>
           <h2 style="font-weight:var(--fw-bold);margin-bottom:var(--space-3);font-size:1.5rem;color:var(--color-slate-900)">Request Expert Validation</h2>
           <p style="color:var(--color-slate-600);margin-bottom:var(--space-6);line-height:1.7">Unsure about a species? Submit your observation for expert review and containment recommendations.</p>
-          <a href="https://docs.google.com/forms/d/e/1FAIpQLSe-I2Ebso1LPhh4mPHetvJXRMBkVqK73gtSxA9aZ_Ty109mkg/viewform?usp=header" target="_blank" rel="noopener noreferrer" class="btn btn-lg btn-micro" style="border:1px solid var(--color-primary);color:var(--color-primary);background:rgba(29,172,201,0.06)">
+          <a href="https://docs.google.com/forms/d/e/1FAIpQLSe-I2Ebso1LPhh4mPHetvJXRMBkVqK73gtSxA9aZ_Ty109mkg/viewform?usp=header" target="_blank" rel="noopener noreferrer" class="btn btn-lg btn-micro" style="border:1px solid var(--color-primary);color:var(--color-primary);background:rgba(74,222,128,0.06)">
             <span class="material-symbols-outlined" style="font-size:1.125rem">contact_mail</span> Contact an Expert
           </a>
->>>>>>> 34cb9df1be9513923501b0d36d44c3d033a743fa
         </div>
       </div>
     </section>

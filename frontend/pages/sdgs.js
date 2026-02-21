@@ -3,9 +3,6 @@ import { renderNavbar } from '../components/navbar.js';
 import { renderFooter } from '../components/footer.js';
 
 export function renderAlerts() {
-<<<<<<< HEAD
-  return `
-=======
   const alerts = [
     { species: 'Lantana camara', region: 'Western Ghats Corridor', reports: 142, confidence: 94, satellite: 'NDVI anomaly confirmed', level: 'critical', color: '#ef4444', time: '2h ago' },
     { species: 'Water Hyacinth', region: 'Kerala Backwaters', reports: 28, confidence: 87, satellite: 'Canopy analysis pending', level: 'elevated', color: '#f59e0b', time: '6h ago' },
@@ -38,7 +35,7 @@ export function renderAlerts() {
 
   return {
     html: `
->>>>>>> 34cb9df1be9513923501b0d36d44c3d033a743fa
+
   ${renderNavbar('alerts')}
   <main style="padding-top:var(--nav-height)">
 
