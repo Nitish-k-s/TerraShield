@@ -2,7 +2,7 @@ node_modules
 .next
 
 # Local SQLite database (auto-created at runtime, never commit)
-lib/db/*.db
-lib/db/*.db-shm
-lib/db/*.db-wal
+# lib/db/*.db
+# lib/db/*.db-shm
+# lib/db/*.db-wal
 .env.local
