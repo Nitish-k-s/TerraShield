@@ -1,0 +1,7 @@
+node_modules
+.next
+
+# Local SQLite database (auto-created at runtime, never commit)
+# lib/db/exif.db
+# lib/db/*.db-shm
+# lib/db/*.db-wal
