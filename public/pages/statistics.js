@@ -91,7 +91,7 @@ export function renderStatistics() {
   <main style="padding-top:var(--nav-height);min-height:100vh;background:linear-gradient(160deg,#03140c 0%,#051a0f 50%,#03140c 100%)">
 
     <!-- Hero -->
-    <section style="padding:var(--space-14) 0 var(--space-6)">
+    <section style="padding:var(--space-14) 0 var(--space-12)">
       <div class="container">
         <div style="display:inline-flex;align-items:center;gap:var(--space-2);padding:0.25rem 0.75rem;border-radius:999px;background:rgba(46,221,130,0.08);border:1px solid rgba(46,221,130,0.2);margin-bottom:var(--space-4)">
           <span style="width:0.5rem;height:0.5rem;border-radius:50%;background:#2edd82;animation:pulse-glow 2s infinite"></span>
@@ -101,7 +101,7 @@ export function renderStatistics() {
         <p style="color:var(--color-slate-400);max-width:42rem;line-height:1.7;margin-bottom:var(--space-6)">District-level multi-species outbreak intelligence — backed by satellite validation and AI classification.</p>
 
         <!-- District Cascade Selector -->
-        <div id="filter-bar" style="display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center">
+        <div id="filter-bar" style="display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center;margin-bottom:var(--space-8)">
           <select id="sel-country" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#fff;padding:0.5rem 1rem;border-radius:var(--radius-md);font-size:0.82rem;cursor:pointer;min-width:10rem">
             <option value="">🌍 All Countries</option>
           </select>
@@ -120,7 +120,7 @@ export function renderStatistics() {
     <div class="container" style="padding-bottom:var(--space-20)" id="stats-root">
 
       <!-- Skeleton -->
-      <div id="stats-skeleton" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:var(--space-4);margin-bottom:var(--space-8)">
+      <div id="stats-skeleton" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:var(--space-6);margin-bottom:var(--space-8)">
         ${[...Array(6)].map(() => `<div style="height:6rem;border-radius:var(--radius-lg);background:rgba(255,255,255,0.04);animation:shimmer 1.5s infinite"></div>`).join('')}
       </div>
 
@@ -128,7 +128,7 @@ export function renderStatistics() {
       <div id="stats-content" style="display:none">
 
         <!-- ① Overview Cards -->
-        <div id="overview-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:var(--space-4);margin-bottom:var(--space-8)"></div>
+        <div id="overview-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:var(--space-6);margin-bottom:var(--space-8)"></div>
 
         <!-- ② Risk Distribution + Outbreak Score (2-col) -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);margin-bottom:var(--space-8)">
@@ -268,6 +268,62 @@ export function renderStatistics() {
 
       // ── Render functions ──────────────────────────────────────────────────────
 
+      // Initialize magnetic effect on all large cards (not overview cards)
+      function initMagneticCards() {
+        const largeCards = document.querySelectorAll('.card');
+        
+        largeCards.forEach(card => {
+          let rect = card.getBoundingClientRect();
+          let cx = rect.left + rect.width / 2;
+          let cy = rect.top + rect.height / 2;
+          let isNear = false;
+          
+          // Recalculate on scroll
+          const updateRect = () => {
+            rect = card.getBoundingClientRect();
+            cx = rect.left + rect.width / 2;
+            cy = rect.top + rect.height / 2;
+          };
+          window.addEventListener('scroll', updateRect, { passive: true });
+          
+          // Add will-change and transition
+          card.style.willChange = 'transform';
+          card.style.transition = 'transform 0.5s ease-in-out, box-shadow 0.3s ease';
+          
+          // Global mousemove for magnetic pull
+          const onGlobalMove = (e) => {
+            const dx = Math.abs(cx - e.clientX);
+            const dy = Math.abs(cy - e.clientY);
+            const padding = 150;
+            
+            if (dx < rect.width / 2 + padding && dy < rect.height / 2 + padding) {
+              if (!isNear) {
+                isNear = true;
+                card.style.transition = 'transform 0.3s ease-out, box-shadow 0.3s ease';
+              }
+              const ox = (e.clientX - cx) / 4;
+              const oy = (e.clientY - cy) / 4;
+              card.style.transform = `translate3d(${ox}px, ${oy}px, 0)`;
+            } else if (isNear) {
+              isNear = false;
+              card.style.transition = 'transform 0.5s ease-in-out, box-shadow 0.3s ease';
+              card.style.transform = 'translate3d(0, 0, 0)';
+            }
+          };
+          
+          window.addEventListener('mousemove', onGlobalMove, { passive: true });
+          
+          // Add hover effects
+          card.addEventListener('mouseenter', () => {
+            card.style.boxShadow = '0 15px 40px rgba(0,0,0,0.4), 0 0 20px rgba(74,222,128,0.15)';
+          });
+          
+          card.addEventListener('mouseleave', () => {
+            card.style.boxShadow = 'none';
+          });
+        });
+      }
+
       function renderOverviewCards(ov) {
         const cards = [
           { label: 'Total Reports', value: ov.total_reports.toLocaleString(), icon: 'description', color: '#2edd82' },
@@ -277,14 +333,78 @@ export function renderStatistics() {
           { label: 'AI Confidence', value: ov.avg_confidence + '%', icon: 'psychology', color: '#a78bfa' },
           { label: 'Top Species', value: ov.most_reported_species || '—', icon: 'eco', color: '#2edd82' },
         ];
-        document.getElementById('overview-cards').innerHTML = cards.map(c => `
-          <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);padding:var(--space-5);transition:border-color 0.2s" onmouseover="this.style.borderColor='${c.color}33'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)'">
+        document.getElementById('overview-cards').innerHTML = cards.map((c, idx) => `
+          <div class="magnetic-card" data-card-idx="${idx}" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);padding:var(--space-6);transition:all 0.3s ease;min-height:6rem;display:flex;flex-direction:column;justify-content:space-between;transform-style:preserve-3d;will-change:transform" onmouseover="this.style.borderColor='${c.color}33'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)'">
             <div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-3)">
               <span class="material-symbols-outlined" style="color:${c.color};font-size:1.1rem">${c.icon}</span>
               <span style="font-size:0.6rem;font-weight:var(--fw-bold);letter-spacing:0.12em;text-transform:uppercase;color:var(--color-slate-500)">${c.label}</span>
             </div>
-            <div style="font-size:1.5rem;font-weight:var(--fw-bold);color:#fff;font-family:monospace;word-break:break-word">${c.value}</div>
+            <div style="font-size:1.5rem;font-weight:var(--fw-bold);color:#fff;font-family:monospace;word-break:break-word;line-height:1.2">${c.value}</div>
           </div>`).join('');
+        
+        // Add magnetic pull + 3D tilt effect to cards
+        document.querySelectorAll('.magnetic-card').forEach(card => {
+          const cardData = cards[card.dataset.cardIdx];
+          let rect = card.getBoundingClientRect();
+          let cx = rect.left + rect.width / 2;
+          let cy = rect.top + rect.height / 2;
+          let isNear = false;
+          
+          // Recalculate on scroll
+          const updateRect = () => {
+            rect = card.getBoundingClientRect();
+            cx = rect.left + rect.width / 2;
+            cy = rect.top + rect.height / 2;
+          };
+          window.addEventListener('scroll', updateRect, { passive: true });
+          
+          // Global mousemove for magnetic pull
+          const onGlobalMove = (e) => {
+            const dx = Math.abs(cx - e.clientX);
+            const dy = Math.abs(cy - e.clientY);
+            const padding = 120;
+            
+            if (dx < rect.width / 2 + padding && dy < rect.height / 2 + padding) {
+              isNear = true;
+              const ox = (e.clientX - cx) / 3;
+              const oy = (e.clientY - cy) / 3;
+              card.style.transform = `translate3d(${ox}px, ${oy}px, 0)`;
+            } else if (isNear) {
+              isNear = false;
+              card.style.transform = 'translate3d(0, 0, 0)';
+            }
+          };
+          
+          window.addEventListener('mousemove', onGlobalMove, { passive: true });
+          
+          // Local mousemove for 3D tilt when hovering directly
+          card.addEventListener('mouseenter', () => {
+            card.style.transition = 'transform 0.1s ease-out, box-shadow 0.3s ease, border-color 0.2s';
+          });
+          
+          card.addEventListener('mousemove', (e) => {
+            const cardRect = card.getBoundingClientRect();
+            const x = e.clientX - cardRect.left;
+            const y = e.clientY - cardRect.top;
+            const centerX = cardRect.width / 2;
+            const centerY = cardRect.height / 2;
+            const rotateX = (y - centerY) / 8;
+            const rotateY = (centerX - x) / 8;
+            
+            const ox = (e.clientX - cx) / 3;
+            const oy = (e.clientY - cy) / 3;
+            
+            card.style.transform = `translate3d(${ox}px, ${oy}px, 0) perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`;
+            card.style.boxShadow = `0 15px 40px rgba(0,0,0,0.4), 0 0 25px ${cardData.color}33`;
+          });
+          
+          card.addEventListener('mouseleave', () => {
+            card.style.transition = 'transform 0.5s ease-in-out, box-shadow 0.3s ease, border-color 0.2s';
+            card.style.transform = 'translate3d(0, 0, 0) perspective(1000px) rotateX(0) rotateY(0) scale(1)';
+            card.style.boxShadow = 'none';
+            isNear = false;
+          });
+        });
       }
 
       function renderDonut(rd) {
@@ -486,6 +606,9 @@ export function renderStatistics() {
           renderTimeTrend(d.time_trends || []);
           renderAlerts(d.alerts || []);
           renderClusters(d.clusters || []);
+
+          // Initialize magnetic effect on all large cards
+          initMagneticCards();
 
           // Populate district selectors on first load
           if (districtData.length === 0 && d.district_list) {
