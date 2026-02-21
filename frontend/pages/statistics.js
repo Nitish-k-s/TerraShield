@@ -1,7 +1,88 @@
-// Statistics Page – Ecological Intelligence Dashboard
+// Statistics – District-Level Ecological Intelligence Dashboard
 import { renderNavbar, initNavbarAuth } from '../components/navbar.js';
 import { renderFooter } from '../components/footer.js';
 import { getSessionToken } from '../utils/auth.js';
+
+// ─── Colour helpers ────────────────────────────────────────────────────────────
+const RISK_COLOR = { Critical: '#ef4444', Elevated: '#f59e0b', Monitoring: '#2edd82' };
+const RISK_BG = { Critical: 'rgba(239,68,68,0.12)', Elevated: 'rgba(245,158,11,0.12)', Monitoring: 'rgba(46,221,130,0.08)' };
+
+function riskColor(level) { return RISK_COLOR[level] || '#2edd82'; }
+function riskBg(level) { return RISK_BG[level] || 'rgba(46,221,130,0.08)'; }
+function scoreToLevel(s) { return s >= 7 ? 'Critical' : s >= 4 ? 'Elevated' : 'Monitoring'; }
+function pct(a, b) { return b > 0 ? Math.round((a / b) * 100) : 0; }
+
+// ─── SVG Chart Helpers ────────────────────────────────────────────────────────
+
+/** Mini horizontal bar (returns SVG string) */
+function miniBar(val, max, color = '#2edd82', h = 6) {
+  const w = max > 0 ? Math.round((val / max) * 100) : 0;
+  return `<div style="width:100%;height:${h}px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden">
+    <div style="height:100%;width:${w}%;background:${color};border-radius:999px;transition:width 0.6s ease"></div></div>`;
+}
+
+/** Donut SVG */
+function donutSVG(low, moderate, high) {
+  const total = low + moderate + high || 1;
+  const r = 48; const cx = 60; const cy = 60;
+  const circ = 2 * Math.PI * r;
+  const lowA = (low / total) * circ;
+  const modA = (moderate / total) * circ;
+  const highA = (high / total) * circ;
+  // offsets: high starts at top, then moderate, then low
+  const highOff = 0;
+  const modOff = circ - highA;
+  const lowOff = circ - highA - modA;
+  const arc = (len, gap, offset, color) =>
+    `<circle r="${r}" cx="${cx}" cy="${cy}" fill="none" stroke="${color}" stroke-width="14"
+      stroke-dasharray="${len} ${gap}" stroke-dashoffset="${offset}" stroke-linecap="butt"
+      style="transform:rotate(-90deg);transform-origin:${cx}px ${cy}px"/>`;
+  return `<svg width="120" height="120" viewBox="0 0 120 120">
+    <circle r="${r}" cx="${cx}" cy="${cy}" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="14"/>
+    ${high > 0 ? arc(highA, circ - highA, highOff, '#ef4444') : ''}
+    ${moderate > 0 ? arc(modA, circ - modA, modOff, '#f59e0b') : ''}
+    ${low > 0 ? arc(lowA, circ - lowA, lowOff, '#2edd82') : ''}
+    <text x="${cx}" y="${cy - 6}" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold">${total}</text>
+    <text x="${cx}" y="${cy + 10}" text-anchor="middle" fill="#6b7280" font-size="8">Reports</text>
+  </svg>`;
+}
+
+/** Line chart SVG (last 30 days) */
+function lineChartSVG(trends) {
+  const W = 600, H = 120, pad = 10;
+  const counts = trends.map(t => t.count);
+  const maxC = Math.max(...counts, 1);
+  const pts = counts.map((c, i) => {
+    const x = pad + (i / (counts.length - 1 || 1)) * (W - pad * 2);
+    const y = H - pad - ((c / maxC) * (H - pad * 2));
+    return `${x},${y}`;
+  }).join(' ');
+  const areaBase = H - pad;
+  const areaPoints = `${pad},${areaBase} ${pts} ${W - pad},${areaBase}`;
+  // x-axis labels (every 5 days)
+  const labels = trends.filter((_, i) => i % 5 === 0 || i === trends.length - 1)
+    .map(t => {
+      const i = trends.indexOf(t);
+      const x = pad + (i / (counts.length - 1 || 1)) * (W - pad * 2);
+      return `<text x="${x}" y="${H + 16}" text-anchor="middle" fill="#6b7280" font-size="9">${t.date.slice(5)}</text>`;
+    }).join('');
+  return `<svg viewBox="0 0 ${W} ${H + 20}" style="width:100%;height:auto;overflow:visible">
+    <defs>
+      <linearGradient id="lg-line" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#2edd82" stop-opacity="0.3"/>
+        <stop offset="100%" stop-color="#2edd82" stop-opacity="0.0"/>
+      </linearGradient>
+    </defs>
+    <polygon points="${areaPoints}" fill="url(#lg-line)"/>
+    <polyline points="${pts}" fill="none" stroke="#2edd82" stroke-width="2" stroke-linejoin="round"/>
+    ${counts.map((c, i) => {
+    const x = pad + (i / (counts.length - 1 || 1)) * (W - pad * 2);
+    const y = H - pad - ((c / maxC) * (H - pad * 2));
+    return c > 0 ? `<circle cx="${x}" cy="${y}" r="3" fill="#2edd82"/>` : ''
+  }).join('')}
+    ${labels}
+  </svg>`;
+}
 
 export function renderStatistics() {
   return {
@@ -9,186 +90,138 @@ export function renderStatistics() {
   ${renderNavbar('statistics')}
   <main style="padding-top:var(--nav-height);min-height:100vh;background:linear-gradient(160deg,#03140c 0%,#051a0f 50%,#03140c 100%)">
 
-    <!-- Header -->
-    <section style="padding:var(--space-16) 0 var(--space-8)">
+    <!-- Hero -->
+    <section style="padding:var(--space-14) 0 var(--space-6)">
       <div class="container">
-        <div style="display:inline-flex;align-items:center;gap:var(--space-2);padding:0.25rem 0.75rem;border-radius:999px;background:rgba(46,221,130,0.08);border:1px solid rgba(46,221,130,0.2);margin-bottom:var(--space-5)">
+        <div style="display:inline-flex;align-items:center;gap:var(--space-2);padding:0.25rem 0.75rem;border-radius:999px;background:rgba(46,221,130,0.08);border:1px solid rgba(46,221,130,0.2);margin-bottom:var(--space-4)">
           <span style="width:0.5rem;height:0.5rem;border-radius:50%;background:#2edd82;animation:pulse-glow 2s infinite"></span>
-          <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:#2edd82;text-transform:uppercase;letter-spacing:0.15em">AI-Powered Monitoring System</span>
+          <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:#2edd82;text-transform:uppercase;letter-spacing:0.15em">District Ecological Intelligence</span>
         </div>
-        <h1 class="font-serif" style="font-size:clamp(2rem,5vw,3.25rem);font-weight:var(--fw-bold);color:#fff;margin-bottom:var(--space-3)">Ecological Intelligence Dashboard</h1>
-        <p style="color:var(--color-slate-400);max-width:38rem;line-height:1.7">Real-time terrestrial biosecurity analytics powered by satellite imagery and citizen-led AI validation.</p>
+        <h1 class="font-serif" style="font-size:clamp(1.75rem,4vw,2.75rem);font-weight:var(--fw-bold);color:#fff;margin-bottom:var(--space-2)">Invasion Analytics Dashboard</h1>
+        <p style="color:var(--color-slate-400);max-width:42rem;line-height:1.7;margin-bottom:var(--space-6)">District-level multi-species outbreak intelligence — backed by satellite validation and AI classification.</p>
+
+        <!-- District Cascade Selector -->
+        <div id="filter-bar" style="display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center">
+          <select id="sel-country" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#fff;padding:0.5rem 1rem;border-radius:var(--radius-md);font-size:0.82rem;cursor:pointer;min-width:10rem">
+            <option value="">🌍 All Countries</option>
+          </select>
+          <select id="sel-state" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#fff;padding:0.5rem 1rem;border-radius:var(--radius-md);font-size:0.82rem;cursor:pointer;min-width:10rem" disabled>
+            <option value="">All States</option>
+          </select>
+          <select id="sel-district" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#fff;padding:0.5rem 1rem;border-radius:var(--radius-md);font-size:0.82rem;cursor:pointer;min-width:12rem" disabled>
+            <option value="">All Districts</option>
+          </select>
+          <button id="btn-reset" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#ef4444;padding:0.5rem 1rem;border-radius:var(--radius-md);font-size:0.78rem;cursor:pointer;font-weight:var(--fw-bold)" onclick="window._statsReset()">✕ Reset</button>
+          <span id="filter-label" style="font-size:0.72rem;color:var(--color-slate-500)"></span>
+        </div>
       </div>
     </section>
 
-    <!-- Skeleton / Content wrapper -->
-    <div class="container" style="padding-bottom:var(--space-20)">
+    <div class="container" style="padding-bottom:var(--space-20)" id="stats-root">
 
-      <!-- Skeleton shown while loading -->
-      <div id="stats-skeleton">
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:var(--space-5);margin-bottom:var(--space-8)">
-          ${[1, 2, 3, 4].map(() => `<div style="height:7rem;border-radius:var(--radius-lg);background:rgba(255,255,255,0.04);animation:shimmer 1.5s infinite"></div>`).join('')}
-        </div>
-        <div style="height:18rem;border-radius:var(--radius-lg);background:rgba(255,255,255,0.04);animation:shimmer 1.5s infinite;margin-bottom:var(--space-8)"></div>
-        <div style="height:14rem;border-radius:var(--radius-lg);background:rgba(255,255,255,0.04);animation:shimmer 1.5s infinite"></div>
+      <!-- Skeleton -->
+      <div id="stats-skeleton" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:var(--space-4);margin-bottom:var(--space-8)">
+        ${[...Array(6)].map(() => `<div style="height:6rem;border-radius:var(--radius-lg);background:rgba(255,255,255,0.04);animation:shimmer 1.5s infinite"></div>`).join('')}
       </div>
 
-      <!-- Real content (hidden until data loads) -->
+      <!-- All content (hidden while loading) -->
       <div id="stats-content" style="display:none">
 
-        <!-- ── Metric Cards ────────────────────────────────────────────── -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:var(--space-5);margin-bottom:var(--space-8)">
+        <!-- ① Overview Cards -->
+        <div id="overview-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:var(--space-4);margin-bottom:var(--space-8)"></div>
 
-          <div class="card hover-lift" style="padding:var(--space-6);background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);backdrop-filter:blur(12px)">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:var(--space-4)">
-              <span style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.12em;text-transform:uppercase;color:var(--color-slate-500)">Total Reports</span>
-              <span class="material-symbols-outlined" style="color:#2edd82;font-size:1.25rem">description</span>
-            </div>
-            <div id="stat-total" class="font-serif" style="font-size:2.25rem;font-weight:var(--fw-bold);color:#fff" data-count="0">0</div>
-            <div style="margin-top:var(--space-2);font-size:0.7rem;color:#2edd82;display:flex;align-items:center;gap:0.25rem">
-              <span class="material-symbols-outlined" style="font-size:0.9rem">analytics</span>All time, AI-analysed
+        <!-- ② Risk Distribution + Outbreak Score (2-col) -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);margin-bottom:var(--space-8)">
+
+          <!-- Donut -->
+          <div class="card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);padding:var(--space-6)">
+            <div style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.15em;text-transform:uppercase;color:var(--color-slate-500);margin-bottom:var(--space-5)">Outbreak Risk Distribution</div>
+            <div style="display:flex;align-items:center;gap:var(--space-6)">
+              <div id="donut-wrap" style="flex-shrink:0"></div>
+              <div id="donut-legend" style="flex:1"></div>
             </div>
           </div>
 
-          <div class="card hover-lift" style="padding:var(--space-6);background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);backdrop-filter:blur(12px)">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:var(--space-4)">
-              <span style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.12em;text-transform:uppercase;color:var(--color-slate-500)">Active Clusters</span>
-              <span class="material-symbols-outlined" style="color:#2edd82;font-size:1.25rem">biotech</span>
-            </div>
-            <div id="stat-clusters" class="font-serif" style="font-size:2.25rem;font-weight:var(--fw-bold);color:#fff" data-count="0">0</div>
-            <div style="margin-top:var(--space-2);font-size:0.7rem;color:var(--color-slate-500)">Outbreak zones (7-day window)</div>
+          <!-- Outbreak Confidence Score -->
+          <div class="card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);padding:var(--space-6)">
+            <div style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.15em;text-transform:uppercase;color:var(--color-slate-500);margin-bottom:var(--space-4)">Outbreak Confidence Score</div>
+            <div id="outbreak-score-panel"></div>
           </div>
-
-          <div class="card hover-lift" style="padding:var(--space-6);background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);backdrop-filter:blur(12px)">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:var(--space-4)">
-              <span style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.12em;text-transform:uppercase;color:var(--color-slate-500)">Invasive (30d)</span>
-              <span class="material-symbols-outlined" style="color:#2edd82;font-size:1.25rem">insights</span>
-            </div>
-            <div id="stat-30d" class="font-serif" style="font-size:2.25rem;font-weight:var(--fw-bold);color:#fff" data-count="0">0</div>
-            <div style="margin-top:var(--space-2);font-size:0.7rem;color:#ef4444;display:flex;align-items:center;gap:0.25rem">
-              <span class="material-symbols-outlined" style="font-size:0.9rem">trending_up</span><span id="stat-invasive-pct">–</span>% invasive
-            </div>
-          </div>
-
-          <div class="card hover-lift" style="padding:var(--space-6);background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);backdrop-filter:blur(12px)">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:var(--space-4)">
-              <span style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.12em;text-transform:uppercase;color:var(--color-slate-500)">System Risk</span>
-              <span class="material-symbols-outlined" style="color:#2edd82;font-size:1.25rem">radar</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:var(--space-3)">
-              <div id="stat-risk" class="font-serif" style="font-size:1.75rem;font-weight:var(--fw-bold);color:#fff">–</div>
-              <div id="stat-risk-dot" style="width:0.75rem;height:0.75rem;border-radius:50%;background:#f59e0b"></div>
-            </div>
-            <div style="margin-top:var(--space-2);font-size:0.7rem;color:var(--color-slate-500)">Current threat level</div>
-          </div>
-
         </div>
 
-        <!-- ── Charts Row ──────────────────────────────────────────────── -->
-        <div style="display:grid;grid-template-columns:1fr 2fr;gap:var(--space-6);margin-bottom:var(--space-8)">
-
-          <!-- Donut Chart -->
-          <div class="card" style="padding:var(--space-8);background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);backdrop-filter:blur(12px);display:flex;flex-direction:column;align-items:center">
-            <div style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.15em;text-transform:uppercase;color:var(--color-slate-500);margin-bottom:var(--space-8);align-self:flex-start">Classification Ratio</div>
-            <div style="position:relative;width:11rem;height:11rem;margin-bottom:var(--space-8)">
-              <svg viewBox="0 0 100 100" style="transform:rotate(-90deg);width:100%;height:100%">
-                <!-- Background track -->
-                <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(239,68,68,0.15)" stroke-width="14"/>
-                <!-- Non-invasive arc (green) -->
-                <circle id="donut-green" cx="50" cy="50" r="38" fill="none"
-                  stroke="#2edd82" stroke-width="14"
-                  stroke-dasharray="238.8" stroke-dashoffset="238.8"
-                  style="transition:stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)"/>
-                <!-- Invasive arc (red) -->
-                <circle id="donut-red" cx="50" cy="50" r="38" fill="none"
-                  stroke="#ef4444" stroke-width="14"
-                  stroke-dasharray="238.8" stroke-dashoffset="238.8"
-                  style="transition:stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1) 0.3s"/>
-              </svg>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <span id="donut-label-pct" class="font-serif" style="font-size:1.75rem;font-weight:var(--fw-bold);color:#fff">–</span>
-                <span style="font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-slate-400)">Invasive</span>
-              </div>
-            </div>
-            <div style="display:flex;gap:var(--space-6);font-size:0.7rem;width:100%;justify-content:center">
-              <div style="display:flex;align-items:center;gap:var(--space-2)">
-                <span style="width:0.75rem;height:0.75rem;border-radius:2px;background:#ef4444;flex-shrink:0"></span>
-                <span style="color:var(--color-slate-400)">Invasive</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:var(--space-2)">
-                <span style="width:0.75rem;height:0.75rem;border-radius:2px;background:#2edd82;flex-shrink:0"></span>
-                <span style="color:var(--color-slate-400)">Non-invasive</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Bar Chart -->
-          <div class="card" style="padding:var(--space-8);background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);backdrop-filter:blur(12px)">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-8)">
-              <span style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.15em;text-transform:uppercase;color:var(--color-slate-500)">Reports — Last 7 Days</span>
-              <span id="bar-total-label" style="font-size:0.7rem;color:#2edd82"></span>
-            </div>
-            <div id="bar-chart" style="height:10rem;display:flex;align-items:flex-end;gap:var(--space-3);width:100%">
-              <!-- Bars injected by JS -->
-              ${[0, 1, 2, 3, 4, 5, 6].map(i => `
-                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:var(--space-2)">
-                  <div class="bar-track" style="width:100%;position:relative;background:rgba(46,221,130,0.08);border-radius:var(--radius-sm) var(--radius-sm) 0 0;height:9rem;display:flex;align-items:flex-end">
-                    <div class="bar-fill-${i}" style="width:100%;height:0%;background:linear-gradient(180deg,#2edd82,#1aab63);border-radius:var(--radius-sm) var(--radius-sm) 0 0;transition:height 1s cubic-bezier(0.4,0,0.2,1) ${i * 80}ms;position:relative">
-                      <div class="bar-glow" style="position:absolute;inset:0;border-radius:inherit;box-shadow:0 -4px 12px rgba(46,221,130,0.3)"></div>
-                    </div>
-                  </div>
-                  <span class="bar-day-${i}" style="font-size:0.6rem;font-weight:var(--fw-bold);text-transform:uppercase;letter-spacing:0.08em;color:var(--color-slate-500)">–</span>
-                </div>`).join('')}
-            </div>
-          </div>
-
+        <!-- ③ Top Districts Bar Chart -->
+        <div class="card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);padding:var(--space-6);margin-bottom:var(--space-8)">
+          <div style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.15em;text-transform:uppercase;color:var(--color-slate-500);margin-bottom:var(--space-5)">🗺 Top Districts by Risk Score</div>
+          <div id="top-districts-chart"></div>
         </div>
 
-        <!-- ── Top Species Line Graph ────────────────────────────────────── -->
-        <div class="card" style="padding:var(--space-8);background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);backdrop-filter:blur(12px);margin-bottom:var(--space-8)">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-6)">
-            <div style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.15em;text-transform:uppercase;color:var(--color-slate-500)">Most Reported Invasive Species</div>
-            <div style="font-size:0.65rem;color:var(--color-slate-500)">Report count by species</div>
-          </div>
-          <div id="species-line-graph" style="width:100%;min-height:18rem;position:relative">
-            <div style="color:var(--color-slate-500);font-size:0.85rem;text-align:center;padding:var(--space-8)">Loading species data…</div>
-          </div>
-          <div id="species-legend" style="display:flex;flex-wrap:wrap;gap:var(--space-4);margin-top:var(--space-5);justify-content:center"></div>
-        </div>
-
-        <!-- ── Outbreak Clusters Table ─────────────────────────────────── -->
-        <div class="card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);backdrop-filter:blur(12px);border-radius:var(--radius-lg);overflow:hidden">
-          <div style="padding:var(--space-6) var(--space-8);border-bottom:1px solid rgba(46,221,130,0.1);display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.15em;text-transform:uppercase;color:var(--color-slate-500)">Recent Outbreak Clusters</span>
-            <a href="#/alerts" style="font-size:0.7rem;font-weight:var(--fw-bold);color:#2edd82;display:flex;align-items:center;gap:var(--space-1);text-decoration:none">
-              VIEW ALERTS <span class="material-symbols-outlined" style="font-size:0.9rem">arrow_forward</span>
-            </a>
+        <!-- ④ Species × District Matrix -->
+        <div class="card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:var(--space-8)">
+          <div style="padding:var(--space-5) var(--space-6);border-bottom:1px solid rgba(46,221,130,0.1);display:flex;align-items:center;justify-content:space-between">
+            <span style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.15em;text-transform:uppercase;color:var(--color-slate-500)">🧬 Species × District Intelligence Matrix</span>
+            <span style="font-size:0.7rem;color:var(--color-slate-600)">Cells = number of reports</span>
           </div>
           <div style="overflow-x:auto">
-            <table id="clusters-table" style="width:100%;border-collapse:collapse;font-size:0.8rem">
+            <table id="species-matrix" style="border-collapse:collapse;font-size:0.78rem;width:100%;min-width:500px"></table>
+          </div>
+        </div>
+
+        <!-- ⑤ Time Trend Line Chart -->
+        <div class="card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);padding:var(--space-6);margin-bottom:var(--space-8)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-5)">
+            <span style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.15em;text-transform:uppercase;color:var(--color-slate-500)">📈 Reports per Day — Last 30 Days</span>
+            <span id="trend-total" style="font-size:0.78rem;color:#2edd82;font-weight:var(--fw-bold)"></span>
+          </div>
+          <div id="trend-chart"></div>
+        </div>
+
+        <!-- ⑥ Alert Intelligence Panel -->
+        <div class="card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:var(--space-8)">
+          <div style="padding:var(--space-5) var(--space-6);border-bottom:1px solid rgba(239,68,68,0.15);display:flex;align-items:center;gap:var(--space-3)">
+            <span style="width:8px;height:8px;border-radius:50%;background:#ef4444;animation:pulse-glow 1.5s infinite"></span>
+            <span style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.15em;text-transform:uppercase;color:#ef4444">⚠ Active Alert Intelligence Panel</span>
+            <span id="alert-count-badge" style="margin-left:auto;font-size:0.65rem;color:var(--color-slate-500)"></span>
+          </div>
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:0.75rem">
               <thead>
                 <tr style="background:rgba(255,255,255,0.02)">
-                  <th style="padding:var(--space-4) var(--space-6);text-align:left;font-size:0.6rem;font-weight:var(--fw-bold);letter-spacing:0.12em;text-transform:uppercase;color:var(--color-slate-500)">Species</th>
-                  <th style="padding:var(--space-4) var(--space-6);text-align:left;font-size:0.6rem;font-weight:var(--fw-bold);letter-spacing:0.12em;text-transform:uppercase;color:var(--color-slate-500)">Coordinates</th>
-                  <th style="padding:var(--space-4) var(--space-6);text-align:left;font-size:0.6rem;font-weight:var(--fw-bold);letter-spacing:0.12em;text-transform:uppercase;color:var(--color-slate-500)">Reports</th>
-                  <th style="padding:var(--space-4) var(--space-6);text-align:left;font-size:0.6rem;font-weight:var(--fw-bold);letter-spacing:0.12em;text-transform:uppercase;color:var(--color-slate-500)">Risk</th>
-                  <th style="padding:var(--space-4) var(--space-6);text-align:left;font-size:0.6rem;font-weight:var(--fw-bold);letter-spacing:0.12em;text-transform:uppercase;color:var(--color-slate-500)">Status</th>
+                  ${['Species', 'District / State', 'Coordinates', 'Risk Score', 'Label', 'Timestamp'].map(h =>
+      `<th style="padding:var(--space-3) var(--space-5);text-align:left;font-size:0.6rem;font-weight:var(--fw-bold);letter-spacing:0.1em;text-transform:uppercase;color:var(--color-slate-500)">${h}</th>`
+    ).join('')}
                 </tr>
               </thead>
-              <tbody id="clusters-tbody">
-                <tr><td colspan="5" style="padding:var(--space-8);text-align:center;color:var(--color-slate-500)">Loading…</td></tr>
-              </tbody>
+              <tbody id="alerts-tbody"></tbody>
             </table>
           </div>
         </div>
 
-      </div>
+        <!-- ⑦ Outbreak Clusters -->
+        <div class="card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:var(--space-8)">
+          <div style="padding:var(--space-5) var(--space-6);border-bottom:1px solid rgba(255,255,255,0.06)">
+            <span style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.15em;text-transform:uppercase;color:var(--color-slate-500)">🔴 Outbreak Cluster Map</span>
+          </div>
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:0.78rem">
+              <thead>
+                <tr style="background:rgba(255,255,255,0.02)">
+                  ${['Species', 'Coordinates', 'Reports', 'Avg Risk', 'Level'].map(h =>
+      `<th style="padding:var(--space-3) var(--space-5);text-align:left;font-size:0.6rem;font-weight:var(--fw-bold);letter-spacing:0.1em;text-transform:uppercase;color:var(--color-slate-500)">${h}</th>`
+    ).join('')}
+                </tr>
+              </thead>
+              <tbody id="clusters-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /stats-content -->
 
       <!-- Empty state -->
       <div id="stats-empty" style="display:none;padding:var(--space-20);text-align:center;color:var(--color-slate-400)">
         <span class="material-symbols-outlined" style="font-size:3rem;opacity:0.3;display:block;margin-bottom:var(--space-4)">monitoring</span>
         <p style="font-weight:var(--fw-bold);margin-bottom:var(--space-2)">No analysed reports yet</p>
-        <p style="font-size:0.85rem">Submit a sighting via the <a href="#/report" style="color:#2edd82">Report page</a> to start seeing statistics.</p>
+        <p style="font-size:0.85rem">Submit a sighting via the <a href="#/report" style="color:#2edd82">Report page</a> to start seeing district analytics.</p>
       </div>
 
     </div>
@@ -198,282 +231,360 @@ export function renderStatistics() {
     async init() {
       initNavbarAuth();
 
-      // Add shimmer keyframe if not already present
+      // shimmer style
       if (!document.getElementById('stats-shimmer-style')) {
         const s = document.createElement('style');
         s.id = 'stats-shimmer-style';
-        s.textContent = `@keyframes shimmer{0%{opacity:0.6}50%{opacity:0.3}100%{opacity:0.6}}`;
+        s.textContent = `@keyframes shimmer{0%{opacity:0.6}50%{opacity:0.3}100%{opacity:0.6}}
+          select option{background:#0d1f0f;color:#fff}`;
         document.head.appendChild(s);
       }
 
-      try {
-        const token = await getSessionToken();
-        const res = await fetch('/api/statistics', {
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      // ── District selector state ────────────────────────────────────────────
+      let districtData = [];  // DistrictListRow[]
+      let activeFilter = {};  // {country?, state?, district?}
+      let currentToken = null;
+
+      const selCountry = document.getElementById('sel-country');
+      const selState = document.getElementById('sel-state');
+      const selDistrict = document.getElementById('sel-district');
+      const filterLabel = document.getElementById('filter-label');
+
+      // ── Main data loader ─────────────────────────────────────────────────────
+      async function loadStats(filter = {}) {
+        const params = new URLSearchParams();
+        if (filter.country) params.set('country', filter.country);
+        if (filter.state) params.set('state', filter.state);
+        if (filter.district) params.set('district', filter.district);
+        const url = '/api/statistics' + (params.toString() ? '?' + params.toString() : '');
+
+        const token = currentToken;
+        const res = await fetch(url, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const d = await res.json();
+        return res.json();
+      }
 
-        if (!d.success || d.total_reports === 0) {
-          document.getElementById('stats-skeleton').style.display = 'none';
-          document.getElementById('stats-empty').style.display = 'block';
+      // ── Render functions ──────────────────────────────────────────────────────
+
+      function renderOverviewCards(ov) {
+        const cards = [
+          { label: 'Total Reports', value: ov.total_reports.toLocaleString(), icon: 'description', color: '#2edd82' },
+          { label: 'Invasive Species Reports', value: ov.invasive_count.toLocaleString(), icon: 'pest_control', color: '#ef4444' },
+          { label: 'High-Risk Zones', value: ov.high_risk_zones.toLocaleString(), icon: 'warning', color: '#f59e0b' },
+          { label: 'Active Clusters', value: ov.active_clusters.toLocaleString(), icon: 'hub', color: '#38bdf8' },
+          { label: 'AI Confidence', value: ov.avg_confidence + '%', icon: 'psychology', color: '#a78bfa' },
+          { label: 'Top Species', value: ov.most_reported_species || '—', icon: 'eco', color: '#2edd82' },
+        ];
+        document.getElementById('overview-cards').innerHTML = cards.map(c => `
+          <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);padding:var(--space-5);transition:border-color 0.2s" onmouseover="this.style.borderColor='${c.color}33'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)'">
+            <div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-3)">
+              <span class="material-symbols-outlined" style="color:${c.color};font-size:1.1rem">${c.icon}</span>
+              <span style="font-size:0.6rem;font-weight:var(--fw-bold);letter-spacing:0.12em;text-transform:uppercase;color:var(--color-slate-500)">${c.label}</span>
+            </div>
+            <div style="font-size:1.5rem;font-weight:var(--fw-bold);color:#fff;font-family:monospace;word-break:break-word">${c.value}</div>
+          </div>`).join('');
+      }
+
+      function renderDonut(rd) {
+        const total = rd.low + rd.moderate + rd.high || 1;
+        document.getElementById('donut-wrap').innerHTML = donutSVG(rd.low, rd.moderate, rd.high);
+        document.getElementById('donut-legend').innerHTML = [
+          ['Low Risk', rd.low, '#2edd82'],
+          ['Moderate Risk', rd.moderate, '#f59e0b'],
+          ['High Risk', rd.high, '#ef4444'],
+        ].map(([l, v, c]) => `
+          <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3)">
+            <div style="width:10px;height:10px;border-radius:2px;background:${c};flex-shrink:0"></div>
+            <div style="flex:1">
+              <div style="font-size:0.78rem;color:#fff;font-weight:var(--fw-bold)">${l}</div>
+              <div style="font-size:0.68rem;color:var(--color-slate-500)">${v} reports (${pct(v, total)}%)</div>
+            </div>
+          </div>`).join('');
+      }
+
+      function renderOutbreakScore(osc) {
+        const conf = osc.avg_ai_confidence;
+        const risk = osc.avg_risk_score;
+        const clusters = osc.active_clusters;
+        const scoreColor = risk >= 7 ? '#ef4444' : risk >= 4 ? '#f59e0b' : '#2edd82';
+        document.getElementById('outbreak-score-panel').innerHTML = `
+          <div style="font-size:2.5rem;font-weight:var(--fw-bold);color:${scoreColor};font-family:monospace;margin-bottom:var(--space-3)">${risk}/10</div>
+          <div style="font-size:0.7rem;color:var(--color-slate-500);margin-bottom:var(--space-4)">Avg AI Risk Score × Cluster Density</div>
+          ${[
+            ['AI Confidence', conf + '%', '#a78bfa'],
+            ['Avg Risk Score', risk + '/10', scoreColor],
+            ['Active Clusters', clusters, '#38bdf8'],
+          ].map(([l, v, c]) => `
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-2)">
+              <span style="font-size:0.72rem;color:var(--color-slate-400)">${l}</span>
+              <span style="font-size:0.78rem;font-weight:var(--fw-bold);color:${c}">${v}</span>
+            </div>`).join('')}
+          <div style="margin-top:var(--space-3);font-size:0.65rem;color:var(--color-slate-600);border-top:1px solid rgba(255,255,255,0.05);padding-top:var(--space-3)">
+            Formula: AI Confidence × Cluster Density × Satellite Anomaly Score
+          </div>`;
+      }
+
+      function renderTopDistricts(rows) {
+        const maxRisk = Math.max(...rows.map(r => r.avg_risk), 1);
+        document.getElementById('top-districts-chart').innerHTML = rows.length === 0
+          ? `<p style="color:var(--color-slate-500);font-size:0.82rem;text-align:center;padding:var(--space-6)">No district data yet — submit reports with GPS to generate spatial intelligence.</p>`
+          : rows.map(r => {
+            const col = riskColor(r.risk_level);
+            return `
+              <div style="margin-bottom:var(--space-3)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                  <div>
+                    <span style="font-weight:var(--fw-bold);color:#fff;font-size:0.82rem">${r.district}</span>
+                    <span style="color:var(--color-slate-500);font-size:0.68rem;margin-left:0.5rem">${r.state || r.country || ''}</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:var(--space-3)">
+                    <span style="font-size:0.72rem;color:${col};font-weight:var(--fw-bold)">${r.avg_risk}/10</span>
+                    <span style="font-size:0.6rem;font-weight:var(--fw-bold);color:${col};background:${riskBg(r.risk_level)};border:1px solid ${col}33;padding:0.15rem 0.5rem;border-radius:999px">${r.risk_level}</span>
+                    <span style="font-size:0.68rem;color:var(--color-slate-500)">${r.report_count} rpts</span>
+                  </div>
+                </div>
+                ${miniBar(r.avg_risk, maxRisk, col, 8)}
+              </div>`;
+          }).join('');
+      }
+
+      function renderSpeciesMatrix(rows) {
+        if (rows.length === 0) {
+          document.getElementById('species-matrix').innerHTML = `<tr><td style="padding:var(--space-8);text-align:center;color:var(--color-slate-500)">No species-district data yet.</td></tr>`;
           return;
         }
-
-        // ── Show content ────────────────────────────────────────────────
-        document.getElementById('stats-skeleton').style.display = 'none';
-        document.getElementById('stats-content').style.display = 'block';
-
-        // Metric cards
-        document.getElementById('stat-total').textContent = d.total_reports.toLocaleString();
-        document.getElementById('stat-clusters').textContent = d.active_clusters;
-        document.getElementById('stat-30d').textContent = d.total_reports_30d.toLocaleString();
-        document.getElementById('stat-invasive-pct').textContent = d.invasive_pct;
-
-        const riskEl = document.getElementById('stat-risk');
-        const riskDot = document.getElementById('stat-risk-dot');
-        riskEl.textContent = d.system_risk;
-        const riskColors = { Critical: '#ef4444', Elevated: '#f59e0b', Monitoring: '#2edd82' };
-        riskDot.style.background = riskColors[d.system_risk] || '#2edd82';
-        riskEl.style.color = riskColors[d.system_risk] || '#fff';
-
-        // ── Donut chart ─────────────────────────────────────────────────
-        const circ = 2 * Math.PI * 38; // 238.8
-        const invasiveFrac = d.invasive_pct / 100;
-        const nonInvasiveFrac = 1 - invasiveFrac;
-
-        // Red arc = invasive (starts at top, goes clockwise)
-        const redLen = circ * invasiveFrac;
-        const redGap = circ - redLen;
-        const greenLen = circ * nonInvasiveFrac;
-        const greenGap = circ - greenLen;
-
-        // Green arc offset: starts after the red arc
-        const greenRotate = invasiveFrac * 360;
-
-        requestAnimationFrame(() => {
-          const donutRed = document.getElementById('donut-red');
-          const donutGreen = document.getElementById('donut-green');
-
-          donutRed.style.strokeDasharray = `${redLen} ${redGap}`;
-          donutRed.style.strokeDashoffset = '0';
-
-          donutGreen.style.strokeDasharray = `${greenLen} ${greenGap}`;
-          donutGreen.style.strokeDashoffset = `${-invasiveFrac * circ}`; // rotate green start
-          donutGreen.style.transform = `rotate(${greenRotate}deg)`;
-          donutGreen.style.transformOrigin = '50% 50%';
-
-          document.getElementById('donut-label-pct').textContent = `${d.invasive_pct}%`;
-        });
-
-        // ── Bar chart ───────────────────────────────────────────────────
-        const maxCount = Math.max(...d.daily_reports.map(r => r.count), 1);
-        const totalWeek = d.daily_reports.reduce((s, r) => s + r.count, 0);
-        document.getElementById('bar-total-label').textContent = `${totalWeek} this week`;
-
-        d.daily_reports.forEach((r, i) => {
-          const pct = Math.round((r.count / maxCount) * 100);
-          const fill = document.querySelector(`.bar-fill-${i}`);
-          const dayEl = document.querySelector(`.bar-day-${i}`);
-          if (fill) setTimeout(() => { fill.style.height = pct + '%'; }, 50);
-          if (dayEl) dayEl.textContent = r.day;
-        });
-
-        // ── Species line graph ───────────────────────────────────────────
-        const graphCont = document.getElementById('species-line-graph');
-        const legendCont = document.getElementById('species-legend');
-        if (d.top_species.length === 0) {
-          graphCont.innerHTML = `<p style="color:var(--color-slate-500);font-size:0.85rem;text-align:center;padding:var(--space-8)">No invasive species identified yet.</p>`;
-        } else {
-          const species = d.top_species; // [{species,count,pct},...]
-          const colors = ['#2edd82', '#ef4444', '#f59e0b', '#38bdf8', '#a78bfa', '#fb7185', '#34d399', '#fbbf24'];
-          const maxCount = Math.max(...species.map(s => s.count), 1);
-          const n = species.length;
-
-          // SVG dimensions
-          const W = 800, H = 300;
-          const pad = { top: 30, right: 30, bottom: 50, left: 55 };
-          const chartW = W - pad.left - pad.right;
-          const chartH = H - pad.top - pad.bottom;
-
-          // Nice Y-axis ticks
-          const yMax = Math.ceil(maxCount * 1.2) || 1;
-          const tickCount = 5;
-          const yTicks = Array.from({ length: tickCount + 1 }, (_, i) => Math.round((yMax / tickCount) * i));
-
-          // Build gridlines & Y labels
-          let gridLines = '';
-          let yLabels = '';
-          yTicks.forEach(val => {
-            const y = pad.top + chartH - (val / yMax) * chartH;
-            gridLines += `<line x1="${pad.left}" y1="${y}" x2="${W - pad.right}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4,4"/>`;
-            yLabels += `<text x="${pad.left - 10}" y="${y + 3}" fill="rgba(255,255,255,0.35)" font-size="10" text-anchor="end" font-family="monospace">${val}</text>`;
-          });
-
-          // X positions for each species
-          const xStep = n > 1 ? chartW / (n - 1) : chartW / 2;
-          const points = species.map((s, i) => ({
-            x: pad.left + (n > 1 ? i * xStep : chartW / 2),
-            y: pad.top + chartH - (s.count / yMax) * chartH,
-            species: s.species,
-            count: s.count
-          }));
-
-          // X-axis labels
-          let xLabels = points.map((p, i) => {
-            const label = species[i].species.length > 14 ? species[i].species.substring(0, 12) + '…' : species[i].species;
-            return `<text x="${p.x}" y="${H - 8}" fill="rgba(255,255,255,0.4)" font-size="9" text-anchor="middle" font-family="sans-serif" font-weight="600" text-transform="uppercase" letter-spacing="0.05em">${label}</text>`;
-          }).join('');
-
-          // Build the smooth path (catmull-rom-like using bezier curves)
-          let pathD = '';
-          if (points.length === 1) {
-            pathD = `M${points[0].x - 20},${points[0].y} L${points[0].x + 20},${points[0].y}`;
-          } else {
-            pathD = `M${points[0].x},${points[0].y}`;
-            for (let i = 0; i < points.length - 1; i++) {
-              const cp = (points[i + 1].x - points[i].x) * 0.4;
-              pathD += ` C${points[i].x + cp},${points[i].y} ${points[i + 1].x - cp},${points[i + 1].y} ${points[i + 1].x},${points[i + 1].y}`;
-            }
-          }
-
-          // Area fill path
-          const areaD = pathD + ` L${points[points.length - 1].x},${pad.top + chartH} L${points[0].x},${pad.top + chartH} Z`;
-
-          // Calculate path length for animation
-          const totalLen = 1500; // approximate, will be updated via JS
-
-          // Build dots
-          const dots = points.map((p, i) => `
-                        <circle class="species-dot" cx="${p.x}" cy="${p.y}" r="5" fill="${colors[0]}" stroke="#03140c" stroke-width="2" style="opacity:0;animation:species-dot-in 0.4s ease-out ${0.8 + i * 0.1}s forwards;cursor:pointer" data-species="${p.species}" data-count="${p.count}"/>
-                        <circle cx="${p.x}" cy="${p.y}" r="12" fill="${colors[0]}" opacity="0.15" style="animation:species-dot-in 0.4s ease-out ${0.8 + i * 0.1}s forwards;opacity:0"/>
-                    `).join('');
-
-          // Tooltip container
-          const tooltip = `<div id="species-tooltip" style="position:absolute;display:none;background:rgba(3,20,12,0.95);border:1px solid rgba(46,221,130,0.3);border-radius:8px;padding:6px 12px;font-size:0.7rem;color:#fff;pointer-events:none;z-index:20;backdrop-filter:blur(8px);box-shadow:0 4px 20px rgba(0,0,0,0.4)"><strong id="tt-species" style="color:#2edd82"></strong><br><span id="tt-count" style="color:rgba(255,255,255,0.7)"></span></div>`;
-
-          graphCont.innerHTML = `
-                        ${tooltip}
-                        <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" preserveAspectRatio="xMidYMid meet">
-                            <defs>
-                                <linearGradient id="line-grad-area" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stop-color="#2edd82" stop-opacity="0.25"/>
-                                    <stop offset="100%" stop-color="#2edd82" stop-opacity="0.01"/>
-                                </linearGradient>
-                                <filter id="glow-line">
-                                    <feGaussianBlur stdDeviation="3" result="blur"/>
-                                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                                </filter>
-                            </defs>
-
-                            <!-- Grid -->
-                            ${gridLines}
-                            ${yLabels}
-                            ${xLabels}
-
-                            <!-- Y-axis title -->
-                            <text x="14" y="${pad.top + chartH / 2}" fill="rgba(255,255,255,0.25)" font-size="9" text-anchor="middle" transform="rotate(-90,14,${pad.top + chartH / 2})" font-family="sans-serif" font-weight="600" letter-spacing="0.1em">REPORTS</text>
-
-                            <!-- Area fill -->
-                            <path d="${areaD}" fill="url(#line-grad-area)" style="opacity:0;animation:species-area-in 1s ease-out 0.5s forwards"/>
-
-                            <!-- Main line -->
-                            <path id="species-main-line" d="${pathD}" fill="none" stroke="#2edd82" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow-line)" style="stroke-dasharray:2000;stroke-dashoffset:2000;animation:species-line-draw 1.5s ease-out 0.2s forwards"/>
-
-                            <!-- Dots -->
-                            ${dots}
-
-                            <!-- Vertical hover lines -->
-                            ${points.map(p => `<line class="species-vline" x1="${p.x}" y1="${pad.top}" x2="${p.x}" y2="${pad.top + chartH}" stroke="rgba(46,221,130,0.15)" stroke-width="1" stroke-dasharray="3,3" style="opacity:0;transition:opacity 0.2s"/>`).join('')}
-                        </svg>
-                    `;
-
-          // Legend
-          legendCont.innerHTML = species.map((s, i) => `
-                        <div style="display:flex;align-items:center;gap:6px;font-size:0.7rem">
-                            <span style="width:10px;height:10px;border-radius:50%;background:${colors[0]};flex-shrink:0;box-shadow:0 0 6px ${colors[0]}40"></span>
-                            <span style="color:rgba(255,255,255,0.6);font-style:italic">${s.species}</span>
-                            <span style="color:#2edd82;font-weight:var(--fw-bold)">${s.count}</span>
-                        </div>
-                    `).join('');
-
-          // Dot hover interactivity
-          const ttEl = document.getElementById('species-tooltip');
-          const ttSpecies = document.getElementById('tt-species');
-          const ttCount = document.getElementById('tt-count');
-          const vlines = graphCont.querySelectorAll('.species-vline');
-
-          graphCont.querySelectorAll('.species-dot').forEach((dot, i) => {
-            dot.addEventListener('mouseenter', (e) => {
-              ttSpecies.textContent = dot.dataset.species;
-              ttCount.textContent = dot.dataset.count + ' report' + (dot.dataset.count == 1 ? '' : 's');
-              ttEl.style.display = 'block';
-              dot.setAttribute('r', '7');
-              if (vlines[i]) vlines[i].style.opacity = '1';
-            });
-            dot.addEventListener('mousemove', (e) => {
-              const rect = graphCont.getBoundingClientRect();
-              ttEl.style.left = (e.clientX - rect.left + 12) + 'px';
-              ttEl.style.top = (e.clientY - rect.top - 30) + 'px';
-            });
-            dot.addEventListener('mouseleave', () => {
-              ttEl.style.display = 'none';
-              dot.setAttribute('r', '5');
-              if (vlines[i]) vlines[i].style.opacity = '0';
-            });
-          });
-
-          // Inject animation keyframes
-          if (!document.getElementById('species-line-style')) {
-            const ls = document.createElement('style');
-            ls.id = 'species-line-style';
-            ls.textContent = `
-                            @keyframes species-line-draw { to { stroke-dashoffset: 0; } }
-                            @keyframes species-dot-in { to { opacity: 1; } }
-                            @keyframes species-area-in { to { opacity: 1; } }
-                        `;
-            document.head.appendChild(ls);
-          }
+        // Build district → species → count map
+        const districts = [...new Set(rows.map(r => r.district))];
+        const allSpecies = [...new Set(rows.map(r => r.species))].slice(0, 8); // cap at 8 species columns
+        const map = {};
+        for (const r of rows) {
+          if (!map[r.district]) map[r.district] = {};
+          map[r.district][r.species] = r.count;
         }
-
-        // ── Clusters table ──────────────────────────────────────────────
-        const tbody = document.getElementById('clusters-tbody');
-        if (!d.clusters || d.clusters.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" style="padding:var(--space-8);text-align:center;color:var(--color-slate-500);font-size:0.8rem">No active outbreak clusters detected</td></tr>`;
-        } else {
-          const levelColor = { critical: '#ef4444', elevated: '#f59e0b', monitoring: '#2edd82' };
-          tbody.innerHTML = d.clusters.map(c => {
-            const col = levelColor[c.level] || '#2edd82';
-            return `
-              <tr style="border-top:1px solid rgba(255,255,255,0.04);transition:background 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
-                <td style="padding:var(--space-4) var(--space-6)">
-                  <div style="font-weight:var(--fw-bold);color:#fff;font-style:italic">${c.species}</div>
-                  <div style="font-size:0.65rem;color:var(--color-slate-500)">${c.count} sightings in 5 km</div>
-                </td>
-                <td style="padding:var(--space-4) var(--space-6);font-family:monospace;font-size:0.72rem;color:var(--color-slate-400)">${c.lat}, ${c.lon}</td>
-                <td style="padding:var(--space-4) var(--space-6);font-weight:var(--fw-bold);color:#fff">${c.count}</td>
-                <td style="padding:var(--space-4) var(--space-6)">
-                  <div style="display:flex;align-items:center;gap:var(--space-2)">
-                    <div style="width:3.5rem;height:3px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden">
-                      <div style="height:100%;width:${Math.round(c.avg_risk * 10)}%;background:${col}"></div>
-                    </div>
-                    <span style="font-size:0.7rem;font-weight:var(--fw-bold);color:${col}">${c.avg_risk}/10</span>
-                  </div>
-                </td>
-                <td style="padding:var(--space-4) var(--space-6)">
-                  <span style="display:inline-flex;align-items:center;gap:var(--space-1);font-size:0.65rem;font-weight:var(--fw-bold);text-transform:uppercase;letter-spacing:0.1em;color:${col}">
-                    <span style="width:5px;height:5px;border-radius:50%;background:${col}"></span>${c.level}
-                  </span>
-                </td>
-              </tr>`;
+        const maxCell = Math.max(...rows.map(r => r.count), 1);
+        const headerCells = ['District/State', ...allSpecies, 'Total'].map(h =>
+          `<th style="padding:var(--space-3) var(--space-4);text-align:left;font-size:0.6rem;font-weight:var(--fw-bold);letter-spacing:0.1em;text-transform:uppercase;color:var(--color-slate-500);white-space:nowrap;background:rgba(255,255,255,0.02)">${h}</th>`
+        ).join('');
+        const bodyRows = districts.map(d => {
+          const dRows = rows.filter(r => r.district === d);
+          const state = dRows[0]?.state || dRows[0]?.country || '';
+          const total = Object.values(map[d] || {}).reduce((a, b) => a + b, 0);
+          const cells = allSpecies.map(sp => {
+            const v = map[d]?.[sp] || 0;
+            const intensity = Math.round((v / maxCell) * 0.7 * 255);
+            const bg = v > 0 ? `rgba(46,221,130,${(v / maxCell) * 0.35})` : 'transparent';
+            return `<td style="padding:var(--space-3) var(--space-4);text-align:center;background:${bg};font-weight:${v > 0 ? 'bold' : 'normal'};color:${v > 0 ? '#fff' : 'var(--color-slate-600)'}">${v || '—'}</td>`;
           }).join('');
-        }
-
-      } catch (err) {
-        console.error('[TerraShield] Statistics load error:', err);
-        document.getElementById('stats-skeleton').style.display = 'none';
-        document.getElementById('stats-empty').style.display = 'block';
+          return `<tr style="border-top:1px solid rgba(255,255,255,0.04)" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+            <td style="padding:var(--space-3) var(--space-5);min-width:8rem">
+              <div style="font-weight:var(--fw-bold);color:#fff;font-size:0.8rem">${d}</div>
+              <div style="font-size:0.65rem;color:var(--color-slate-500)">${state}</div>
+            </td>
+            ${cells}
+            <td style="padding:var(--space-3) var(--space-4);text-align:center;font-weight:bold;color:#2edd82">${total}</td>
+          </tr>`;
+        }).join('');
+        document.getElementById('species-matrix').innerHTML = `
+          <thead><tr>${headerCells}</tr></thead>
+          <tbody>${bodyRows}</tbody>`;
       }
+
+      function renderTimeTrend(trends) {
+        const total = trends.reduce((a, t) => a + t.count, 0);
+        document.getElementById('trend-total').textContent = `${total} reports in 30 days`;
+        document.getElementById('trend-chart').innerHTML = lineChartSVG(trends);
+      }
+
+      function renderAlerts(alerts) {
+        const badge = document.getElementById('alert-count-badge');
+        badge.textContent = `${alerts.length} active alerts`;
+        const tbody = document.getElementById('alerts-tbody');
+        if (alerts.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" style="padding:var(--space-8);text-align:center;color:var(--color-slate-500);font-size:0.8rem">No high-risk alerts for selected filter</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = alerts.map(a => {
+          const risk = a.ai_risk_score ?? 0;
+          const level = scoreToLevel(risk);
+          const col = riskColor(level);
+          const coords = (a.latitude && a.longitude)
+            ? `${a.latitude.toFixed(4)}, ${a.longitude.toFixed(4)}`
+            : '—';
+          const ts = a.ai_analysed_at ? new Date(a.ai_analysed_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
+          return `<tr style="border-top:1px solid rgba(255,255,255,0.04)" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+            <td style="padding:var(--space-3) var(--space-5);font-style:italic;color:#fff;font-weight:bold">${a.species || '—'}</td>
+            <td style="padding:var(--space-3) var(--space-5)">
+              <div style="color:#fff;font-size:0.78rem">${a.district || '—'}</div>
+              <div style="color:var(--color-slate-500);font-size:0.65rem">${a.state || a.country || ''}</div>
+            </td>
+            <td style="padding:var(--space-3) var(--space-5);font-family:monospace;font-size:0.7rem;color:var(--color-slate-400)">${coords}</td>
+            <td style="padding:var(--space-3) var(--space-5)">
+              <span style="font-weight:bold;color:${col}">${risk.toFixed(1)}/10</span>
+            </td>
+            <td style="padding:var(--space-3) var(--space-5)">
+              <span style="font-size:0.65rem;font-weight:bold;background:${riskBg(level)};color:${col};border:1px solid ${col}33;padding:0.15rem 0.5rem;border-radius:999px;text-transform:uppercase">${a.ai_label || level}</span>
+            </td>
+            <td style="padding:var(--space-3) var(--space-5);color:var(--color-slate-500);font-size:0.7rem">${ts}</td>
+          </tr>`;
+        }).join('');
+      }
+
+      function renderClusters(clusters) {
+        const tbody = document.getElementById('clusters-tbody');
+        if (!clusters || clusters.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" style="padding:var(--space-8);text-align:center;color:var(--color-slate-500);font-size:0.8rem">No active outbreak clusters detected</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = clusters.map(c => {
+          const col = riskColor(c.level === 'critical' ? 'Critical' : c.level === 'elevated' ? 'Elevated' : 'Monitoring');
+          return `<tr style="border-top:1px solid rgba(255,255,255,0.04)" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+            <td style="padding:var(--space-4) var(--space-5);font-style:italic;font-weight:bold;color:#fff">${c.species}</td>
+            <td style="padding:var(--space-4) var(--space-5);font-family:monospace;font-size:0.72rem;color:var(--color-slate-400)">${c.lat}, ${c.lon}</td>
+            <td style="padding:var(--space-4) var(--space-5);font-weight:bold;color:#fff">${c.count}</td>
+            <td style="padding:var(--space-4) var(--space-5)">
+              <div style="display:flex;align-items:center;gap:var(--space-2)">
+                <div style="width:3rem;height:3px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden">
+                  <div style="height:100%;width:${Math.round(c.avg_risk * 10)}%;background:${col}"></div>
+                </div>
+                <span style="font-size:0.72rem;font-weight:bold;color:${col}">${c.avg_risk}/10</span>
+              </div>
+            </td>
+            <td style="padding:var(--space-4) var(--space-5)">
+              <span style="font-size:0.65rem;font-weight:bold;text-transform:uppercase;color:${col}">${c.level}</span>
+            </td>
+          </tr>`;
+        }).join('');
+      }
+
+      // ── Main render orchestrator ─────────────────────────────────────────────
+      async function renderAll(filter = {}) {
+        try {
+          document.getElementById('stats-skeleton').style.display = 'grid';
+          document.getElementById('stats-content').style.display = 'none';
+          document.getElementById('stats-empty').style.display = 'none';
+
+          const d = await loadStats(filter);
+          if (!d.success) throw new Error(d.error || 'API error');
+
+          const ov = d.overview || {};
+          if (ov.total_reports === 0 && !filter.country && !filter.state && !filter.district) {
+            document.getElementById('stats-skeleton').style.display = 'none';
+            document.getElementById('stats-empty').style.display = 'block';
+            return;
+          }
+
+          document.getElementById('stats-skeleton').style.display = 'none';
+          document.getElementById('stats-content').style.display = 'block';
+
+          renderOverviewCards(ov);
+          renderDonut(d.risk_distribution || { low: 0, moderate: 0, high: 0 });
+          renderOutbreakScore(d.outbreak_score_components || {});
+          renderTopDistricts(d.top_districts || []);
+          renderSpeciesMatrix(d.species_by_district || []);
+          renderTimeTrend(d.time_trends || []);
+          renderAlerts(d.alerts || []);
+          renderClusters(d.clusters || []);
+
+          // Populate district selectors on first load
+          if (districtData.length === 0 && d.district_list) {
+            districtData = d.district_list;
+            populateSelectors(districtData);
+          }
+
+        } catch (err) {
+          console.error('[statistics]', err);
+          document.getElementById('stats-skeleton').style.display = 'none';
+          document.getElementById('stats-empty').style.display = 'block';
+        }
+      }
+
+      // ── Cascade Selector Population ──────────────────────────────────────────
+      function populateSelectors(list) {
+        const countries = [...new Set(list.map(r => r.country).filter(Boolean))].sort();
+        selCountry.innerHTML = '<option value="">🌍 All Countries</option>' +
+          countries.map(c => `<option value="${c}">${c}</option>`).join('');
+      }
+
+      function updateStateSelector(country) {
+        const states = [...new Set(
+          districtData.filter(r => !country || r.country === country).map(r => r.state).filter(Boolean)
+        )].sort();
+        selState.innerHTML = '<option value="">All States</option>' +
+          states.map(s => `<option value="${s}">${s}</option>`).join('');
+        selState.disabled = states.length === 0;
+      }
+
+      function updateDistrictSelector(country, state) {
+        const districts = [...new Set(
+          districtData
+            .filter(r => (!country || r.country === country) && (!state || r.state === state))
+            .map(r => r.district).filter(Boolean)
+        )].sort();
+        selDistrict.innerHTML = '<option value="">All Districts</option>' +
+          districts.map(d => `<option value="${d}">${d}</option>`).join('');
+        selDistrict.disabled = districts.length === 0;
+      }
+
+      // ── Selector event wiring ────────────────────────────────────────────────
+      selCountry.addEventListener('change', () => {
+        const c = selCountry.value;
+        updateStateSelector(c);
+        updateDistrictSelector(c, '');
+        selState.value = '';
+        selDistrict.value = '';
+        activeFilter = c ? { country: c } : {};
+        updateFilterLabel();
+        renderAll(activeFilter);
+      });
+
+      selState.addEventListener('change', () => {
+        const c = selCountry.value;
+        const s = selState.value;
+        updateDistrictSelector(c, s);
+        selDistrict.value = '';
+        activeFilter = { ...(c ? { country: c } : {}), ...(s ? { state: s } : {}) };
+        updateFilterLabel();
+        renderAll(activeFilter);
+      });
+
+      selDistrict.addEventListener('change', () => {
+        const c = selCountry.value;
+        const s = selState.value;
+        const district = selDistrict.value;
+        activeFilter = {
+          ...(c ? { country: c } : {}),
+          ...(s ? { state: s } : {}),
+          ...(district ? { district } : {}),
+        };
+        updateFilterLabel();
+        renderAll(activeFilter);
+      });
+
+      function updateFilterLabel() {
+        const parts = [activeFilter.country, activeFilter.state, activeFilter.district].filter(Boolean);
+        filterLabel.textContent = parts.length > 0 ? '📍 ' + parts.join(' › ') : '';
+      }
+
+      // Reset
+      window._statsReset = () => {
+        selCountry.value = '';
+        selState.value = '';
+        selDistrict.value = '';
+        updateStateSelector('');
+        updateDistrictSelector('', '');
+        activeFilter = {};
+        updateFilterLabel();
+        renderAll({});
+      };
+
+      // ── Boot ─────────────────────────────────────────────────────────────────
+      try {
+        currentToken = await getSessionToken();
+      } catch { /* no token */ }
+
+      renderAll({});
     },
   };
 }

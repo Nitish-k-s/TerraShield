@@ -39,7 +39,7 @@ export interface ReportSections {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const MODEL_NAME = "gemini-2.5-flash";
+const MODEL_NAME = "gemini-2.0-flash";
 
 const SECTION_HEADINGS = [
     "Species Overview",

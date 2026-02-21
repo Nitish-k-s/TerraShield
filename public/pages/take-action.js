@@ -886,6 +886,13 @@ export function renderReport() {
           return;
         }
 
+        // Guard: wait for satellite card to resolve before generating report
+        if (window._reportPayload.risk_level === 'Unknown' || window._reportPayload.current_ndvi === 0) {
+          label.textContent = '⏳ Waiting for satellite data to load…';
+          setTimeout(() => { label.textContent = 'Download Full Ecological Risk Report (PDF)'; }, 3000);
+          return;
+        }
+
         try {
           btn.disabled = true;
           label.textContent = 'Generating PDF report…';
