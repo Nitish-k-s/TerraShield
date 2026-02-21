@@ -112,8 +112,6 @@ TerraShield/
 ├── app/
 │   ├── layout.tsx                     # Root layout with TerraShield metadata
 │   ├── page.tsx                       # Redirects / → /index.html (the SPA)
-│   ├── login/
-│   │   └── page.tsx                   # Next.js login page (Supabase email+password)
 │   └── auth/
 │       └── callback/
 │           └── route.ts               # OAuth code exchange handler
@@ -122,6 +120,7 @@ TerraShield/
 │       │   └── route.ts               # POST: image upload → EXIF + GPS → SQLite insert
 │       └── analyse-exif/
 │           └── route.ts               # POST: { recordId } → Gemini Vision multimodal
+
 │
 ├── lib/
 │   ├── supabase/
