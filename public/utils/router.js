@@ -13,6 +13,7 @@ import { renderSignup } from '../pages/signup.js';
 import { renderForgotPassword } from '../pages/forgot-password.js';
 import { renderProfile } from '../pages/profile.js';
 import { renderStatistics } from '../pages/statistics.js';
+import { renderEnterpriseRegister } from '../pages/enterprise-register.js';
 
 const routes = {
     '/': renderHome,
@@ -20,6 +21,7 @@ const routes = {
     '/alerts': renderAlerts,
     '/report': renderReport,
     '/statistics': renderStatistics,
+    '/enterprise/register': renderEnterpriseRegister,
     '/login': renderLogin,
     '/signup': renderSignup,
     '/forgot-password': renderForgotPassword,
