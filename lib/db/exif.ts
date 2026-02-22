@@ -396,7 +396,6 @@ export function getPublicReports(): PublicReport[] {
                ai_risk_score, ai_confidence, created_at
         FROM   exif_data
         WHERE  ai_analysed_at IS NOT NULL
-          AND  ai_label IN ('invasive-plant', 'invasive-animal')
           AND  latitude  IS NOT NULL
           AND  longitude IS NOT NULL
           AND  created_at >= ?

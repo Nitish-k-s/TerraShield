@@ -160,7 +160,7 @@ export function renderAlerts() {
               window.L.circleMarker([r.lat, r.lon], {
                 radius: 8,
                 fillColor: color,
-                color: '#fff',
+                color: color,
                 weight: 2,
                 fillOpacity: 0.85,
               }).bindPopup(`
