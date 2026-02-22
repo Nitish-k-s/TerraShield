@@ -1,10 +1,10 @@
 // Footer Component
 export function renderFooter() {
-  const isRegister = typeof window !== 'undefined' && window.location.hash === '#/enterprise/register';
+  const isHidden = typeof window !== 'undefined' && (window.location.hash === '#/enterprise/register' || window.location.hash === '#/statistics');
 
-  const ctaSection = isRegister ? '' : `
+  const ctaSection = isHidden ? '' : `
   <!-- Enterprise API CTA Section -->
-  <section style="margin-top:40px;margin-bottom:100px;display:flex;justify-content:center;align-items:center;background:linear-gradient(135deg, #041f16, #062e21, #031a12);position:relative">
+  <section style="margin-top:-20px;margin-bottom:100px;display:flex;justify-content:center;align-items:center;background:linear-gradient(135deg, #041f16, #062e21, #031a12);position:relative">
     <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 30%, rgba(0,255,150,0.05), transparent 60%);pointer-events:none"></div>
     <div class="container" style="position:relative;z-index:2;max-width:800px;text-align:center">
       <div style="background:rgba(0,40,30,0.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(0,255,150,0.15);border-radius:20px;padding:var(--space-10) var(--space-8);box-shadow:0 0 40px rgba(0,255,150,0.08);transition:transform 0.4s ease-out, box-shadow 0.4s ease"
