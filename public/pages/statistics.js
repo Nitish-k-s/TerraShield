@@ -186,7 +186,7 @@ export function renderStatistics() {
             <table style="width:100%;border-collapse:collapse;font-size:0.75rem">
               <thead>
                 <tr style="background:rgba(255,255,255,0.02)">
-                  ${['Species', 'District / State', 'Coordinates', 'Risk Score', 'Label', 'Timestamp'].map(h =>
+                  ${['Species', 'District / State', 'Coordinates', 'Risk Score', 'Label', 'Timestamp', ''].map(h =>
       `<th style="padding:var(--space-3) var(--space-5);text-align:left;font-size:0.6rem;font-weight:var(--fw-bold);letter-spacing:0.1em;text-transform:uppercase;color:var(--color-slate-500)">${h}</th>`
     ).join('')}
                 </tr>
@@ -236,6 +236,7 @@ export function renderStatistics() {
         const s = document.createElement('style');
         s.id = 'stats-shimmer-style';
         s.textContent = `@keyframes shimmer{0%{opacity:0.6}50%{opacity:0.3}100%{opacity:0.6}}
+          @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
           select option{background:#0d1f0f;color:#fff}`;
         document.head.appendChild(s);
       }
@@ -271,13 +272,13 @@ export function renderStatistics() {
       // Initialize magnetic effect on all large cards (not overview cards)
       function initMagneticCards() {
         const largeCards = document.querySelectorAll('.card');
-        
+
         largeCards.forEach(card => {
           let rect = card.getBoundingClientRect();
           let cx = rect.left + rect.width / 2;
           let cy = rect.top + rect.height / 2;
           let isNear = false;
-          
+
           // Recalculate on scroll
           const updateRect = () => {
             rect = card.getBoundingClientRect();
@@ -285,17 +286,17 @@ export function renderStatistics() {
             cy = rect.top + rect.height / 2;
           };
           window.addEventListener('scroll', updateRect, { passive: true });
-          
+
           // Add will-change and transition
           card.style.willChange = 'transform';
           card.style.transition = 'transform 0.5s ease-in-out, box-shadow 0.3s ease';
-          
+
           // Global mousemove for magnetic pull (reduced strength)
           const onGlobalMove = (e) => {
             const dx = Math.abs(cx - e.clientX);
             const dy = Math.abs(cy - e.clientY);
             const padding = 100; // Reduced from 150
-            
+
             if (dx < rect.width / 2 + padding && dy < rect.height / 2 + padding) {
               if (!isNear) {
                 isNear = true;
@@ -310,14 +311,14 @@ export function renderStatistics() {
               card.style.transform = 'translate3d(0, 0, 0)';
             }
           };
-          
+
           window.addEventListener('mousemove', onGlobalMove, { passive: true });
-          
+
           // Add hover effects
           card.addEventListener('mouseenter', () => {
             card.style.boxShadow = '0 15px 40px rgba(0,0,0,0.4), 0 0 20px rgba(74,222,128,0.15)';
           });
-          
+
           card.addEventListener('mouseleave', () => {
             card.style.boxShadow = 'none';
           });
@@ -341,7 +342,7 @@ export function renderStatistics() {
             </div>
             <div style="font-size:1.5rem;font-weight:var(--fw-bold);color:#fff;font-family:monospace;word-break:break-word;line-height:1.2">${c.value}</div>
           </div>`).join('');
-        
+
         // Add magnetic pull + 3D tilt effect to cards
         document.querySelectorAll('.magnetic-card').forEach(card => {
           const cardData = cards[card.dataset.cardIdx];
@@ -349,7 +350,7 @@ export function renderStatistics() {
           let cx = rect.left + rect.width / 2;
           let cy = rect.top + rect.height / 2;
           let isNear = false;
-          
+
           // Recalculate on scroll
           const updateRect = () => {
             rect = card.getBoundingClientRect();
@@ -357,13 +358,13 @@ export function renderStatistics() {
             cy = rect.top + rect.height / 2;
           };
           window.addEventListener('scroll', updateRect, { passive: true });
-          
+
           // Global mousemove for magnetic pull
           const onGlobalMove = (e) => {
             const dx = Math.abs(cx - e.clientX);
             const dy = Math.abs(cy - e.clientY);
             const padding = 80; // Reduced from 120
-            
+
             if (dx < rect.width / 2 + padding && dy < rect.height / 2 + padding) {
               isNear = true;
               const ox = (e.clientX - cx) / 6; // Reduced from /3 to /6
@@ -374,14 +375,14 @@ export function renderStatistics() {
               card.style.transform = 'translate3d(0, 0, 0)';
             }
           };
-          
+
           window.addEventListener('mousemove', onGlobalMove, { passive: true });
-          
+
           // Local mousemove for 3D tilt when hovering directly
           card.addEventListener('mouseenter', () => {
             card.style.transition = 'transform 0.1s ease-out, box-shadow 0.3s ease, border-color 0.2s';
           });
-          
+
           card.addEventListener('mousemove', (e) => {
             const cardRect = card.getBoundingClientRect();
             const x = e.clientX - cardRect.left;
@@ -390,14 +391,14 @@ export function renderStatistics() {
             const centerY = cardRect.height / 2;
             const rotateX = (y - centerY) / 12; // Reduced from /8 to /12
             const rotateY = (centerX - x) / 12; // Reduced from /8 to /12
-            
+
             const ox = (e.clientX - cx) / 6; // Reduced from /3 to /6
             const oy = (e.clientY - cy) / 6; // Reduced from /3 to /6
-            
+
             card.style.transform = `translate3d(${ox}px, ${oy}px, 0) perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`; // Reduced scale from 1.03 to 1.02
             card.style.boxShadow = `0 15px 40px rgba(0,0,0,0.4), 0 0 25px ${cardData.color}33`;
           });
-          
+
           card.addEventListener('mouseleave', () => {
             card.style.transition = 'transform 0.5s ease-in-out, box-shadow 0.3s ease, border-color 0.2s';
             card.style.transform = 'translate3d(0, 0, 0) perspective(1000px) rotateX(0) rotateY(0) scale(1)';
@@ -517,12 +518,52 @@ export function renderStatistics() {
         document.getElementById('trend-chart').innerHTML = lineChartSVG(trends);
       }
 
+      // ─── PDF download for individual alert rows ─────────────────────────────
+      window._downloadAlertPdf = async function (btn, alertData) {
+        const originalHtml = btn.innerHTML;
+        try {
+          btn.disabled = true;
+          btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:0.9rem;animation:spin 1s linear infinite">progress_activity</span>';
+
+          // Just send the record id — the server fetches all data from the DB
+          const payload = {
+            id: alertData.id,
+            species: alertData.species || 'Unknown', // used only for filename
+          };
+
+          const headers = { 'Content-Type': 'application/json' };
+          if (currentToken) headers['Authorization'] = `Bearer ${currentToken}`;
+
+          const res = await fetch('/api/report-quick', { method: 'POST', headers, body: JSON.stringify(payload) });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || `Error ${res.status}`);
+          }
+
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          const safe = (alertData.species || 'report').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 30);
+          a.href = url;
+          a.download = `TerraShield_${safe}_${new Date().toISOString().slice(0, 10)}.pdf`;
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 5000);
+
+          btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:0.9rem;color:#2edd82">check_circle</span>';
+          setTimeout(() => { btn.innerHTML = originalHtml; btn.disabled = false; }, 3000);
+        } catch (err) {
+          btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:0.9rem;color:#ef4444">error</span>';
+          btn.title = err.message;
+          setTimeout(() => { btn.innerHTML = originalHtml; btn.disabled = false; }, 4000);
+        }
+      };
+
       function renderAlerts(alerts) {
         const badge = document.getElementById('alert-count-badge');
         badge.textContent = `${alerts.length} active alerts`;
         const tbody = document.getElementById('alerts-tbody');
         if (alerts.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" style="padding:var(--space-8);text-align:center;color:var(--color-slate-500);font-size:0.8rem">No high-risk alerts for selected filter</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="7" style="padding:var(--space-8);text-align:center;color:var(--color-slate-500);font-size:0.8rem">No high-risk alerts for selected filter</td></tr>`;
           return;
         }
         tbody.innerHTML = alerts.map(a => {
@@ -533,6 +574,18 @@ export function renderStatistics() {
             ? `${a.latitude.toFixed(4)}, ${a.longitude.toFixed(4)}`
             : '—';
           const ts = a.ai_analysed_at ? new Date(a.ai_analysed_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
+          // Build the data object passed to the PDF helper
+          const riskLevelStr = risk >= 7 ? 'Critical' : risk >= 4 ? 'Moderate' : 'Low';
+          const alertJson = JSON.stringify({
+            id: a.id,
+            species: a.species,
+            ai_confidence: a.ai_confidence ?? 0,
+            ai_risk_score: a.ai_risk_score ?? 0,
+            ai_label: a.ai_label || '',
+            latitude: a.latitude ?? 0,
+            longitude: a.longitude ?? 0,
+            risk_level: riskLevelStr,
+          }).replace(/'/g, '&#39;');
           return `<tr style="border-top:1px solid rgba(255,255,255,0.04)" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
             <td style="padding:var(--space-3) var(--space-5);font-style:italic;color:#fff;font-weight:bold">${a.species || '—'}</td>
             <td style="padding:var(--space-3) var(--space-5)">
@@ -547,6 +600,19 @@ export function renderStatistics() {
               <span style="font-size:0.65rem;font-weight:bold;background:${riskBg(level)};color:${col};border:1px solid ${col}33;padding:0.15rem 0.5rem;border-radius:999px;text-transform:uppercase">${a.ai_label || level}</span>
             </td>
             <td style="padding:var(--space-3) var(--space-5);color:var(--color-slate-500);font-size:0.7rem">${ts}</td>
+            <td style="padding:var(--space-3) var(--space-4);text-align:right">
+              <button
+                onclick="window._downloadAlertPdf(this, JSON.parse(this.dataset.alert))"
+                data-alert='${alertJson}'
+                title="Download PDF Report"
+                style="display:inline-flex;align-items:center;gap:4px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);color:#38bdf8;padding:0.25rem 0.6rem;border-radius:var(--radius-md);font-size:0.7rem;font-weight:var(--fw-bold);cursor:pointer;transition:background 0.2s,border 0.2s;white-space:nowrap"
+                onmouseover="this.style.background='rgba(56,189,248,0.2)'"
+                onmouseout="this.style.background='rgba(56,189,248,0.1)'"
+              >
+                <span class="material-symbols-outlined" style="font-size:0.9rem">picture_as_pdf</span>
+                PDF
+              </button>
+            </td>
           </tr>`;
         }).join('');
       }
