@@ -149,6 +149,77 @@ export function renderStatistics() {
           </div>
         </div>
 
+        <!-- New Section: Early Detection Intelligence -->
+        <div class="simple-anim-card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);padding:var(--space-6);margin-bottom:var(--space-8)">
+          <div style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.15em;text-transform:uppercase;color:var(--color-slate-500);margin-bottom:var(--space-5)">⏱ Early Detection Intelligence</div>
+          
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:var(--space-6);margin-bottom:var(--space-6)">
+            <!-- Left Side -->
+            <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.15);border-radius:var(--radius-md);padding:var(--space-5)">
+              <div style="font-size:0.85rem;font-weight:var(--fw-bold);color:#ef4444;margin-bottom:var(--space-3)">Traditional Field Survey Detection</div>
+              <div style="font-family:monospace;font-size:1.1rem;font-weight:var(--fw-bold);color:#fff;margin-bottom:var(--space-3)">Average Detection Time: 8–12 Months</div>
+              <ul style="padding-left:1.5rem;color:var(--color-slate-400);font-size:0.8rem;line-height:1.6;margin:0">
+                <li>Manual Ground Survey</li>
+                <li>Low Frequency Monitoring</li>
+                <li>High Spread Before Response</li>
+              </ul>
+            </div>
+            
+            <!-- Right Side -->
+            <div style="background:rgba(46,221,130,0.05);border:1px solid rgba(46,221,130,0.15);border-radius:var(--radius-md);padding:var(--space-5);position:relative;overflow:hidden">
+              <div style="position:absolute;top:0;right:0;width:150px;height:150px;background:radial-gradient(circle, rgba(46,221,130,0.1) 0%, transparent 70%);transform:translate(30%, -30%);pointer-events:none"></div>
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:var(--space-3);flex-wrap:wrap;gap:12px">
+                <div>
+                  <div style="font-size:0.85rem;font-weight:var(--fw-bold);color:#2edd82;margin-bottom:var(--space-2)">TerraShield Early Warning</div>
+                  <div style="font-family:monospace;font-size:1.1rem;font-weight:var(--fw-bold);color:#fff">Detection Time: 2–4 Weeks</div>
+                </div>
+                <div style="background:rgba(46,221,130,0.1);border:1px solid rgba(46,221,130,0.3);padding:0.4rem 0.6rem;border-radius:6px;text-align:center">
+                  <div style="font-size:0.5rem;text-transform:uppercase;color:var(--color-slate-400);font-weight:bold;margin-bottom:4px">Early Detection Advantage</div>
+                  <div style="font-size:0.85rem;font-weight:bold;color:#2edd82">~7 Months Faster</div>
+                </div>
+              </div>
+              <ul style="padding-left:1.5rem;color:var(--color-slate-400);font-size:0.8rem;line-height:1.6;margin:0">
+                <li>Citizen Reports + Satellite Correlation</li>
+                <li>Automated Cluster Detection</li>
+                <li>Rapid Escalation Alerts</li>
+              </ul>
+            </div>
+          </div>
+          
+          <!-- Animated Timeline Bar -->
+          <div style="margin-top:var(--space-5);padding-top:var(--space-4);border-top:1px solid rgba(255,255,255,0.05)">
+             <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:var(--space-4)">
+                <span style="font-size:0.75rem;color:#fff;font-weight:var(--fw-bold)">Reaction Timeline Comparison</span>
+                <span style="color:#2edd82;font-style:italic;font-size:0.7rem;opacity:0.9">Outbreak detected before exponential spread phase.</span>
+             </div>
+             
+             <!-- Traditional -->
+             <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
+               <div style="width:110px;font-size:0.75rem;color:var(--color-slate-400);text-align:right">Traditional</div>
+               <div style="flex:1;background:rgba(255,255,255,0.05);height:10px;border-radius:5px;overflow:hidden;position:relative">
+                  <div style="width:85%;height:100%;background:#ef4444;border-radius:5px"></div>
+               </div>
+               <div style="width:70px;font-size:0.75rem;color:#ef4444;font-family:monospace;font-weight:bold">9 Months</div>
+             </div>
+             
+             <!-- TerraShield -->
+             <div style="display:flex;align-items:center;gap:16px">
+               <div style="width:110px;font-size:0.75rem;color:#2edd82;font-weight:bold;text-align:right">TerraShield</div>
+               <div style="flex:1;background:rgba(255,255,255,0.05);height:10px;border-radius:5px;overflow:hidden;position:relative">
+                  <div style="height:100%;background:linear-gradient(90deg, #2edd82, #10b981);border-radius:5px;animation:slide-bar 1.5s cubic-bezier(0.1,0.8,0.2,1) 0.5s forwards;width:0%"></div>
+               </div>
+               <div style="width:70px;font-size:0.75rem;color:#2edd82;font-family:monospace;font-weight:bold">3 Weeks</div>
+             </div>
+          </div>
+          
+          <style>
+            @keyframes slide-bar {
+              from { width: 0%; }
+              to { width: 12%; }
+            }
+          </style>
+        </div>
+
         <!-- ③ Top Districts Bar Chart -->
         <div class="simple-anim-card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);padding:var(--space-6);margin-bottom:var(--space-8)">
           <div style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.15em;text-transform:uppercase;color:var(--color-slate-500);margin-bottom:var(--space-5)">🗺 Top Districts by Risk Score</div>
