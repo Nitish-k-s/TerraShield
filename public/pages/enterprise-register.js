@@ -5,18 +5,19 @@ export function renderEnterpriseRegister() {
     return {
         html: `
         ${renderNavbar('enterprise')}
-        <main style="padding-top:calc(var(--nav-height) + var(--space-12));min-height:100vh;background:linear-gradient(160deg,#03140c 0%,#051a0f 50%,#03140c 100%);padding-bottom:var(--space-16);display:flex;align-items:center;justify-content:center">
-            <div class="container" style="max-width:640px;width:100%;margin:0 auto">
+        <main style="padding-top:calc(var(--nav-height) + var(--space-12));min-height:100vh;background:radial-gradient(circle at 50% 10%, rgba(0,255,150,0.08) 0%, transparent 60%), linear-gradient(160deg,#03140c 0%,#051a0f 50%,#03140c 100%);padding-bottom:var(--space-16);display:flex;align-items:center;justify-content:center;position:relative">
+            <div style="position:absolute;inset:0;background-image:url('data:image/svg+xml,%3Csvg width=\\'60\\' height=\\'60\\' viewBox=\\'0 0 60 60\\' xmlns=\\'http://www.w3.org/2000/svg\\'%3E%3Cg fill=\\'none\\' fill-rule=\\'evenodd\\'%3E%3Cg fill=\\'%2300ff9d\\' fill-opacity=\\'0.02\\'%3E%3Cpath d=\\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');pointer-events:none"></div>
+            <div class="container" style="max-width:640px;width:100%;margin:0 auto;position:relative;z-index:2">
                 
                 <div style="text-align:center;margin-bottom:var(--space-8)">
-                    <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:14px;background:rgba(46,221,130,0.1);color:#2edd82;margin-bottom:var(--space-4)">
-                        <span class="material-symbols-outlined" style="font-size:2rem">corporate_fare</span>
+                    <div style="display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg, rgba(0,255,150,0.1), rgba(0,0,0,0));color:#00ff9d;margin-bottom:var(--space-4);border:1px solid rgba(0,255,150,0.3);box-shadow:0 0 30px rgba(0,255,150,0.15)">
+                        <span class="material-symbols-outlined" style="font-size:2.5rem">corporate_fare</span>
                     </div>
                     <h1 class="font-serif" style="font-size:clamp(1.75rem,4vw,2.5rem);font-weight:var(--fw-bold);color:#fff;margin-bottom:var(--space-3)">Enterprise API Access Request</h1>
                     <p style="color:var(--color-slate-400);font-size:1.05rem;line-height:1.6">Request institutional access to TerraShield’s ecological intelligence platform.</p>
                 </div>
 
-                <div id="enterprise-form-card" style="background:rgba(255,255,255,0.03);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-xl);padding:var(--space-8);box-shadow:0 0 40px rgba(0,0,0,0.5)">
+                <div id="enterprise-form-card" style="background:rgba(0,40,30,0.55);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(0,255,150,0.15);border-radius:var(--radius-xl);padding:var(--space-10);box-shadow:0 0 50px rgba(0,255,150,0.1), inset 0 0 20px rgba(0,255,150,0.02)">
                     <style>
                         #enterprise-form input::placeholder, #enterprise-form textarea::placeholder {
                             color: rgba(255,255,255,0.55);
@@ -85,7 +86,7 @@ export function renderEnterpriseRegister() {
                             <label for="ent-terms" style="font-size:0.85rem;font-weight:600;color:#e8fff5;cursor:pointer;user-select:none">I accept the Terms of Service & Ecological Data Policy. <span style="color:#ff4d4d">*</span></label>
                         </div>
 
-                        <button id="ent-submit-btn" type="submit" style="width:100%;background:#2edd82;color:#03140c;border:none;border-radius:var(--radius-md);padding:1rem;font-size:1rem;font-weight:bold;cursor:pointer;transition:all 0.3s;box-shadow:0 0 20px rgba(46,221,130,0.2);display:flex;align-items:center;justify-content:center;gap:8px" onmouseover="this.style.boxShadow='0 0 30px rgba(46,221,130,0.4)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='0 0 20px rgba(46,221,130,0.2)';this.style.transform='translateY(0)'">
+                        <button id="ent-submit-btn" type="submit" style="width:100%;background:linear-gradient(90deg, #00c97b, #00ff9d);color:#002b1f;border:none;border-radius:var(--radius-md);padding:1rem;font-size:1rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;box-shadow:0 0 20px rgba(0,255,150,0.3);display:flex;align-items:center;justify-content:center;gap:8px" onmouseover="this.style.boxShadow='0 0 30px rgba(0,255,150,0.5)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='0 0 20px rgba(0,255,150,0.3)';this.style.transform='translateY(0)'">
                             <span id="ent-btn-text">Submit Enterprise Request</span>
                             <span id="ent-btn-icon" class="material-symbols-outlined" style="font-size:1.2rem">send</span>
                         </button>
