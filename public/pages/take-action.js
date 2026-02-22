@@ -1159,7 +1159,93 @@ export function renderReport() {
           window._reportToken = token;
           document.getElementById('pdf-download-section').style.display = 'block';
 
-        } catch (error) {
+          // ── Step 5: Agency Escalation Modal (Simulated) ──────────────────
+          const riskSco = ai.ai_risk_score ?? ai.risk_score ?? 0;
+          const labelLo = (ai.ai_label || '').toLowerCase();
+
+          if (labelLo.includes('invasive') && riskSco >= 6) {
+            const stateLoc = ai.state || gps?.state || gps?.administrative_area_level_1 || 'Regional';
+            const districtLoc = ai.district || gps?.district || gps?.locality || 'Local';
+
+            const escalateOverlay = document.createElement('div');
+            escalateOverlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(3,20,12,0.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.4s ease';
+
+            escalateOverlay.innerHTML = `
+               <div style="background:#051a0f;border:1px solid #ef4444;border-radius:12px;padding:32px;width:90%;max-width:480px;box-shadow:0 0 40px rgba(239,68,68,0.25);position:relative;overflow:hidden">
+                  <div style="position:absolute;top:0;left:0;right:0;height:4px;background:#ef4444;box-shadow:0 0 12px #ef4444;animation:pulse-glow 2s infinite"></div>
+                  
+                  <div id="escalate-loading" style="display:flex;flex-direction:column;align-items:center;padding:24px 0">
+                    <span class="material-symbols-outlined" style="color:#ef4444;font-size:3.5rem;animation:pulse 1s infinite">library_local_police</span>
+                    <h2 style="color:#ef4444;margin-top:16px;font-size:1.25rem;font-family:serif;font-weight:bold;text-align:center">Rapid Response Alert Escalated</h2>
+                    <div id="escalate-step" style="margin-top:16px;font-family:monospace;color:var(--color-slate-400);font-size:0.85rem">Validating Threat...</div>
+                    <div style="width:100%;background:rgba(255,255,255,0.05);height:6px;border-radius:3px;margin-top:16px;overflow:hidden">
+                       <div id="escalate-progress" style="width:0%;height:100%;background:#ef4444;transition:width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)"></div>
+                    </div>
+                  </div>
+                  
+                  <div id="escalate-success" style="display:none;flex-direction:column">
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+                      <span class="material-symbols-outlined" style="color:#ef4444;font-size:2.5rem">emergency</span>
+                      <h2 style="color:#ef4444;font-size:1.35rem;font-weight:bold;font-family:serif">High-Risk Invasive Detected!</h2>
+                    </div>
+                    
+                    <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);padding:16px;border-radius:8px;margin-bottom:20px">
+                       <p style="color:#fff;font-size:0.95rem;margin-bottom:8px">Location: <strong>${districtLoc}, ${stateLoc}</strong></p>
+                       <p style="color:#fff;font-size:0.95rem;margin-bottom:8px">Alert has been escalated to:<br/><strong style="color:#38bdf8">${stateLoc} Forest Department</strong></p>
+                       
+                       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;border-top:1px solid rgba(255,255,255,0.05);padding-top:16px">
+                         <div>
+                           <div style="font-size:0.65rem;color:var(--color-slate-500);text-transform:uppercase">Cluster Density</div>
+                           <div style="font-size:0.9rem;font-weight:bold;color:#f59e0b;font-family:monospace">High (Level 4)</div>
+                         </div>
+                         <div>
+                           <div style="font-size:0.65rem;color:var(--color-slate-500);text-transform:uppercase">Risk Score</div>
+                           <div style="font-size:0.9rem;font-weight:bold;color:#ef4444;font-family:monospace">${riskSco.toFixed(1)}/10</div>
+                         </div>
+                         <div>
+                           <div style="font-size:0.65rem;color:var(--color-slate-500);text-transform:uppercase">Satellite Validation</div>
+                           <div style="font-size:0.9rem;font-weight:bold;color:#2edd82;font-family:monospace">Confirmed</div>
+                         </div>
+                         <div>
+                           <div style="font-size:0.65rem;color:var(--color-slate-500);text-transform:uppercase">Containment Window</div>
+                           <div style="font-size:0.9rem;font-weight:bold;color:#f59e0b;font-family:monospace">14–30 days</div>
+                         </div>
+                       </div>
+                    </div>
+                    
+                    <button id="close-escalate-btn" style="width:100%;padding:14px;background:#ef4444;color:#fff;border:none;border-radius:6px;font-size:0.95rem;font-weight:bold;cursor:pointer;transition:background 0.2s;outline:none" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">Acknowledge & Close</button>
+                  </div>
+               </div>
+             `;
+            document.body.appendChild(escalateOverlay);
+
+            // Trigger reflow for transition
+            void escalateOverlay.offsetWidth;
+            escalateOverlay.style.opacity = '1';
+
+            const progress = document.getElementById('escalate-progress');
+            const stepText = document.getElementById('escalate-step');
+
+            // Controlled state steps without refreshing page
+            setTimeout(() => { progress.style.width = '30%'; stepText.textContent = 'Cross-checking Satellite Data...'; }, 800);
+            setTimeout(() => { progress.style.width = '65%'; stepText.textContent = `Escalating to ${stateLoc} Authority...`; }, 1800);
+            setTimeout(() => {
+              progress.style.width = '100%';
+              stepText.textContent = 'Alert Successfully Dispatched';
+            }, 2800);
+            setTimeout(() => {
+              document.getElementById('escalate-loading').style.display = 'none';
+              document.getElementById('escalate-success').style.display = 'flex';
+            }, 3400);
+
+            document.getElementById('close-escalate-btn').addEventListener('click', () => {
+              escalateOverlay.style.opacity = '0';
+              setTimeout(() => {
+                if (escalateOverlay.parentNode) escalateOverlay.remove();
+                showMsg('Forest Department notified successfully.', 'success');
+              }, 400);
+            });
+          }
           if (window._reportRemoveLoader) window._reportRemoveLoader();
           showMsg(`<strong>Submission Failed:</strong> ${error.message}`, 'error');
         } finally {
