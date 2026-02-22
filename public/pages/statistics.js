@@ -150,13 +150,13 @@ export function renderStatistics() {
         </div>
 
         <!-- ③ Top Districts Bar Chart -->
-        <div class="card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);padding:var(--space-6);margin-bottom:var(--space-8)">
+        <div class="simple-anim-card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);padding:var(--space-6);margin-bottom:var(--space-8)">
           <div style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.15em;text-transform:uppercase;color:var(--color-slate-500);margin-bottom:var(--space-5)">🗺 Top Districts by Risk Score</div>
           <div id="top-districts-chart"></div>
         </div>
 
         <!-- ④ Species × District Matrix -->
-        <div class="card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:var(--space-8)">
+        <div class="simple-anim-card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:var(--space-8)">
           <div style="padding:var(--space-5) var(--space-6);border-bottom:1px solid rgba(46,221,130,0.1);display:flex;align-items:center;justify-content:space-between">
             <span style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.15em;text-transform:uppercase;color:var(--color-slate-500)">🧬 Species × District Intelligence Matrix</span>
             <span style="font-size:0.7rem;color:var(--color-slate-600)">Cells = number of reports</span>
@@ -167,7 +167,7 @@ export function renderStatistics() {
         </div>
 
         <!-- ⑤ Time Trend Line Chart -->
-        <div class="card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);padding:var(--space-6);margin-bottom:var(--space-8)">
+        <div class="simple-anim-card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);padding:var(--space-6);margin-bottom:var(--space-8)">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-5)">
             <span style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.15em;text-transform:uppercase;color:var(--color-slate-500)">📈 Reports per Day — Last 30 Days</span>
             <span id="trend-total" style="font-size:0.78rem;color:#2edd82;font-weight:var(--fw-bold)"></span>
@@ -176,7 +176,7 @@ export function renderStatistics() {
         </div>
 
         <!-- ⑥ Alert Intelligence Panel -->
-        <div class="card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:var(--space-8)">
+        <div class="simple-anim-card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:var(--space-8)">
           <div style="padding:var(--space-5) var(--space-6);border-bottom:1px solid rgba(239,68,68,0.15);display:flex;align-items:center;gap:var(--space-3)">
             <span style="width:8px;height:8px;border-radius:50%;background:#ef4444;animation:pulse-glow 1.5s infinite"></span>
             <span style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.15em;text-transform:uppercase;color:#ef4444">⚠ Active Alert Intelligence Panel</span>
@@ -197,7 +197,7 @@ export function renderStatistics() {
         </div>
 
         <!-- ⑦ Outbreak Clusters -->
-        <div class="card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:var(--space-8)">
+        <div class="simple-anim-card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:var(--space-8)">
           <div style="padding:var(--space-5) var(--space-6);border-bottom:1px solid rgba(255,255,255,0.06)">
             <span style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.15em;text-transform:uppercase;color:var(--color-slate-500)">🔴 Outbreak Cluster Map</span>
           </div>
@@ -237,7 +237,9 @@ export function renderStatistics() {
         s.id = 'stats-shimmer-style';
         s.textContent = `@keyframes shimmer{0%{opacity:0.6}50%{opacity:0.3}100%{opacity:0.6}}
           @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-          select option{background:#0d1f0f;color:#fff}`;
+          select option{background:#0d1f0f;color:#fff}
+          .simple-anim-card { transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; }
+          .simple-anim-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 20px rgba(46,221,130,0.15); border-color: rgba(46,221,130,0.3) !important; }`;
         document.head.appendChild(s);
       }
 
