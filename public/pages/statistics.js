@@ -290,19 +290,19 @@ export function renderStatistics() {
           card.style.willChange = 'transform';
           card.style.transition = 'transform 0.5s ease-in-out, box-shadow 0.3s ease';
           
-          // Global mousemove for magnetic pull
+          // Global mousemove for magnetic pull (reduced strength)
           const onGlobalMove = (e) => {
             const dx = Math.abs(cx - e.clientX);
             const dy = Math.abs(cy - e.clientY);
-            const padding = 150;
+            const padding = 100; // Reduced from 150
             
             if (dx < rect.width / 2 + padding && dy < rect.height / 2 + padding) {
               if (!isNear) {
                 isNear = true;
                 card.style.transition = 'transform 0.3s ease-out, box-shadow 0.3s ease';
               }
-              const ox = (e.clientX - cx) / 4;
-              const oy = (e.clientY - cy) / 4;
+              const ox = (e.clientX - cx) / 8; // Reduced from /4 to /8
+              const oy = (e.clientY - cy) / 8; // Reduced from /4 to /8
               card.style.transform = `translate3d(${ox}px, ${oy}px, 0)`;
             } else if (isNear) {
               isNear = false;
@@ -362,12 +362,12 @@ export function renderStatistics() {
           const onGlobalMove = (e) => {
             const dx = Math.abs(cx - e.clientX);
             const dy = Math.abs(cy - e.clientY);
-            const padding = 120;
+            const padding = 80; // Reduced from 120
             
             if (dx < rect.width / 2 + padding && dy < rect.height / 2 + padding) {
               isNear = true;
-              const ox = (e.clientX - cx) / 3;
-              const oy = (e.clientY - cy) / 3;
+              const ox = (e.clientX - cx) / 6; // Reduced from /3 to /6
+              const oy = (e.clientY - cy) / 6; // Reduced from /3 to /6
               card.style.transform = `translate3d(${ox}px, ${oy}px, 0)`;
             } else if (isNear) {
               isNear = false;
@@ -388,13 +388,13 @@ export function renderStatistics() {
             const y = e.clientY - cardRect.top;
             const centerX = cardRect.width / 2;
             const centerY = cardRect.height / 2;
-            const rotateX = (y - centerY) / 8;
-            const rotateY = (centerX - x) / 8;
+            const rotateX = (y - centerY) / 12; // Reduced from /8 to /12
+            const rotateY = (centerX - x) / 12; // Reduced from /8 to /12
             
-            const ox = (e.clientX - cx) / 3;
-            const oy = (e.clientY - cy) / 3;
+            const ox = (e.clientX - cx) / 6; // Reduced from /3 to /6
+            const oy = (e.clientY - cy) / 6; // Reduced from /3 to /6
             
-            card.style.transform = `translate3d(${ox}px, ${oy}px, 0) perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`;
+            card.style.transform = `translate3d(${ox}px, ${oy}px, 0) perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`; // Reduced scale from 1.03 to 1.02
             card.style.boxShadow = `0 15px 40px rgba(0,0,0,0.4), 0 0 25px ${cardData.color}33`;
           });
           
