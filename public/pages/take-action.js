@@ -983,6 +983,46 @@ export function renderReport() {
         btnText.textContent = 'Extracting EXIF metadata…';
         msg.style.display = 'none';
 
+        const loaderOverlay = document.createElement('div');
+        loaderOverlay.id = 'ai-loader-overlay';
+        loaderOverlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(3,20,12,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s ease';
+        loaderOverlay.innerHTML = `
+          <div style="position:relative;width:80px;height:80px;margin-bottom:var(--space-6)">
+            <svg viewBox="0 0 100 100" style="width:100%;height:100%;animation:spin 1.5s linear infinite">
+              <defs>
+                <linearGradient id="loaderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#2edd82"></stop>
+                  <stop offset="100%" stop-color="#03140c"></stop>
+                </linearGradient>
+              </defs>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(46,221,130,0.15)" stroke-width="6"></circle>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="url(#loaderGrad)" stroke-width="6" stroke-dasharray="160 90" stroke-linecap="round"></circle>
+            </svg>
+            <div style="position:absolute;inset:0;background:#2edd82;border-radius:50%;filter:blur(24px);opacity:0.3;animation:pulse-glow 2s infinite"></div>
+          </div>
+          <div id="ai-loader-title" style="font-family:serif;font-size:1.5rem;font-weight:bold;color:#fff;margin-bottom:var(--space-2)">Uploading Image...</div>
+          <div id="ai-loader-step" style="font-size:0.85rem;color:var(--color-slate-400);font-family:monospace">Parsing EXIF geolocation & metadata</div>
+        `;
+        document.body.appendChild(loaderOverlay);
+        void loaderOverlay.offsetWidth;
+        loaderOverlay.style.opacity = '1';
+
+        const updateLoader = (title, step) => {
+          const t = document.getElementById('ai-loader-title');
+          const s = document.getElementById('ai-loader-step');
+          if (t) t.textContent = title;
+          if (s) s.textContent = step;
+        };
+
+        const removeLoader = () => {
+          if (loaderOverlay) {
+            loaderOverlay.style.opacity = '0';
+            setTimeout(() => { if (loaderOverlay.parentNode) loaderOverlay.remove(); }, 300);
+          }
+        };
+
+        window._reportRemoveLoader = removeLoader;
+
         try {
           const formData = new FormData();
           formData.append('image', file);
@@ -1013,6 +1053,8 @@ export function renderReport() {
           const { recordId, gps, mapsUrl } = exifData;
 
           // Let user know EXIF worked, now running AI
+          updateLoader('Analyzing Species...', 'Running multi-modal AI classification');
+
           showMsg(`
             <strong>✓ Image received (ID: ${recordId})</strong>
             <span style="display:block;margin-top:2px;font-size:0.8125rem;opacity:0.85">
@@ -1035,6 +1077,7 @@ export function renderReport() {
           const aiData = await aiRes.json();
 
           if (!aiRes.ok || !aiData.success || !aiData.analysed?.length) {
+            removeLoader();
             // AI failed — still show the EXIF success but warn
             showMsg(`
               <strong>✓ Report stored (ID: ${recordId})</strong>
@@ -1044,6 +1087,12 @@ export function renderReport() {
             `, 'success');
             return;
           }
+
+          updateLoader('Calculating Risk Score...', 'Cross-referencing ecological database');
+          await new Promise(r => setTimeout(r, 600));
+          updateLoader('Finalizing Report...', 'Generating insight panel');
+          await new Promise(r => setTimeout(r, 400));
+          removeLoader();
 
           // Merge GPS into analysed result for convenience
           const ai = { ...aiData.analysed[0], ai_tags: aiData.analysed[0].ai_tags || [] };
@@ -1111,6 +1160,7 @@ export function renderReport() {
           document.getElementById('pdf-download-section').style.display = 'block';
 
         } catch (error) {
+          if (window._reportRemoveLoader) window._reportRemoveLoader();
           showMsg(`<strong>Submission Failed:</strong> ${error.message}`, 'error');
         } finally {
           submitBtn.disabled = false;
