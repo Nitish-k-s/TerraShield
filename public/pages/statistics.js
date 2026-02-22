@@ -131,14 +131,14 @@ export function renderStatistics() {
         <div id="overview-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:var(--space-6);margin-bottom:var(--space-8)"></div>
 
         <!-- ② Risk Distribution + Outbreak Score (2-col) -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);margin-bottom:var(--space-8)">
+        <div style="display:grid;grid-template-columns:3fr 2fr;gap:var(--space-6);margin-bottom:var(--space-8)">
 
           <!-- Donut -->
           <div class="card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);padding:var(--space-6)">
             <div style="font-size:0.65rem;font-weight:var(--fw-bold);letter-spacing:0.15em;text-transform:uppercase;color:var(--color-slate-500);margin-bottom:var(--space-5)">Outbreak Risk Distribution</div>
-            <div style="display:flex;align-items:center;gap:var(--space-6)">
-              <div id="donut-wrap" style="flex-shrink:0"></div>
-              <div id="donut-legend" style="flex:1"></div>
+            <div style="display:flex;align-items:center;gap:var(--space-8);justify-content:center;height:240px">
+              <div id="donut-wrap" style="flex-shrink:0;position:relative;width:240px;height:240px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:inherit"></div>
+              <div id="donut-legend" style="flex:1;max-width:200px"></div>
             </div>
           </div>
 
@@ -333,7 +333,6 @@ export function renderStatistics() {
           { label: 'Invasive Species Reports', value: ov.invasive_count.toLocaleString(), icon: 'pest_control', color: '#ef4444' },
           { label: 'High-Risk Zones', value: ov.high_risk_zones.toLocaleString(), icon: 'warning', color: '#f59e0b' },
           { label: 'Active Clusters', value: ov.active_clusters.toLocaleString(), icon: 'hub', color: '#38bdf8' },
-          { label: 'AI Confidence', value: ov.avg_confidence + '%', icon: 'psychology', color: '#a78bfa' },
           { label: 'Top Species', value: ov.most_reported_species || '—', icon: 'eco', color: '#2edd82' },
         ];
         document.getElementById('overview-cards').innerHTML = cards.map((c, idx) => `
@@ -412,19 +411,161 @@ export function renderStatistics() {
 
       function renderDonut(rd) {
         const total = rd.low + rd.moderate + rd.high || 1;
-        document.getElementById('donut-wrap').innerHTML = donutSVG(rd.low, rd.moderate, rd.high);
-        document.getElementById('donut-legend').innerHTML = [
-          ['Low Risk', rd.low, '#2edd82'],
-          ['Moderate Risk', rd.moderate, '#f59e0b'],
-          ['High Risk', rd.high, '#ef4444'],
-        ].map(([l, v, c]) => `
-          <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3)">
-            <div style="width:10px;height:10px;border-radius:2px;background:${c};flex-shrink:0"></div>
+        const legendHtml = [
+          ['Low Risk', rd.low, '#2edd82', 'Low'],
+          ['Moderate Risk', rd.moderate, '#f59e0b', 'Moderate'],
+          ['High Risk', rd.high, '#ef4444', 'High'],
+        ].map(([l, v, c, k]) => `
+          <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3);cursor:pointer;transition:all 0.2s" class="donut-legend-item" data-risk="${k}">
+            <div style="width:10px;height:10px;border-radius:2px;background:${c};flex-shrink:0;box-shadow:0 0 8px ${c}40"></div>
             <div style="flex:1">
               <div style="font-size:0.78rem;color:#fff;font-weight:var(--fw-bold)">${l}</div>
               <div style="font-size:0.68rem;color:var(--color-slate-500)">${v} reports (${pct(v, total)}%)</div>
             </div>
           </div>`).join('');
+
+        document.getElementById('donut-legend').innerHTML = legendHtml;
+
+        if (window._donutFrameReq) cancelAnimationFrame(window._donutFrameReq);
+        if (window._donutRenderer) {
+          window._donutRenderer.dispose();
+        }
+
+        const bootThree = () => {
+          const container = document.getElementById('donut-wrap');
+          if (!container) return;
+          container.innerHTML = '';
+
+          const scene = new window.THREE.Scene();
+          const camera = new window.THREE.PerspectiveCamera(45, 1, 0.1, 100);
+          camera.position.z = 4.75;
+
+          const renderer = new window.THREE.WebGLRenderer({ alpha: true, antialias: true });
+          renderer.setSize(240, 240);
+          renderer.setPixelRatio(window.devicePixelRatio);
+          renderer.setScissorTest(true);
+          renderer.setScissor(0, 0, 240, 240);
+          container.appendChild(renderer.domElement);
+          window._donutRenderer = renderer;
+
+          const centerText = document.createElement('div');
+          centerText.style.cssText = 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;text-shadow:0 4px 12px rgba(0,0,0,0.8)';
+          centerText.innerHTML = `<div style="font-size:1.5rem;font-weight:bold;color:#fff">${total}</div><div style="font-size:0.55rem;color:#9ca3af;text-transform:uppercase;letter-spacing:1px">Reports</div>`;
+          container.appendChild(centerText);
+
+          const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.85);
+          scene.add(ambientLight);
+          const dirLight = new window.THREE.DirectionalLight(0xffffff, 0.5);
+          dirLight.position.set(2, 3, 5);
+          scene.add(dirLight);
+
+          const group = new window.THREE.Group();
+          scene.add(group);
+
+          let startAngle = 0;
+          const slices = [];
+          const extrudeSettings = { depth: 0.15, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 0.02, bevelThickness: 0.02, curveSegments: 32 };
+
+          const createSlice = (val, colorHex, name) => {
+            if (val <= 0) return;
+            const angle = (val / total) * Math.PI * 2;
+            const shape = new window.THREE.Shape();
+            const outerR = 1.6;
+            const innerR = 1.15;
+            shape.absarc(0, 0, outerR, startAngle, startAngle + angle, false);
+            shape.absarc(0, 0, innerR, startAngle + angle, startAngle, true);
+
+            const geo = new window.THREE.ExtrudeGeometry(shape, extrudeSettings);
+            const mat = new window.THREE.MeshPhongMaterial({ color: colorHex, shininess: 40 });
+            const mesh = new window.THREE.Mesh(geo, mat);
+            mesh.position.z = -0.075;
+
+            group.add(mesh);
+            const midAngle = startAngle + angle / 2;
+            slices.push({ mesh, name, midAngle, tx: 0, ty: 0 });
+            startAngle += angle;
+          };
+
+          createSlice(rd.high, 0xef4444, 'High');
+          createSlice(rd.moderate, 0xf59e0b, 'Moderate');
+          createSlice(rd.low, 0x2edd82, 'Low');
+
+          const raycaster = new window.THREE.Raycaster();
+          const mouse = new window.THREE.Vector2(-1, -1);
+          let activeFromLegend = null;
+
+          container.addEventListener('mousemove', (e) => {
+            const rect = container.getBoundingClientRect();
+            mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+          });
+          container.addEventListener('mouseleave', () => { mouse.x = -1; mouse.y = -1; });
+
+          const legends = document.querySelectorAll('.donut-legend-item');
+          legends.forEach(l => {
+            l.addEventListener('mouseenter', () => { mouse.x = -2; activeFromLegend = l.dataset.risk; });
+            l.addEventListener('mouseleave', () => { activeFromLegend = null; });
+          });
+
+          group.rotation.x = -0.6;
+          group.rotation.y = -0.2;
+          group.scale.set(0.01, 0.01, 0.01);
+
+          const animate = () => {
+            window._donutFrameReq = requestAnimationFrame(animate);
+
+            group.rotation.x += (-0.3 - group.rotation.x) * 0.05;
+            group.scale.x += (1 - group.scale.x) * 0.08;
+            group.scale.y += (1 - group.scale.y) * 0.08;
+            group.scale.z += (1 - group.scale.z) * 0.08;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(slices.map(s => s.mesh));
+            let activeName = activeFromLegend || (intersects.length > 0 ? slices.find(s => s.mesh === intersects[0].object).name : null);
+
+            legends.forEach(el => {
+              if (el.dataset.risk === activeName) {
+                el.style.transform = 'translateX(6px)';
+                el.style.opacity = '1';
+                el.style.filter = 'drop-shadow(0 0 4px rgba(255,255,255,0.2))';
+              } else {
+                el.style.transform = 'translateX(0)';
+                el.style.opacity = activeName ? '0.4' : '1';
+                el.style.filter = 'none';
+              }
+            });
+
+            slices.forEach(s => {
+              const isActive = (s.name === activeName);
+              const targetDist = isActive ? 0.08 : 0;
+              s.tx += (Math.cos(s.midAngle) * targetDist - s.tx) * 0.15;
+              s.ty += (Math.sin(s.midAngle) * targetDist - s.ty) * 0.15;
+
+              const maxOffset = 0.12;
+              s.mesh.position.x = Math.max(-maxOffset, Math.min(s.tx, maxOffset));
+              s.mesh.position.y = Math.max(-maxOffset, Math.min(s.ty, maxOffset));
+              s.mesh.scale.setScalar(isActive ? 1.05 : 1.0);
+
+              if (isActive) {
+                s.mesh.material.emissive.setHex(s.mesh.material.color.getHex());
+                s.mesh.material.emissiveIntensity = 0.35;
+              } else {
+                s.mesh.material.emissiveIntensity = 0;
+              }
+            });
+
+            renderer.render(scene, camera);
+          };
+          animate();
+        };
+
+        if (window.THREE) bootThree();
+        else {
+          const s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+          s.onload = bootThree;
+          document.head.appendChild(s);
+        }
       }
 
       function renderOutbreakScore(osc) {
@@ -525,7 +666,20 @@ export function renderStatistics() {
         const originalHtml = btn.innerHTML;
         try {
           btn.disabled = true;
-          btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:0.9rem;animation:spin 1s linear infinite">progress_activity</span>';
+          btn.style.position = 'relative';
+          btn.style.overflow = 'hidden';
+          btn.innerHTML = `
+            <div style="position:absolute;left:0;top:-1px;bottom:-1px;background:rgba(56,189,248,0.25);width:0%;transition:width 5s cubic-bezier(0.1, 0.8, 0.2, 1)" id="pdf-prog-${alertData.id}"></div>
+            <span style="position:relative;display:flex;align-items:center;gap:4px">
+              <span class="material-symbols-outlined" style="font-size:0.9rem;animation:spin 1s linear infinite">progress_activity</span>
+              Generating Satellite Report...
+            </span>
+          `;
+
+          setTimeout(() => {
+            const pb = document.getElementById('pdf-prog-' + alertData.id);
+            if (pb) pb.style.width = '85%';
+          }, 50);
 
           // Just send the record id — the server fetches all data from the DB
           const payload = {
@@ -551,12 +705,18 @@ export function renderStatistics() {
           document.body.appendChild(a); a.click(); a.remove();
           setTimeout(() => URL.revokeObjectURL(url), 5000);
 
+          const pb = document.getElementById('pdf-prog-' + alertData.id);
+          if (pb) {
+            pb.style.transition = 'width 0.3s ease-out';
+            pb.style.width = '100%';
+          }
+          await new Promise(r => setTimeout(r, 400));
           btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:0.9rem;color:#2edd82">check_circle</span>';
-          setTimeout(() => { btn.innerHTML = originalHtml; btn.disabled = false; }, 3000);
+          setTimeout(() => { btn.innerHTML = originalHtml; btn.disabled = false; btn.style.overflow = ''; }, 3000);
         } catch (err) {
           btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:0.9rem;color:#ef4444">error</span>';
           btn.title = err.message;
-          setTimeout(() => { btn.innerHTML = originalHtml; btn.disabled = false; }, 4000);
+          setTimeout(() => { btn.innerHTML = originalHtml; btn.disabled = false; btn.style.overflow = ''; }, 4000);
         }
       };
 
@@ -564,11 +724,13 @@ export function renderStatistics() {
         const badge = document.getElementById('alert-count-badge');
         badge.textContent = `${alerts.length} active alerts`;
         const tbody = document.getElementById('alerts-tbody');
+        tbody.innerHTML = '';
         if (alerts.length === 0) {
           tbody.innerHTML = `<tr><td colspan="7" style="padding:var(--space-8);text-align:center;color:var(--color-slate-500);font-size:0.8rem">No high-risk alerts for selected filter</td></tr>`;
           return;
         }
-        tbody.innerHTML = alerts.map(a => {
+
+        alerts.forEach(a => {
           const risk = a.ai_risk_score ?? 0;
           const level = scoreToLevel(risk);
           const col = riskColor(level);
@@ -576,7 +738,7 @@ export function renderStatistics() {
             ? `${a.latitude.toFixed(4)}, ${a.longitude.toFixed(4)}`
             : '—';
           const ts = a.ai_analysed_at ? new Date(a.ai_analysed_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
-          // Build the data object passed to the PDF helper
+
           const riskLevelStr = risk >= 7 ? 'Critical' : risk >= 4 ? 'Moderate' : 'Low';
           const alertJson = JSON.stringify({
             id: a.id,
@@ -588,7 +750,17 @@ export function renderStatistics() {
             longitude: a.longitude ?? 0,
             risk_level: riskLevelStr,
           }).replace(/'/g, '&#39;');
-          return `<tr style="border-top:1px solid rgba(255,255,255,0.04)" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+
+          const row = document.createElement('tr');
+          row.style.borderTop = '1px solid rgba(255,255,255,0.04)';
+          row.addEventListener('mouseenter', () => {
+            row.style.background = 'rgba(255,255,255,0.02)';
+          });
+          row.addEventListener('mouseleave', () => {
+            row.style.background = 'transparent';
+          });
+
+          row.innerHTML = `
             <td style="padding:var(--space-3) var(--space-5);font-style:italic;color:#fff;font-weight:bold">${a.species || '—'}</td>
             <td style="padding:var(--space-3) var(--space-5)">
               <div style="color:#fff;font-size:0.78rem">${a.district || '—'}</div>
@@ -615,19 +787,31 @@ export function renderStatistics() {
                 PDF
               </button>
             </td>
-          </tr>`;
-        }).join('');
+          `;
+          tbody.appendChild(row);
+        });
       }
 
       function renderClusters(clusters) {
         const tbody = document.getElementById('clusters-tbody');
+        tbody.innerHTML = '';
         if (!clusters || clusters.length === 0) {
           tbody.innerHTML = `<tr><td colspan="5" style="padding:var(--space-8);text-align:center;color:var(--color-slate-500);font-size:0.8rem">No active outbreak clusters detected</td></tr>`;
           return;
         }
-        tbody.innerHTML = clusters.map(c => {
+
+        clusters.forEach(c => {
           const col = riskColor(c.level === 'critical' ? 'Critical' : c.level === 'elevated' ? 'Elevated' : 'Monitoring');
-          return `<tr style="border-top:1px solid rgba(255,255,255,0.04)" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+          const row = document.createElement('tr');
+          row.style.borderTop = '1px solid rgba(255,255,255,0.04)';
+          row.addEventListener('mouseenter', () => {
+            row.style.background = 'rgba(255,255,255,0.02)';
+          });
+          row.addEventListener('mouseleave', () => {
+            row.style.background = 'transparent';
+          });
+
+          row.innerHTML = `
             <td style="padding:var(--space-4) var(--space-5);font-style:italic;font-weight:bold;color:#fff">${c.species}</td>
             <td style="padding:var(--space-4) var(--space-5);font-family:monospace;font-size:0.72rem;color:var(--color-slate-400)">${c.lat}, ${c.lon}</td>
             <td style="padding:var(--space-4) var(--space-5);font-weight:bold;color:#fff">${c.count}</td>
@@ -642,8 +826,9 @@ export function renderStatistics() {
             <td style="padding:var(--space-4) var(--space-5)">
               <span style="font-size:0.65rem;font-weight:bold;text-transform:uppercase;color:${col}">${c.level}</span>
             </td>
-          </tr>`;
-        }).join('');
+          `;
+          tbody.appendChild(row);
+        });
       }
 
       // ── Main render orchestrator ─────────────────────────────────────────────
@@ -777,5 +962,9 @@ export function renderStatistics() {
 
       renderAll({});
     },
+    cleanup() {
+      if (window._donutFrameReq) cancelAnimationFrame(window._donutFrameReq);
+      if (window._donutRenderer) window._donutRenderer.dispose();
+    }
   };
 }
