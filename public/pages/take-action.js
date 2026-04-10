@@ -271,6 +271,17 @@ export function renderReport() {
               <p style="font-size:0.75rem;font-weight:var(--fw-bold);text-transform:uppercase;letter-spacing:0.08em;color:var(--color-primary);margin-bottom:var(--space-2)">Ecological Assessment</p>
               <p id="ai-summary-text" style="color:#a8d5b0;font-size:0.9375rem;line-height:1.7;margin:0"></p>
             </div>
+
+            <!-- Agent Memory Panel -->
+            <div id="agent-memory-panel" style="display:none;margin-top:var(--space-4);padding:var(--space-4) var(--space-5);background:rgba(127,255,127,0.06);border:1px solid rgba(74,222,128,0.25);border-radius:var(--radius-lg)">
+              <div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-2)">
+                <span style="font-size:1.1rem">🧠</span>
+                <span style="font-size:0.75rem;font-weight:var(--fw-bold);text-transform:uppercase;letter-spacing:0.08em;color:#4ade80">Agent Memory</span>
+                <span id="memory-groq-badge" style="display:none;font-size:0.6rem;padding:2px 8px;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.3);border-radius:999px;color:#4ade80;font-weight:bold">⚡ Groq Enhanced</span>
+                <span style="margin-left:auto;font-size:0.75rem;color:#4ade80;font-weight:bold"><span id="memory-count">0</span> past sightings recalled nearby</span>
+              </div>
+              <p id="memory-summary" style="font-size:0.85rem;color:#a8d5b0;margin:0;line-height:1.6"></p>
+            </div>
           </div>
 
           <div id="map-section" style="margin-top:var(--space-6)">
@@ -698,6 +709,16 @@ export function renderReport() {
 
         // Summary
         document.getElementById('ai-summary-text').textContent = ai.ai_summary || 'No summary available.';
+
+        // ── Agent Memory ──────────────────────────────────────────────────────
+        const memoryPanel = document.getElementById('agent-memory-panel');
+        if (memoryPanel && ai.agentMemory) {
+          const { pastSightingsNearby, summary, groqEnhanced } = ai.agentMemory;
+          document.getElementById('memory-count').textContent = pastSightingsNearby;
+          document.getElementById('memory-summary').textContent = summary;
+          document.getElementById('memory-groq-badge').style.display = groqEnhanced ? 'inline-block' : 'none';
+          memoryPanel.style.display = 'block';
+        }
 
         // Map
         if (gps && gps.latitude !== null && gps.longitude !== null) {
