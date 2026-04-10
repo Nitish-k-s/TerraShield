@@ -1,19 +1,8 @@
-import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
+// Auth is now handled via /api/auth/login and /api/auth/signup
+// This route is kept for compatibility but just redirects home
 export async function GET(request: Request) {
-    const { searchParams, origin } = new URL(request.url);
-    const code = searchParams.get("code");
-    const next = searchParams.get("next") ?? "/";
-
-    if (code) {
-        const supabase = await createClient();
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (!error) {
-            return NextResponse.redirect(`${origin}${next}`);
-        }
-    }
-
-    // Return to login with error
-    return NextResponse.redirect(`${origin}/login?error=Could not authenticate`);
+    const { origin } = new URL(request.url);
+    return NextResponse.redirect(`${origin}/index.html`);
 }
