@@ -90,19 +90,21 @@ interface TokenEntry {
 let tokenCache: TokenEntry | null = null;
 
 async function getAccessToken(): Promise<string> {
-    // Return a cached token if still valid (with 30 s buffer)
     if (tokenCache && Date.now() < tokenCache.expiresAt - 30_000) {
         return tokenCache.token;
     }
 
     const clientId = process.env.SENTINEL_CLIENT_ID;
-    const clientSecret = process.env.SENTINAL_CLIENT_SECRET; // note: env key uses "SENTINAL"
+    const clientSecret = process.env.SENTINEL_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
-        throw new Error(
-            "Missing Sentinel Hub credentials. " +
-            "Set SENTINEL_CLIENT_ID and SENTINAL_CLIENT_SECRET in .env.local."
-        );
+        throw new Error("Missing Sentinel Hub credentials. Set SENTINEL_CLIENT_ID and SENTINEL_CLIENT_SECRET in .env.local.");
+    }
+
+    // Planet API keys (PLAK prefix) are used directly as Bearer tokens
+    if (clientId.startsWith("PLAK")) {
+        tokenCache = { token: clientId, expiresAt: Date.now() + 24 * 60 * 60 * 1000 };
+        return clientId;
     }
 
     const body = new URLSearchParams({
@@ -123,12 +125,7 @@ async function getAccessToken(): Promise<string> {
     }
 
     const json = await res.json() as { access_token: string; expires_in: number };
-
-    tokenCache = {
-        token: json.access_token,
-        expiresAt: Date.now() + json.expires_in * 1000,
-    };
-
+    tokenCache = { token: json.access_token, expiresAt: Date.now() + json.expires_in * 1000 };
     return tokenCache.token;
 }
 
