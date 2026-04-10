@@ -1,6 +1,6 @@
 # TerraShield
 
-A Next.js application with a backend API for extracting **EXIF metadata** (including GPS latitude & longitude) from uploaded images.
+A Next.js application with AI-powered ecological intelligence for detecting invasive species outbreaks 6–12 months earlier than traditional methods.
 
 ---
 
@@ -10,19 +10,77 @@ A Next.js application with a backend API for extracting **EXIF metadata** (inclu
 | --------- | --------------------------------------- |
 | Framework | Next.js 14 (App Router)                 |
 | Runtime   | Node.js                                 |
+| Database  | Supabase (PostgreSQL + PostGIS)         |
+| Storage   | Supabase Storage                        |
+| Auth      | Supabase Auth                           |
+| AI        | Google Gemini Vision                    |
 | EXIF      | [`exifr`](https://github.com/MikeKovarik/exifr) |
 | Upload    | [`formidable`](https://github.com/node-formidable/formidable) |
+| Deployment| Vercel                                  |
 
 ---
 
 ## 🚀 Getting Started
 
+### Prerequisites
+
+- Node.js 18+ installed
+- Supabase account ([sign up free](https://supabase.com))
+- Google Gemini API key ([get one here](https://makersuite.google.com/app/apikey))
+
+### Local Development
+
+1. **Clone the repository**
+
+```bash
+git clone https://github.com/yourusername/terrashield.git
+cd terrashield
+```
+
+2. **Install dependencies**
+
 ```bash
 npm install
+```
+
+3. **Set up Supabase**
+
+- Create a new project at [supabase.com](https://supabase.com)
+- Run the migration in `supabase/migrations/001_initial_schema.sql` in the SQL Editor
+- Get your project URL and keys from Settings → API
+
+4. **Configure environment variables**
+
+Create `.env.local` in the project root:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+GEMINI_API_KEY=your-gemini-api-key
+```
+
+5. **Run the development server**
+
+```bash
 npm run dev
 ```
 
-The dev server starts at **http://localhost:3000**.
+The dev server starts at **http://localhost:7001**.
+
+---
+
+## 🌐 Deployment
+
+TerraShield is optimized for Vercel deployment with Supabase as the backend.
+
+### Quick Deploy
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/terrashield)
+
+### Manual Deployment
+
+See [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) for detailed deployment instructions.
 
 ---
 
