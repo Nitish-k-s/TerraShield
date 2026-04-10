@@ -1,86 +1,105 @@
 /**
  * utils/auth.js
- *
- * Supabase auth helper for the TerraShield frontend SPA.
- * Uses the Supabase JS v2 CDN build (loaded in index.html via importmap).
- *
- * Provides:
- *  - getSupabase()        → singleton Supabase client
- *  - getSession()         → current session or null
- *  - getUser()            → current user or null
- *  - signIn(email, pass)  → { error }
- *  - signUp(email, pass)  → { error }
- *  - signOut()            → void
- *  - onAuthChange(cb)     → unsubscribe fn
+ * Local JWT auth helper for TerraShield frontend SPA.
+ * Replaces Supabase auth — uses /api/auth/login and /api/auth/signup
  */
 
-const SUPABASE_URL = 'https://utnlgwhofcssmlcmuvlw.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0bmxnd2hvZmNzc21sY211dmx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE2NDE5NjQsImV4cCI6MjA4NzIxNzk2NH0.LSDJMO_Tq-l4pWRNE-07oANrSYEwecY1yW8DiXWenvI';
+const TOKEN_KEY = 'terrashield_token';
+const USER_KEY  = 'terrashield_user';
 
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+// ─── Token storage ────────────────────────────────────────────────────────────
 
-let _client = null;
-
-export function getSupabase() {
-    if (!_client) {
-        _client = createClient(SUPABASE_URL, SUPABASE_ANON);
-    }
-    return _client;
+export function saveSession(token, user) {
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
 }
 
-export async function getSession() {
-    const { data } = await getSupabase().auth.getSession();
-    return data?.session ?? null;
+export function clearSession() {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
 }
 
-export async function getUser() {
-    const { data } = await getSupabase().auth.getUser();
-    return data?.user ?? null;
+export function getSessionToken() {
+    return localStorage.getItem(TOKEN_KEY);
 }
+
+export function getUser() {
+    try {
+        const raw = localStorage.getItem(USER_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+}
+
+export function getSession() {
+    const token = getSessionToken();
+    const user = getUser();
+    if (!token || !user) return null;
+    return { access_token: token, user };
+}
+
+// ─── Auth actions ─────────────────────────────────────────────────────────────
 
 export async function signIn(email, password) {
-    const { error } = await getSupabase().auth.signInWithPassword({ email, password });
-    return { error };
+    try {
+        const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) return { error: { message: data.error || 'Login failed' } };
+        saveSession(data.token, data.user);
+        _notifyListeners(data.user);
+        return { error: null };
+    } catch (e) {
+        return { error: { message: e.message } };
+    }
 }
 
-export async function signUp(email, password, name = '') {
-    const { error } = await getSupabase().auth.signUp({
-        email,
-        password,
-        options: {
-            emailRedirectTo: `${location.origin}/auth/callback`,
-            data: { full_name: name }
-        },
-    });
-    return { error };
+export async function signUp(email, password, name = '', role = '') {
+    try {
+        const res = await fetch('/api/auth/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password, name, role }),
+        });
+        const data = await res.json();
+        if (!res.ok) return { error: { message: data.error || 'Signup failed' } };
+        saveSession(data.token, data.user);
+        _notifyListeners(data.user);
+        return { error: null };
+    } catch (e) {
+        return { error: { message: e.message } };
+    }
 }
 
-export async function signOut() {
-    await getSupabase().auth.signOut();
+export function signOut() {
+    clearSession();
+    _notifyListeners(null);
 }
 
-/** Get the raw JWT access token for API requests */
-export async function getSessionToken() {
-    const session = await getSession();
-    return session?.access_token || null;
-}
-
-/**
- * Returns the display name for the current user.
- * Priority: user_metadata.full_name (set at signup) → local part of email → null
- * This is synchronous-friendly — call getUser() first, then pass the user here.
- */
 export function getUserDisplayName(user) {
     if (!user) return null;
-    return user.user_metadata?.full_name
-        || user.user_metadata?.name
-        || null;
+    return user.name || user.user_metadata?.full_name || null;
 }
 
-/** Subscribe to auth state changes. Returns the unsubscribe function. */
+// ─── Auth state listeners ─────────────────────────────────────────────────────
+
+const _listeners = new Set();
+
 export function onAuthChange(callback) {
-    const { data: { subscription } } = getSupabase().auth.onAuthStateChange((_event, session) => {
-        callback(session?.user ?? null);
-    });
-    return () => subscription.unsubscribe();
+    _listeners.add(callback);
+    // Fire immediately with current state
+    callback(getUser());
+    return () => _listeners.delete(callback);
+}
+
+function _notifyListeners(user) {
+    _listeners.forEach(cb => cb(user));
+}
+
+// ─── Compat shim (for code that calls getSupabase()) ─────────────────────────
+export function getSupabase() {
+    console.warn('[auth] getSupabase() is deprecated — use signIn/signOut/getUser directly');
+    return null;
 }

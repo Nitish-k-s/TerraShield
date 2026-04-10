@@ -62,17 +62,24 @@ export function renderForgotPassword() {
           <p style="color:var(--color-slate-500);margin-top:var(--space-2);font-size:0.8125rem;line-height:1.6">Enter your email and we'll send you a secure reset link.</p>
         </div>
 
-        <form onsubmit="event.preventDefault(); alert('Reset link sent! Check your email.'); window.location.hash='#/login';" style="display:flex;flex-direction:column;gap:var(--space-5)">
+        <form id="forgot-form" style="display:flex;flex-direction:column;gap:var(--space-5)">
           <div class="form-group">
             <label class="form-label">Email Address</label>
             <div class="form-input-icon">
               <span class="material-symbols-outlined">mail</span>
-              <input class="form-input" type="email" placeholder="you@example.com" required style="background:rgba(255,255,255,0.6)">
+              <input class="form-input" id="forgot-email" type="email" placeholder="you@example.com" required style="background:rgba(255,255,255,0.6)">
             </div>
           </div>
-
-          <button type="submit" class="btn btn-primary" style="width:100%;padding:var(--space-3) var(--space-4)">
-            <span class="material-symbols-outlined" style="font-size:1.125rem">send</span> Send Reset Link
+          <div class="form-group">
+            <label class="form-label">New Password</label>
+            <div class="form-input-icon">
+              <span class="material-symbols-outlined">lock</span>
+              <input class="form-input" id="forgot-newpass" type="password" placeholder="••••••••" required minlength="6" style="background:rgba(255,255,255,0.6)">
+            </div>
+          </div>
+          <div id="forgot-msg" style="display:none;padding:var(--space-3);border-radius:var(--radius);font-size:0.8125rem;text-align:center"></div>
+          <button type="submit" id="forgot-btn" class="btn btn-primary" style="width:100%;padding:var(--space-3) var(--space-4)">
+            <span class="material-symbols-outlined" style="font-size:1.125rem">lock_reset</span> <span id="forgot-btn-text">Reset Password</span>
           </button>
         </form>
 
@@ -96,16 +103,61 @@ export function renderForgotPassword() {
       </div>
     </div>
   </div>`,
-    init() {
+    async init() {
       const c = document.getElementById('forgot-particles');
-      if (!c) return;
-      const symbols = ['🍃', '🌿', '•', '✦'];
-      for (let i = 0; i < 8; i++) {
-        const p = document.createElement('span');
-        p.textContent = symbols[Math.floor(Math.random() * symbols.length)];
-        p.style.cssText = 'position:absolute;font-size:' + (7 + Math.random() * 7) + 'px;opacity:0.12;animation:particle-float ' + (6 + Math.random() * 6) + 's ease-in-out ' + (Math.random() * 4) + 's infinite;left:' + (Math.random() * 100) + '%;top:' + (Math.random() * 60) + '%;pointer-events:none';
-        c.appendChild(p);
+      if (c) {
+        const symbols = ['🍃', '🌿', '•', '✦'];
+        for (let i = 0; i < 8; i++) {
+          const p = document.createElement('span');
+          p.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+          p.style.cssText = 'position:absolute;font-size:' + (7 + Math.random() * 7) + 'px;opacity:0.12;animation:particle-float ' + (6 + Math.random() * 6) + 's ease-in-out ' + (Math.random() * 4) + 's infinite;left:' + (Math.random() * 100) + '%;top:' + (Math.random() * 60) + '%;pointer-events:none';
+          c.appendChild(p);
+        }
       }
+
+      const form = document.getElementById('forgot-form');
+      if (!form) return;
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('forgot-email').value.trim();
+        const newPassword = document.getElementById('forgot-newpass').value;
+        const btn = document.getElementById('forgot-btn');
+        const btnText = document.getElementById('forgot-btn-text');
+        const msg = document.getElementById('forgot-msg');
+
+        btn.disabled = true;
+        btnText.textContent = 'Resetting...';
+
+        try {
+          const res = await fetch('/api/auth/reset-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, newPassword }),
+          });
+          const data = await res.json();
+          msg.style.display = 'block';
+          if (res.ok) {
+            msg.style.background = 'rgba(16,185,129,0.1)';
+            msg.style.color = '#10b981';
+            msg.style.border = '1px solid rgba(16,185,129,0.2)';
+            msg.textContent = '✓ Password reset! Redirecting to sign in...';
+            setTimeout(() => { window.location.hash = '#/login'; }, 1500);
+          } else {
+            msg.style.background = 'rgba(239,68,68,0.1)';
+            msg.style.color = '#ef4444';
+            msg.style.border = '1px solid rgba(239,68,68,0.2)';
+            msg.textContent = data.error || 'Reset failed.';
+            btn.disabled = false;
+            btnText.textContent = 'Reset Password';
+          }
+        } catch {
+          msg.style.display = 'block';
+          msg.style.color = '#ef4444';
+          msg.textContent = 'Network error. Try again.';
+          btn.disabled = false;
+          btnText.textContent = 'Reset Password';
+        }
+      });
     }
   };
 }

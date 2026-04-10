@@ -217,7 +217,8 @@ export function renderSignup() {
         msg.style.display = 'none';
 
         const name = document.getElementById('signup-name').value.trim();
-        const { error } = await signUp(email, password, name);
+        const role = document.getElementById('signup-role').value;
+        const { error } = await signUp(email, password, name, role);
 
         if (error) {
           msg.style.display = 'block';
@@ -232,7 +233,7 @@ export function renderSignup() {
           msg.style.background = 'var(--color-emerald-50)';
           msg.style.color = 'var(--color-emerald)';
           msg.style.border = '1px solid rgba(16,185,129,0.2)';
-          msg.textContent = '✓ Account created! Check your email to confirm, then sign in.';
+          msg.textContent = '✓ Account created! Redirecting to sign in...';
           btn.disabled = false;
           btnText.textContent = 'Create Account';
           // Redirect to login after 3s
