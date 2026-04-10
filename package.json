@@ -6,7 +6,8 @@
     "dev": "next dev --port 7001",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "migrate": "node scripts/migrate-sqlite-to-supabase.mjs"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -26,6 +27,7 @@
     "@types/formidable": "^3.4.5",
     "@types/node": "20.19.33",
     "@types/react": "18.3.28",
+    "dotenv": "^16.4.7",
     "eslint": "^10.0.1",
     "eslint-config-next": "^0.2.4",
     "typescript": "5.9.3"

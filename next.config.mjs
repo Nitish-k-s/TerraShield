@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    // Required so formidable can parse multipart/form-data in API routes
+    // Vercel-compatible configuration
     experimental: {
-        serverComponentsExternalPackages: ["exifr", "formidable"],
+        // No longer needed - using Supabase instead of formidable/better-sqlite3
     },
 };
 
