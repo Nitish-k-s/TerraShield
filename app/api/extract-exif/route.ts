@@ -16,8 +16,9 @@ import { Readable } from "stream";
 import formidable, { File } from "formidable";
 import * as fs from "fs";
 import exifr from "exifr";
-import { createClient } from "@/lib/supabase/server";
-import { insertExifRecord, updateExifDistrict } from "@/lib/db/exif";
+import { getUserFromRequest } from "@/lib/auth";
+import { insertExifRecord, updateExifDistrict } from "@/lib/db/sqlite-exif";
+import { uploadReportImage } from "@/lib/storage";
 
 // ─── Disable the built-in Next.js body parser for this route ─────────────────
 // (Next.js App Router does NOT automatically parse multipart bodies, so we
@@ -97,36 +98,11 @@ function buildMapsUrl(lat: number, lng: number): string {
 
 export async function POST(req: NextRequest): Promise<NextResponse<ExifResponse>> {
     try {
-        // 0. Auth guard — reject unauthenticated requests
-        const authHeader = req.headers.get('authorization');
-        let user = null;
-
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-            const token = authHeader.substring(7);
-            const supabase = await createClient();
-
-            // Supabase API requires `getUser(jwt)` for custom tokens
-            const { data, error } = await supabase.auth.getUser(token);
-            if (error) console.error("[extract-exif] Token validation error:", error);
-            user = data?.user || null;
-        } else {
-            // Fallback to cookie-based session
-            const supabase = await createClient();
-            const { data } = await supabase.auth.getUser();
-            user = data?.user || null;
-        }
-
+        // 0. Auth guard
+        const user = await getUserFromRequest(req);
         if (!user) {
             return NextResponse.json(
-                {
-                    success: false,
-                    filename: "",
-                    mimeType: "",
-                    gps: { latitude: null, longitude: null, altitude: null, latitudeRef: null, longitudeRef: null },
-                    allTags: {},
-                    mapsUrl: null,
-                    error: "Unauthorized. Please sign in.",
-                },
+                { success: false, filename: "", mimeType: "", gps: { latitude: null, longitude: null, altitude: null, latitudeRef: null, longitudeRef: null }, allTags: {}, mapsUrl: null, error: "Unauthorized. Please sign in." },
                 { status: 401 }
             );
         }
@@ -226,10 +202,16 @@ export async function POST(req: NextRequest): Promise<NextResponse<ExifResponse>
             return null;
         };
 
-        // 7. Persist to local SQLite database (insert FIRST — district added below via UPDATE)
-        //    District columns are guaranteed to exist from the migration in getDb().
-        //    We delete the temp file AFTER the insert so the buffer is safely saved.
-        const recordId = insertExifRecord({
+        // 7. Upload image to Supabase Storage
+        const { path: storagePath } = await uploadReportImage(
+            user.id,
+            buffer,
+            file.originalFilename ?? "unknown",
+            file.mimetype ?? "application/octet-stream"
+        );
+
+        // 8. Persist to Supabase database (insert FIRST — district added below via UPDATE)
+        const recordId = await insertExifRecord({
             user_id: user.id,
             filename: file.originalFilename ?? "unknown",
             mime_type: file.mimetype ?? "application/octet-stream",
@@ -270,8 +252,8 @@ export async function POST(req: NextRequest): Promise<NextResponse<ExifResponse>
             // Full raw dump — JSON.stringify is always a string, safe
             all_tags_json: JSON.stringify(allTags),
 
-            // Raw image bytes — Buffer is accepted by SQLite
-            image_data: buffer,
+            // Storage path instead of BLOB
+            image_storage_path: storagePath,
         });
 
 
@@ -296,7 +278,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ExifResponse>
                     const state = addr.state ?? addr.province ?? null;
                     const country = addr.country ?? null;
                     // Write district onto the already-saved record
-                    updateExifDistrict(recordId, district, state, country);
+                    await updateExifDistrict(recordId, district, state, country);
                 }
             } catch {
                 console.warn('[extract-exif] Nominatim geocoding skipped (timeout/offline)');

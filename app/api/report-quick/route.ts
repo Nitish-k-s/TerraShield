@@ -10,25 +10,17 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getUserFromRequest } from "@/lib/auth";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { getDb } from "@/lib/db/exif";
-import type { ExifRecord } from "@/lib/db/exif";
+import { getExifById } from "@/lib/db/sqlite-exif";
+import type { ExifRecord } from "@/lib/db/sqlite-exif";
 
 export const runtime = "nodejs";
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 async function resolveUser(req: NextRequest) {
-    const supabase = await createClient();
-    const authHeader = req.headers.get("authorization");
-    if (authHeader?.startsWith("Bearer ")) {
-        const token = authHeader.slice(7);
-        const { data } = await supabase.auth.getUser(token);
-        return data?.user ?? null;
-    }
-    const { data } = await supabase.auth.getUser();
-    return data?.user ?? null;
+    return getUserFromRequest(req);
 }
 
 // ─── Colour palette ─────────────────────────────────────────────────────────
@@ -74,10 +66,10 @@ function wrapText(text: string, font: typeof StandardFonts.Helvetica extends nev
 
 interface SatData { current_ndvi?: number; historical_ndvi?: number; anomaly_score?: number; risk_level?: string; }
 
-function parseSatData(satellite_context_json: string | null | undefined): SatData {
+function parseSatData(satellite_context_json: string | Record<string, unknown> | null | undefined): SatData {
     if (!satellite_context_json) return {};
     try {
-        const j = JSON.parse(satellite_context_json);
+        const j = typeof satellite_context_json === "string" ? JSON.parse(satellite_context_json) : satellite_context_json;
         return {
             current_ndvi: j.current_ndvi ?? j.ndvi ?? j.ndvi_current,
             historical_ndvi: j.historical_ndvi ?? j.ndvi_baseline,
@@ -249,9 +241,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     if (body.id) {
         const id = Number(body.id);
         if (isFinite(id) && id > 0) {
-            record = getDb()
-                .prepare<[number], ExifRecord>("SELECT * FROM exif_data WHERE id = ?")
-                .get(id);
+            record = await getExifById(id);
         }
     }
 

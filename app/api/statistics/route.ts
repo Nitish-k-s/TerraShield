@@ -10,29 +10,25 @@
  * Accepts Bearer token or session cookie for auth.
  */
 import { NextResponse, type NextRequest } from "next/server";
-import { getUsersDb } from "@/lib/db/users";
 import {
     getDb,
-    getDistrictList,
+    getUsersDb,
+    getDistrictDistribution,
     getOverviewStats,
     getRiskDistribution,
+    detectOutbreakClusters,
+    getDistrictList,
     getSpeciesByDistrict,
     getTopDistricts,
     getTimeTrends,
     getRecentAlerts,
-    getDistrictDistribution,
-    detectOutbreakClusters,
     type DistrictFilter,
-} from "@/lib/db/exif";
+} from "@/lib/db/sqlite-exif";
 
 export const runtime = "nodejs";
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
     try {
-        // ── Trigger migration (idempotent) ────────────────────────────────────
-        getDb();
-
-        // ── Parse optional district filter from query params ──────────────────
         const { searchParams } = new URL(req.url);
         const filter: DistrictFilter = {
             country: searchParams.get("country") || undefined,
@@ -41,13 +37,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         };
         const hasFilter = !!(filter.country || filter.state || filter.district);
 
-        // ── Users count ───────────────────────────────────────────────────────
+        const db = getDb();
         const usersDb = getUsersDb();
-        const totalUsers = (usersDb.prepare<[], { total: number }>(
-            "SELECT COUNT(*) AS total FROM users_meta"
-        ).get()?.total) ?? 0;
+        const totalUsers = (usersDb.prepare<[], { total: number }>("SELECT COUNT(*) AS total FROM users_meta").get()?.total) ?? 0;
 
-        // ── All district-aware aggregations ───────────────────────────────────
         const overview = getOverviewStats(hasFilter ? filter : undefined);
         const risk_distribution = getRiskDistribution(hasFilter ? filter : undefined);
         const district_list = getDistrictList();
@@ -58,65 +51,37 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         const alerts = getRecentAlerts(hasFilter ? filter : undefined, 20);
         const clusters = detectOutbreakClusters();
 
-        // ── Outbreak confidence score components (district-aware average) ──────
-        const db = getDb();
-        const scoreComps = ((): { avg_ai_confidence: number; avg_risk_score: number; active_clusters: number } => {
-            const clauses = ["ai_analysed_at IS NOT NULL"];
-            const params: (string)[] = [];
-            if (hasFilter && filter.country) { clauses.push("country = ?"); params.push(filter.country); }
-            if (hasFilter && filter.state) { clauses.push("state = ?"); params.push(filter.state); }
-            if (hasFilter && filter.district) { clauses.push("district = ?"); params.push(filter.district); }
-            const row = db.prepare<string[], { conf: number; risk: number }>(
-                `SELECT ROUND(AVG(COALESCE(ai_confidence,0)),3) AS conf,
-                        ROUND(AVG(COALESCE(ai_risk_score,0)),2)  AS risk
-                 FROM   exif_data WHERE ${clauses.join(" AND ")}`
-            ).get(...params);
-            return {
-                avg_ai_confidence: Math.round((row?.conf ?? 0) * 100),
-                avg_risk_score: row?.risk ?? 0,
-                active_clusters: clusters.filter(c =>
-                    !hasFilter || !filter.district ||
-                    (c as { district?: string }).district === filter.district
-                ).length,
-            };
-        })();
-
-        console.log("[statistics] overview:", overview, "filter:", filter);
+        const clauses = ["ai_analysed_at IS NOT NULL"];
+        const params: string[] = [];
+        if (hasFilter && filter.country) { clauses.push("country = ?"); params.push(filter.country); }
+        if (hasFilter && filter.state) { clauses.push("state = ?"); params.push(filter.state); }
+        if (hasFilter && filter.district) { clauses.push("district = ?"); params.push(filter.district); }
+        const scoreRow = db.prepare<string[], { conf: number; risk: number }>(
+            `SELECT ROUND(AVG(COALESCE(ai_confidence,0)),3) AS conf, ROUND(AVG(COALESCE(ai_risk_score,0)),2) AS risk FROM exif_data WHERE ${clauses.join(" AND ")}`
+        ).get(...params);
 
         return NextResponse.json({
             success: true,
             filter_active: hasFilter,
             total_users: totalUsers,
-
-            // Overview (filter-aware)
             overview,
-
-            // Risk donut (filter-aware)
             risk_distribution,
-
-            // District data (global — for selector/matrix)
             district_list,
             district_summary,
             species_by_district,
-
-            // Top districts bar chart
             top_districts,
-
-            // Time trend line chart (filter-aware)
             time_trends,
-
-            // Alert table (filter-aware)
             alerts,
-
-            // Outbreak clusters (all, for map)
             clusters,
-
-            // Confidence score breakdown
-            outbreak_score_components: scoreComps,
+            outbreak_score_components: {
+                avg_ai_confidence: Math.round((scoreRow?.conf ?? 0) * 100),
+                avg_risk_score: scoreRow?.risk ?? 0,
+                active_clusters: clusters.length,
+            },
         });
     } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : "Unexpected error";
-        console.error("[statistics] Error:", msg, err);
+        console.error("[statistics] Error:", msg);
         return NextResponse.json({ success: false, error: msg }, { status: 500 });
     }
 }

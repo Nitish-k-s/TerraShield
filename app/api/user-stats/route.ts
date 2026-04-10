@@ -8,9 +8,8 @@
  *   - species_tracked    : distinct species from ai_tags across the user's reports
  */
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import Database from "better-sqlite3";
-import path from "path";
+import { getUserFromRequest } from "@/lib/auth";
+import { getDb } from "@/lib/db/sqlite-exif";
 
 export const runtime = "nodejs";
 
@@ -55,83 +54,34 @@ function latLngToCountry(lat: number, lng: number): string | null {
 }
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
-    // ── Auth ────────────────────────────────────────────────────────────────────
-    const authHeader = req.headers.get("authorization");
-    let userId: string | null = null;
-
-    if (authHeader?.startsWith("Bearer ")) {
-        const token = authHeader.substring(7);
-        const supabase = await createClient();
-        const { data } = await supabase.auth.getUser(token);
-        userId = data?.user?.id ?? null;
-    }
-
-    if (!authHeader || !userId) {
-        const supabase = await createClient();
-        const { data } = await supabase.auth.getUser();
-        userId = data?.user?.id ?? null;
-    }
-
-    if (!userId) {
-        return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-    }
+    const user = await getUserFromRequest(req);
+    if (!user) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
 
     try {
-        const exifDbPath = path.join(process.cwd(), "lib", "db", "exif.db");
-        const db = new Database(exifDbPath, { readonly: true });
+        const db = getDb();
+        const userId = user.id;
 
-        // ── Total reports by this user ───────────────────────────────────────────
-        const totalRow = db.prepare<[string], { n: number }>(
-            "SELECT COUNT(*) AS n FROM exif_data WHERE user_id = ?"
-        ).get(userId);
-        const totalReports = totalRow?.n ?? 0;
+        const totalReports = (db.prepare<[string], { n: number }>("SELECT COUNT(*) AS n FROM exif_data WHERE user_id = ?").get(userId)?.n) ?? 0;
+        const outbreaksFlagged = (db.prepare<[string], { n: number }>("SELECT COUNT(*) AS n FROM exif_data WHERE user_id = ? AND ai_label IN ('invasive-plant','invasive-animal') AND ai_analysed_at IS NOT NULL").get(userId)?.n) ?? 0;
 
-        // ── Outbreaks flagged (invasive classifications) ─────────────────────────
-        const invasiveRow = db.prepare<[string], { n: number }>(
-            "SELECT COUNT(*) AS n FROM exif_data WHERE user_id = ? AND ai_label IN ('invasive-plant','invasive-animal') AND ai_analysed_at IS NOT NULL"
-        ).get(userId);
-        const outbreaksFlagged = invasiveRow?.n ?? 0;
-
-        // ── Countries active (from GPS coords) ───────────────────────────────────
-        const gpsRows = db.prepare<[string], { latitude: number | null; longitude: number | null }>(
-            "SELECT latitude, longitude FROM exif_data WHERE user_id = ? AND latitude IS NOT NULL AND longitude IS NOT NULL"
-        ).all(userId);
-
+        const gpsRows = db.prepare<[string], { latitude: number; longitude: number }>("SELECT latitude, longitude FROM exif_data WHERE user_id = ? AND latitude IS NOT NULL AND longitude IS NOT NULL").all(userId);
         const countrySet = new Set<string>();
         for (const row of gpsRows) {
-            if (row.latitude != null && row.longitude != null) {
-                const country = latLngToCountry(row.latitude, row.longitude);
-                if (country) countrySet.add(country);
-            }
+            const c = latLngToCountry(row.latitude, row.longitude);
+            if (c) countrySet.add(c);
         }
-        const countriesActive = countrySet.size;
 
-        // ── Species tracked (unique species from ai_tags) ────────────────────────
-        const tagRows = db.prepare<[string], { ai_tags: string }>(
-            "SELECT ai_tags FROM exif_data WHERE user_id = ? AND ai_tags IS NOT NULL AND ai_analysed_at IS NOT NULL"
-        ).all(userId);
-
+        const tagRows = db.prepare<[string], { ai_tags: string }>("SELECT ai_tags FROM exif_data WHERE user_id = ? AND ai_tags IS NOT NULL AND ai_analysed_at IS NOT NULL").all(userId);
         const speciesSet = new Set<string>();
         for (const row of tagRows) {
             try {
                 const tags: string[] = JSON.parse(row.ai_tags);
-                // First tag is conventionally the species name
                 const sp = tags.find(t => /^[A-Z]/.test(t) || t.includes(" ")) ?? tags[0];
                 if (sp) speciesSet.add(sp.toLowerCase().trim());
-            } catch { /* skip malformed */ }
+            } catch { /* skip */ }
         }
-        const speciesTracked = speciesSet.size;
 
-        db.close();
-
-        return NextResponse.json({
-            success: true,
-            total_reports: totalReports,
-            outbreaks_flagged: outbreaksFlagged,
-            countries_active: countriesActive,
-            species_tracked: speciesTracked,
-        });
-
+        return NextResponse.json({ success: true, total_reports: totalReports, outbreaks_flagged: outbreaksFlagged, countries_active: countrySet.size, species_tracked: speciesSet.size });
     } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : "Unexpected error";
         console.error("[user-stats]", msg);

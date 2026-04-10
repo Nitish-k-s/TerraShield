@@ -10,7 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getUserFromRequest } from "@/lib/auth";
 import { generateEcologicalReport } from "@/lib/gemini";
 import { generatePdfReport } from "@/lib/pdf";
 import type { EcologicalReportInput } from "@/lib/gemini";
@@ -20,15 +20,7 @@ export const runtime = "nodejs";
 // ─── Auth helper ──────────────────────────────────────────────────────────────
 
 async function resolveUser(req: NextRequest) {
-    const supabase = await createClient();
-    const authHeader = req.headers.get("authorization");
-    if (authHeader?.startsWith("Bearer ")) {
-        const token = authHeader.slice(7);
-        const { data } = await supabase.auth.getUser(token);
-        return data?.user ?? null;
-    }
-    const { data } = await supabase.auth.getUser();
-    return data?.user ?? null;
+    return getUserFromRequest(req);
 }
 
 // ─── Input validator ──────────────────────────────────────────────────────────

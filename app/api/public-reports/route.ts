@@ -8,7 +8,7 @@
  * Exposes ONLY safe public fields. No user_id, email, or image data.
  */
 import { NextResponse } from "next/server";
-import { getPublicReports, detectOutbreakClusters } from "@/lib/db/exif";
+import { getPublicReports, detectOutbreakClusters } from "@/lib/db/sqlite-exif";
 
 export const runtime = "nodejs";
 

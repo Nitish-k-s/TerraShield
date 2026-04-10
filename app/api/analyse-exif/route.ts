@@ -21,14 +21,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import axios from "axios";
-import { createClient } from "@/lib/supabase/server";
+import { buildMemoryContext, retainSighting } from "@/lib/agent";
 import {
     getExifById,
     getPendingAiAnalysis,
     updateAiAnalysis,
     ExifRecord,
-} from "@/lib/db/exif";
-import { getUserMeta, awardReportPoints } from "@/lib/db/users";
+} from "@/lib/db/sqlite-exif";
+import { getUserMeta, awardReportPoints } from "@/lib/db/sqlite-users";
+import { getUserFromRequest } from "@/lib/auth";
+import { downloadReportImage } from "@/lib/storage";
 
 export const runtime = "nodejs";
 
@@ -76,27 +78,30 @@ async function withRetry<T>(fn: () => Promise<T>, maxAttempts = 3): Promise<T> {
  */
 async function fetchLocationContext(lat: number, lng: number): Promise<any> {
     const sentinelClientId = process.env.SENTINEL_CLIENT_ID;
-    const sentinelSecret = process.env.SENTINAL_CLIENT_SECRET;
+    const sentinelSecret = process.env.SENTINEL_CLIENT_SECRET;
 
     if (!sentinelClientId || !sentinelSecret) {
-        console.warn("[analyse-exif] Missing Sentinel Hub credentials (SENTINEL_CLIENT_ID or SENTINAL_CLIENT_SECRET).");
+        console.warn("[analyse-exif] Missing Sentinel Hub credentials (SENTINEL_CLIENT_ID or SENTINEL_CLIENT_SECRET).");
         return null;
     }
 
     try {
-        console.log(`[analyse-exif] Authenticating with Sentinel Hub OAuth...`);
-        const tokenParams = new URLSearchParams();
-        tokenParams.append("grant_type", "client_credentials");
-        tokenParams.append("client_id", sentinelClientId);
-        tokenParams.append("client_secret", sentinelSecret);
-
-        const tokenRes = await axios.post(
-            "https://services.sentinel-hub.com/oauth/token",
-            tokenParams.toString(),
-            { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
-        );
-        const accessToken = tokenRes.data.access_token;
-
+        // Planet API keys (PLAK prefix) used directly as Bearer token
+        let accessToken: string;
+        if (sentinelClientId.startsWith("PLAK")) {
+            accessToken = sentinelClientId;
+        } else {
+            const tokenParams = new URLSearchParams();
+            tokenParams.append("grant_type", "client_credentials");
+            tokenParams.append("client_id", sentinelClientId);
+            tokenParams.append("client_secret", sentinelSecret);
+            const tokenRes = await axios.post(
+                "https://services.sentinel-hub.com/oauth/token",
+                tokenParams.toString(),
+                { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+            );
+            accessToken = tokenRes.data.access_token;
+        }
         console.log(`[analyse-exif] Fetching Statistical NDVI data for GPS: ${lat}, ${lng}...`);
 
         // 500m x 500m bounding box (~0.005 degrees) around the exact sighting
@@ -174,12 +179,15 @@ async function fetchLocationContext(lat: number, lng: number): Promise<any> {
  * ecological context (location, time, device) so Gemini focuses on VISUAL
  * analysis rather than re-parsing raw metadata.
  */
-function buildPrompt(record: ExifRecord, externalContext: any = null): string {
+function buildPrompt(record: ExifRecord, externalContext: any = null, memoryContext = "No previous sightings in agent memory for this area."): string {
     const contextJson = externalContext
         ? JSON.stringify(externalContext, null, 2)
         : "External satellite/weather context unavailable.";
 
     return `
+## Agent Memory (past sightings recalled near this location)
+${memoryContext}
+
 You are TerraShield's ecological AI analyst. You are viewing a field image submitted
 by a citizen observer for invasive species early-warning detection.
 
@@ -234,18 +242,15 @@ interface GeminiResult {
 interface AnalysisMetadata {
     ai: GeminiResult;
     externalContext: any | null;
+    pastSightings: any[];
+    memorySummary: string;
+    groqEnhanced: boolean;
 }
 
 async function analyseWithGemini(record: ExifRecord): Promise<AnalysisMetadata> {
     const genAI = getGemini();
-    // The user's API key provisions Gemini 2.5 and 2.0 models, so we use gemini-2.5-flash
-    // temperature: 0 → deterministic output so the same image always yields the same score
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    // temperature: 0.2 gives near-deterministic results while remaining compatible
-    // with gemini-2.5-flash (a thinking model that doesn't support strict 0).
-    // maxOutputTokens: 2048 gives plenty of room for the JSON response.
     const generationConfig = { temperature: 0.2, maxOutputTokens: 2048 };
-
 
     // Fetch external geographical context if GPS coordinates exist
     let externalContext = null;
@@ -253,15 +258,29 @@ async function analyseWithGemini(record: ExifRecord): Promise<AnalysisMetadata> 
         externalContext = await fetchLocationContext(record.latitude, record.longitude);
     }
 
-    const textPrompt = buildPrompt(record, externalContext);
+    // ── Recall agent memory for this location ────────────────────────────────
+    let memoryContext = "No previous sightings in agent memory for this area.";
+    let pastSightings: any[] = [];
+    let groqEnhanced = false;
+    if (record.latitude != null && record.longitude != null) {
+        try {
+            const memory = await buildMemoryContext(record.latitude, record.longitude, record.filename);
+            memoryContext = memory.summary;
+            pastSightings = memory.pastSightings;
+            groqEnhanced = memory.groqEnhanced;
+        } catch (e) {
+            console.warn("[analyse-exif] Memory recall failed:", e);
+        }
+    }
+
+    const textPrompt = buildPrompt(record, externalContext, memoryContext);
 
     let result;
 
-    if (record.image_data) {
-        // ── Multimodal path: send actual image pixels + metadata context ────
-        // better-sqlite3 returns BLOBs as Node.js Buffer objects; we convert
-        // to base64 for the Gemini inline-data format.
-        const base64Image = Buffer.from(record.image_data).toString("base64");
+    if (record.image_storage_path) {
+        // ── Multimodal path: download image from Supabase Storage + send to Gemini ────
+        const imageBuffer = await downloadReportImage(record.image_storage_path);
+        const base64Image = imageBuffer.toString("base64");
 
         const imagePart = {
             inlineData: {
@@ -278,7 +297,7 @@ async function analyseWithGemini(record: ExifRecord): Promise<AnalysisMetadata> 
             })
         );
     } else {
-        // ── Text-only fallback for records uploaded before image_data was added ─
+        // ── Text-only fallback for records uploaded before storage migration ─
         console.warn(`[analyse-exif] Record ${record.id} has no stored image — falling back to metadata-only analysis.`);
         result = await withRetry(() =>
             model.generateContent({
@@ -316,27 +335,13 @@ async function analyseWithGemini(record: ExifRecord): Promise<AnalysisMetadata> 
     parsed.ai_confidence = Math.min(1, Math.max(0, Number(parsed.ai_confidence) || 0));
     parsed.ai_risk_score = Math.min(10, Math.max(0, Number(parsed.ai_risk_score) || 0));
 
-    return { ai: parsed, externalContext };
+    return { ai: parsed, externalContext, pastSightings, memorySummary: memoryContext, groqEnhanced };
 }
 
 // ─── Route handler ────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest): Promise<NextResponse> {
-    // 1. Auth guard — supports both Bearer token (SPA / localStorage) and cookie-based sessions
-    const authHeader = req.headers.get("authorization");
-    let user = null;
-
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-        const token = authHeader.substring(7);
-        const supabase = await createClient();
-        const { data, error } = await supabase.auth.getUser(token);
-        if (error) console.error("[analyse-exif] Token validation error:", error);
-        user = data?.user || null;
-    } else {
-        const supabase = await createClient();
-        const { data } = await supabase.auth.getUser();
-        user = data?.user || null;
-    }
-
+    // 1. Auth guard
+    const user = await getUserFromRequest(req);
     if (!user) {
         return NextResponse.json({ success: false, error: "Unauthorized." }, { status: 401 });
     }
@@ -348,7 +353,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         const body = await req.json().catch(() => ({}));
 
         if (body.recordId) {
-            // Single record by id
             const rec = getExifById(Number(body.recordId));
             if (!rec) {
                 return NextResponse.json(
@@ -358,7 +362,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             }
             records = [rec];
         } else if (body.pending) {
-            // All rows not yet analysed
             records = getPendingAiAnalysis();
         } else {
             return NextResponse.json(
@@ -381,7 +384,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     for (const record of records) {
         try {
-            const { ai, externalContext } = await analyseWithGemini(record);
+            const { ai, externalContext, pastSightings, memorySummary, groqEnhanced } = await analyseWithGemini(record);
 
             const ai_analysed_at = new Date().toISOString();
 
@@ -395,8 +398,25 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                 satellite_context_json: externalContext ? JSON.stringify(externalContext) : null,
             });
 
+            // ── Retain in agent memory ────────────────────────────────────────
+            if (record.latitude != null && record.longitude != null) {
+                try {
+                    await retainSighting(
+                        record.latitude,
+                        record.longitude,
+                        record.district ?? null,
+                        record.state ?? null,
+                        ai.ai_label,
+                        ai.ai_risk_score,
+                        ai.ai_tags,
+                        ai.ai_confidence
+                    );
+                } catch (e) {
+                    console.warn("[analyse-exif] Memory retain failed:", e);
+                }
+            }
+
             // ── Award TerraPoints ─────────────────────────────────────────────
-            // Ensure the user exists in users_meta (auto-creates with welcome bonus)
             getUserMeta(user.id, user.email ?? "");
 
             const { pointsAwarded, updatedUser } = awardReportPoints(
@@ -415,9 +435,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                 ai_summary: ai.ai_summary,
                 ai_tags: ai.ai_tags,
                 ai_analysed_at,
-                used_vision: !!record.image_data,   // helpful debug flag
+                used_vision: !!record.image_storage_path,
                 points_awarded: pointsAwarded,
                 updated_user: updatedUser,
+                agentMemory: {
+                    pastSightingsNearby: pastSightings.length,
+                    summary: memorySummary,
+                    groqEnhanced,
+                },
             });
         } catch (e: unknown) {
             const msg = e instanceof Error ? e.message : "Unknown error";
