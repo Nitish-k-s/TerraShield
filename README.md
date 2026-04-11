@@ -109,8 +109,7 @@ Edit `.env.local`:
 JWT_SECRET=your-secret-here
 GEMINI_API_KEY=your-gemini-key
 GROQ_API_KEY=your-groq-key
-SENTINEL_CLIENT_ID=your-sentinel-id      # optional
-SENTINEL_CLIENT_SECRET=your-sentinel-secret  # optional
+PLANET_API_KEY=your-planet-api-key  # for satellite NDVI
 ```
 
 ### Run
