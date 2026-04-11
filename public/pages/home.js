@@ -491,6 +491,25 @@ export function renderHome() {
           <p style="text-align:center;color:rgba(255,255,255,0.55);max-width:36rem;margin:0 auto;font-size:0.9375rem;line-height:1.7">Emerging clusters are continuously monitored. High-confidence outbreak zones are flagged in real time.</p>
         </div>
 
+        <!-- 🧠 Agent Memory Live Panel -->
+        <div id="agent-memory-home" style="margin-bottom:var(--space-8);padding:var(--space-5) var(--space-6);background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.2);border-radius:var(--radius-xl);display:flex;align-items:flex-start;gap:var(--space-4);flex-wrap:wrap">
+          <div style="font-size:2rem;line-height:1">🧠</div>
+          <div style="flex:1;min-width:200px">
+            <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-2);flex-wrap:wrap">
+              <span style="font-size:0.7rem;font-weight:var(--fw-bold);color:#4ade80;text-transform:uppercase;letter-spacing:0.12em">Agent Memory — Groq Enhanced</span>
+              <span style="width:6px;height:6px;border-radius:50%;background:#4ade80;animation:pulse-glow 2s infinite"></span>
+              <span id="home-memory-count" style="font-size:0.7rem;color:rgba(74,222,128,0.6)">Loading recalls...</span>
+            </div>
+            <p id="home-memory-summary" style="color:rgba(255,255,255,0.7);font-size:0.875rem;line-height:1.6;margin:0">The agent is continuously learning from every field report. Past sightings are recalled to improve future analyses.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:var(--space-2);min-width:140px">
+            <div style="text-align:center;padding:var(--space-3) var(--space-4);background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.15);border-radius:var(--radius-lg)">
+              <div id="home-memory-total" style="font-size:1.5rem;font-weight:bold;color:#4ade80">—</div>
+              <div style="font-size:0.65rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.08em">Memories Stored</div>
+            </div>
+          </div>
+        </div>
+
         <div class="three-col-grid" style="margin-bottom:var(--space-10)">
           <div class="card hover-lift reveal" data-delay="0" style="padding:var(--space-6);border-left:3px solid #ef4444;background:rgba(255,255,255,0.06);backdrop-filter:blur(8px);border-top:1px solid rgba(255,255,255,0.06);border-right:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06)">
             <div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-3)">
@@ -770,6 +789,23 @@ export function renderHome() {
   ${renderFooter()}`,
     init() {
       initNavbarAuth();
+
+      // ── Agent Memory home panel ───────────────────────────────────────────
+      fetch('/api/agent-memory')
+        .then(r => r.json())
+        .then(data => {
+          const countEl = document.getElementById('home-memory-count');
+          const summaryEl = document.getElementById('home-memory-summary');
+          const totalEl = document.getElementById('home-memory-total');
+          if (totalEl) totalEl.textContent = data.total ?? 0;
+          if (countEl) countEl.textContent = `${data.total ?? 0} sightings in memory`;
+          if (summaryEl && data.total > 0) {
+            const top = data.topSpecies ? `Most tracked: ${data.topSpecies} (${data.topSpeciesCount} reports). ` : '';
+            const recent = data.recent?.length > 0 ? `Latest recall: ${data.recent[0].classification} in ${data.recent[0].district ?? 'unknown'}, risk ${data.recent[0].risk_score}/10.` : '';
+            summaryEl.textContent = top + recent || summaryEl.textContent;
+          }
+        }).catch(() => {});
+
       const hero = document.getElementById('hero-section');
       if (!hero) return;
 

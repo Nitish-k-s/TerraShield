@@ -8,6 +8,7 @@ export async function middleware(request: NextRequest) {
         "/api/auth/login",
         "/api/auth/signup",
         "/api/auth/reset-password",
+        "/api/agent-memory",
     ].some(p => request.nextUrl.pathname.startsWith(p));
 
     if (!isApiRoute || isPublicApiRoute) return NextResponse.next();
