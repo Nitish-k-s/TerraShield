@@ -1,20 +1,16 @@
-/**
- * POST /api/auth/login
- * Body: { email, password }
- */
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { getUsersDb } from "@/lib/db/sqlite-users";
+import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { createToken } from "@/lib/auth";
+
+export const runtime = "nodejs";
 
 function verifyPassword(password: string, stored: string): boolean {
     try {
         const [salt, hash] = stored.split(":");
         const attempt = crypto.scryptSync(password, salt, 64).toString("hex");
         return crypto.timingSafeEqual(Buffer.from(hash, "hex"), Buffer.from(attempt, "hex"));
-    } catch {
-        return false;
-    }
+    } catch { return false; }
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -22,12 +18,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         const { email, password } = await req.json();
         if (!email || !password) return NextResponse.json({ error: "Email and password required" }, { status: 400 });
 
-        const db = getUsersDb();
-
-        // Ensure password_hash column exists
-        try { db.exec("ALTER TABLE users_meta ADD COLUMN password_hash TEXT"); } catch { /* exists */ }
-
-        const user = db.prepare("SELECT * FROM users_meta WHERE email = ?").get(email) as any;
+        const supabase = getSupabaseAdmin();
+        const { data: user } = await supabase.from("users_meta").select("*").eq("email", email).single();
         if (!user) return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
         if (!user.password_hash) return NextResponse.json({ error: "Account has no password set. Use forgot password." }, { status: 401 });
         if (!verifyPassword(password, user.password_hash)) return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });

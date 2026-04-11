@@ -1,54 +1,42 @@
 /**
- * lib/storage.ts
- * Local filesystem image storage (replaces Supabase Storage)
- * Images are saved to /public/uploads/<userId>/<timestamp>-<filename>
+ * lib/storage.ts — Supabase Storage for image uploads
  */
-
-import fs from "fs";
-import path from "path";
-
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
-
-function ensureDir(dir: string): void {
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-}
+import { getSupabaseAdmin } from "@/lib/supabase/server";
 
 export interface UploadResult {
-    path: string;       // relative storage path, e.g. "userId/123-file.jpg"
-    publicUrl: string;  // URL accessible from browser, e.g. "/uploads/userId/123-file.jpg"
+    path: string;
+    publicUrl: string;
 }
 
 export async function uploadReportImage(
     userId: string,
     buffer: Buffer,
     filename: string,
-    _mimeType: string
+    mimeType: string
 ): Promise<UploadResult> {
-    const userDir = path.join(UPLOAD_DIR, userId);
-    ensureDir(userDir);
-
+    const supabase = getSupabaseAdmin();
     const timestamp = Date.now();
     const sanitized = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const storedFilename = `${timestamp}-${sanitized}`;
-    const fullPath = path.join(userDir, storedFilename);
+    const storagePath = `${userId}/${timestamp}-${sanitized}`;
 
-    fs.writeFileSync(fullPath, buffer);
+    const { error } = await supabase.storage
+        .from("report-images")
+        .upload(storagePath, buffer, { contentType: mimeType, upsert: false });
 
-    const storagePath = `${userId}/${storedFilename}`;
-    return { path: storagePath, publicUrl: `/uploads/${storagePath}` };
+    if (error) throw new Error(`Failed to upload image: ${error.message}`);
+
+    const { data } = supabase.storage.from("report-images").getPublicUrl(storagePath);
+    return { path: storagePath, publicUrl: data.publicUrl };
 }
 
 export async function downloadReportImage(storagePath: string): Promise<Buffer> {
-    const fullPath = path.join(UPLOAD_DIR, storagePath);
-    if (!fs.existsSync(fullPath)) throw new Error(`Image not found: ${storagePath}`);
-    return fs.readFileSync(fullPath);
+    const supabase = getSupabaseAdmin();
+    const { data, error } = await supabase.storage.from("report-images").download(storagePath);
+    if (error) throw new Error(`Failed to download image: ${error.message}`);
+    return Buffer.from(await data.arrayBuffer());
 }
 
 export async function deleteReportImage(storagePath: string): Promise<void> {
-    const fullPath = path.join(UPLOAD_DIR, storagePath);
-    if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
-}
-
-export async function getSignedUrl(storagePath: string, _expiresIn = 3600): Promise<string> {
-    return `/uploads/${storagePath}`;
+    const supabase = getSupabaseAdmin();
+    await supabase.storage.from("report-images").remove([storagePath]);
 }

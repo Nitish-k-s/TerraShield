@@ -1,11 +1,9 @@
-/**
- * POST /api/auth/signup
- * Body: { email, password, name? }
- */
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { getUsersDb } from "@/lib/db/sqlite-users";
+import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { createToken } from "@/lib/auth";
+
+export const runtime = "nodejs";
 
 function hashPassword(password: string): string {
     const salt = crypto.randomBytes(16).toString("hex");
@@ -18,27 +16,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         const { email, password, name, role } = await req.json();
         if (!email || !password) return NextResponse.json({ error: "Email and password required" }, { status: 400 });
 
-        const db = getUsersDb();
+        const supabase = getSupabaseAdmin();
 
-        // Ensure password_hash column exists
-        try { db.exec("ALTER TABLE users_meta ADD COLUMN password_hash TEXT"); } catch {}
-        try { db.exec("ALTER TABLE users_meta ADD COLUMN role TEXT DEFAULT 'user'"); } catch {}
-
-        // Check if email already exists
-        const existing = db.prepare("SELECT user_id FROM users_meta WHERE email = ?").get(email);
+        const { data: existing } = await supabase.from("users_meta").select("user_id").eq("email", email).single();
         if (existing) return NextResponse.json({ error: "Email already registered" }, { status: 409 });
 
-        // Create user
         const userId = crypto.randomUUID();
         const passwordHash = hashPassword(password);
 
-        db.transaction(() => {
-            db.prepare(`
-                INSERT INTO users_meta (user_id, email, name, terra_points, password_hash, role)
-                VALUES (?, ?, ?, 50, ?, ?)
-            `).run(userId, email, name ?? null, passwordHash, role ?? 'user');
-            db.prepare("INSERT INTO points_history (user_id, amount, reason) VALUES (?, 50, 'Welcome to TerraShield')").run(userId);
-        })();
+        await supabase.from("users_meta").insert({
+            user_id: userId, email, name: name ?? null,
+            terra_points: 50, password_hash: passwordHash,
+            role: role ?? 'user'
+        });
+        await supabase.from("points_history").insert({ user_id: userId, amount: 50, reason: "Welcome to TerraShield" });
 
         const token = await createToken({ id: userId, email, user_metadata: { full_name: name ?? "" } });
         return NextResponse.json({ token, user: { id: userId, email, name } }, { status: 201 });
