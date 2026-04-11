@@ -48,16 +48,7 @@ ${ctaSection}
     <div class="footer-grid">
       <div>
         <div class="flex items-center gap-3" style="margin-bottom:var(--space-6)">
-          <svg class="ts-logo" width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="shield-grad-footer" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#1dacc9" />
-                <stop offset="100%" stop-color="#2d5a4c" />
-              </linearGradient>
-            </defs>
-            <path d="M50 8 L88 28 L88 52 C88 74 72 90 50 96 C28 90 12 74 12 52 L12 28 Z" fill="url(#shield-grad-footer)" opacity="0.9" />
-            <path d="M50 30 C50 30 36 44 36 56 C36 64 42 70 50 70 C58 70 64 64 64 56 C64 44 50 30 50 30Z" fill="#fff" opacity="0.7" />
-          </svg>
+          <img src="/terrashield-logo.svg" width="32" height="32" alt="TerraShield" style="object-fit:contain"/>
           <h2 style="font-size:1.5rem;font-weight:var(--fw-bold);letter-spacing:-0.02em;color:var(--color-slate-800)">TerraShield</h2>
         </div>
         <p class="footer-desc">Real-Time Ecological Intelligence for Early Invasive Species Detection.</p>

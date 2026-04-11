@@ -98,13 +98,7 @@ export function renderLogin() {
 
       <!-- Logo -->
       <a href="#/" class="hero-animate" style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-8);text-decoration:none">
-        <svg class="ts-logo" width="36" height="36" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <defs><linearGradient id="shield-grad-login" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4ade80"/><stop offset="100%" stop-color="#22c55e"/></linearGradient></defs>
-          <path d="M50 8 L88 28 L88 52 C88 74 72 90 50 96 C28 90 12 74 12 52 L12 28 Z" fill="url(#shield-grad-login)" opacity="0.9">
-            <animate attributeName="opacity" values="0.85;1;0.85" dur="3s" repeatCount="indefinite"/>
-          </path>
-          <path d="M50 30 C50 30 36 44 36 56 C36 64 42 70 50 70 C58 70 64 64 64 56 C64 44 50 30 50 30Z" fill="#fff" opacity="0.9"/>
-        </svg>
+        <img src="/terrashield-logo.svg" width="48" height="48" alt="TerraShield" style="object-fit:contain"/>
         <span style="font-size:1.375rem;font-weight:var(--fw-bold);color:#f0f8f0;letter-spacing:-0.02em">TerraShield</span>
       </a>
 

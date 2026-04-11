@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 460" width="400" height="460">
+  <defs>
+    <!-- Shield clip path -->
+    <clipPath id="shield-clip">
+      <path d="M200 20 L370 80 L370 220 C370 320 295 400 200 430 C105 400 30 320 30 220 L30 80 Z"/>
+    </clipPath>
+
+    <!-- Green forest texture gradient -->
+    <radialGradient id="green-grad" cx="35%" cy="45%" r="60%">
+      <stop offset="0%" stop-color="#2d6e3a"/>
+      <stop offset="100%" stop-color="#1a4a24"/>
+    </radialGradient>
+
+    <!-- Brown bark texture gradient -->
+    <linearGradient id="brown-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B4513"/>
+      <stop offset="50%" stop-color="#6B3410"/>
+      <stop offset="100%" stop-color="#5a2d0c"/>
+    </linearGradient>
+
+    <!-- Leaf glow -->
+    <radialGradient id="leaf-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#4ade80" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#4ade80" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Shield border gradient -->
+    <linearGradient id="border-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#555"/>
+      <stop offset="50%" stop-color="#222"/>
+      <stop offset="100%" stop-color="#444"/>
+    </linearGradient>
+
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <filter id="soft-glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Shield outer border / shadow -->
+  <path d="M200 18 L372 79 L372 222 C372 323 296 403 200 433 C104 403 28 323 28 222 L28 79 Z"
+        fill="#111" stroke="#333" stroke-width="2"/>
+
+  <!-- Shield background split — green left, brown right -->
+  <g clip-path="url(#shield-clip)">
+
+    <!-- Green left half -->
+    <rect x="30" y="20" width="170" height="420" fill="url(#green-grad)"/>
+
+    <!-- Brown right half -->
+    <rect x="200" y="20" width="170" height="420" fill="url(#brown-grad)"/>
+
+    <!-- Green half subtle texture dots (satellite view) -->
+    <ellipse cx="90" cy="160" rx="28" ry="18" fill="#1e5a2a" opacity="0.5"/>
+    <ellipse cx="130" cy="220" rx="22" ry="14" fill="#1e5a2a" opacity="0.4"/>
+    <ellipse cx="70" cy="280" rx="32" ry="20" fill="#1e5a2a" opacity="0.45"/>
+    <ellipse cx="155" cy="310" rx="18" ry="12" fill="#1e5a2a" opacity="0.35"/>
+    <ellipse cx="100" cy="350" rx="25" ry="16" fill="#1e5a2a" opacity="0.4"/>
+
+    <!-- Brown half bark texture lines -->
+    <g stroke="#5a2a08" stroke-width="1.2" opacity="0.5" fill="none">
+      <path d="M220 60 Q230 80 225 100 Q235 120 228 140"/>
+      <path d="M250 50 Q258 75 252 95 Q262 118 255 138"/>
+      <path d="M280 65 Q288 88 283 110 Q292 132 286 155"/>
+      <path d="M310 55 Q318 80 312 102 Q322 125 315 148"/>
+      <path d="M340 70 Q347 92 342 115 Q350 138 344 160"/>
+      <path d="M230 150 Q238 172 233 195 Q242 218 236 240"/>
+      <path d="M260 145 Q268 168 263 190 Q272 213 266 235"/>
+      <path d="M295 155 Q302 178 297 200 Q306 223 300 245"/>
+      <path d="M325 148 Q332 172 327 195 Q336 218 330 240"/>
+      <path d="M240 255 Q248 278 243 300 Q252 322 246 345"/>
+      <path d="M270 248 Q278 272 273 295 Q282 318 276 340"/>
+      <path d="M305 258 Q312 280 307 303 Q316 326 310 348"/>
+      <path d="M335 252 Q342 275 337 298 Q346 320 340 342"/>
+      <path d="M215 355 Q222 375 218 395 Q226 412 220 428"/>
+      <path d="M248 360 Q255 380 250 400 Q258 418 252 435"/>
+      <path d="M280 358 Q287 378 282 398 Q290 416 284 432"/>
+      <path d="M312 362 Q318 382 314 402 Q322 420 316 436"/>
+    </g>
+
+    <!-- Center dividing line glow -->
+    <rect x="197" y="20" width="6" height="420" fill="#0a1a0f" opacity="0.8"/>
+
+    <!-- Leaf glow halo -->
+    <ellipse cx="200" cy="240" rx="70" ry="80" fill="url(#leaf-glow)"/>
+
+    <!-- Leaf shape centered on dividing line -->
+    <g filter="url(#soft-glow)">
+      <path d="M200 160 C220 175 238 200 238 230 C238 265 222 290 200 305 C178 290 162 265 162 230 C162 200 180 175 200 160 Z"
+            fill="#3dba6e" opacity="0.85" stroke="#4ade80" stroke-width="1.5"/>
+      <!-- Leaf midrib -->
+      <line x1="200" y1="163" x2="200" y2="302" stroke="#1a5a30" stroke-width="2" stroke-linecap="round"/>
+      <!-- Leaf veins -->
+      <line x1="200" y1="195" x2="225" y2="210" stroke="#1a5a30" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="200" y1="195" x2="175" y2="210" stroke="#1a5a30" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="200" y1="220" x2="232" y2="232" stroke="#1a5a30" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="200" y1="220" x2="168" y2="232" stroke="#1a5a30" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="200" y1="248" x2="230" y2="258" stroke="#1a5a30" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="200" y1="248" x2="170" y2="258" stroke="#1a5a30" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="200" y1="272" x2="222" y2="280" stroke="#1a5a30" stroke-width="1" stroke-linecap="round"/>
+      <line x1="200" y1="272" x2="178" y2="280" stroke="#1a5a30" stroke-width="1" stroke-linecap="round"/>
+    </g>
+
+    <!-- Alert dots — red critical -->
+    <g filter="url(#glow)">
+      <!-- Red dot 1 -->
+      <circle cx="105" cy="195" r="10" fill="#ef4444" opacity="0.9"/>
+      <circle cx="105" cy="195" r="16" fill="none" stroke="#ef4444" stroke-width="2" opacity="0.5"/>
+      <!-- Red dot 2 -->
+      <circle cx="140" cy="290" r="8" fill="#ef4444" opacity="0.85"/>
+      <circle cx="140" cy="290" r="13" fill="none" stroke="#ef4444" stroke-width="1.5" opacity="0.45"/>
+      <!-- Amber dot -->
+      <circle cx="68" cy="355" r="7" fill="#f59e0b" opacity="0.9"/>
+      <circle cx="68" cy="355" r="12" fill="none" stroke="#f59e0b" stroke-width="1.5" opacity="0.5"/>
+    </g>
+
+  </g>
+
+  <!-- Shield outer border -->
+  <path d="M200 20 L370 80 L370 220 C370 320 295 400 200 430 C105 400 30 320 30 220 L30 80 Z"
+        fill="none" stroke="url(#border-grad)" stroke-width="5"/>
+
+  <!-- Inner shield highlight -->
+  <path d="M200 28 L362 84 L362 220 C362 315 290 392 200 421 C110 392 38 315 38 220 L38 84 Z"
+        fill="none" stroke="#444" stroke-width="1.5" opacity="0.6"/>
+
+  <!-- Text: TERRASHIELD -->
+  <text x="200" y="455" text-anchor="middle"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="38" font-weight="bold" letter-spacing="4"
+        fill="white">TERRASHIELD</text>
+
+  <!-- Text: EARLY WARNING SYSTEM -->
+  <text x="200" y="478" text-anchor="middle"
+        font-family="'Courier New', monospace"
+        font-size="11" letter-spacing="5"
+        fill="#4ade80" opacity="0.85">EARLY WARNING SYSTEM</text>
+</svg>
