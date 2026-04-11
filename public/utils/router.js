@@ -14,6 +14,7 @@ import { renderForgotPassword } from '../pages/forgot-password.js';
 import { renderProfile } from '../pages/profile.js';
 import { renderStatistics } from '../pages/statistics.js';
 import { renderEnterpriseRegister } from '../pages/enterprise-register.js';
+import { renderMemory } from '../pages/memory.js';
 
 const routes = {
     '/': renderHome,
@@ -26,6 +27,7 @@ const routes = {
     '/signup': renderSignup,
     '/forgot-password': renderForgotPassword,
     '/profile': renderProfile,
+    '/memory': renderMemory,
 };
 
 const app = document.getElementById('app');
