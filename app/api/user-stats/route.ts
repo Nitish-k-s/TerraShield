@@ -9,7 +9,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
-import { getDb } from "@/lib/db/sqlite-exif";
+import { getSupabaseAdmin } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
@@ -58,30 +58,30 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     if (!user) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
 
     try {
-        const db = getDb();
+        const supabase = getSupabaseAdmin();
         const userId = user.id;
 
-        const totalReports = (db.prepare<[string], { n: number }>("SELECT COUNT(*) AS n FROM exif_data WHERE user_id = ?").get(userId)?.n) ?? 0;
-        const outbreaksFlagged = (db.prepare<[string], { n: number }>("SELECT COUNT(*) AS n FROM exif_data WHERE user_id = ? AND ai_label IN ('invasive-plant','invasive-animal') AND ai_analysed_at IS NOT NULL").get(userId)?.n) ?? 0;
+        const { count: totalReports } = await supabase.from("exif_data").select("*", { count: "exact", head: true }).eq("user_id", userId);
+        const { count: outbreaksFlagged } = await supabase.from("exif_data").select("*", { count: "exact", head: true }).eq("user_id", userId).in("ai_label", ["invasive-plant", "invasive-animal"]).not("ai_analysed_at", "is", null);
 
-        const gpsRows = db.prepare<[string], { latitude: number; longitude: number }>("SELECT latitude, longitude FROM exif_data WHERE user_id = ? AND latitude IS NOT NULL AND longitude IS NOT NULL").all(userId);
+        const { data: gpsRows } = await supabase.from("exif_data").select("latitude, longitude").eq("user_id", userId).not("latitude", "is", null).not("longitude", "is", null);
         const countrySet = new Set<string>();
-        for (const row of gpsRows) {
+        for (const row of gpsRows || []) {
             const c = latLngToCountry(row.latitude, row.longitude);
             if (c) countrySet.add(c);
         }
 
-        const tagRows = db.prepare<[string], { ai_tags: string }>("SELECT ai_tags FROM exif_data WHERE user_id = ? AND ai_tags IS NOT NULL AND ai_analysed_at IS NOT NULL").all(userId);
+        const { data: tagRows } = await supabase.from("exif_data").select("ai_tags").eq("user_id", userId).not("ai_tags", "is", null).not("ai_analysed_at", "is", null);
         const speciesSet = new Set<string>();
-        for (const row of tagRows) {
+        for (const row of tagRows || []) {
             try {
-                const tags: string[] = JSON.parse(row.ai_tags);
+                const tags: string[] = Array.isArray(row.ai_tags) ? row.ai_tags : JSON.parse(row.ai_tags);
                 const sp = tags.find(t => /^[A-Z]/.test(t) || t.includes(" ")) ?? tags[0];
                 if (sp) speciesSet.add(sp.toLowerCase().trim());
             } catch { /* skip */ }
         }
 
-        return NextResponse.json({ success: true, total_reports: totalReports, outbreaks_flagged: outbreaksFlagged, countries_active: countrySet.size, species_tracked: speciesSet.size });
+        return NextResponse.json({ success: true, total_reports: totalReports || 0, outbreaks_flagged: outbreaksFlagged || 0, countries_active: countrySet.size, species_tracked: speciesSet.size });
     } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : "Unexpected error";
         console.error("[user-stats]", msg);

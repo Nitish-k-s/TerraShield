@@ -17,7 +17,7 @@ import formidable, { File } from "formidable";
 import * as fs from "fs";
 import exifr from "exifr";
 import { getUserFromRequest } from "@/lib/auth";
-import { insertExifRecord, updateExifDistrict } from "@/lib/db/sqlite-exif";
+import { insertExifRecord, updateExifDistrict } from "@/lib/db/supabase-exif";
 import { uploadReportImage } from "@/lib/storage";
 
 // ─── Disable the built-in Next.js body parser for this route ─────────────────
@@ -250,7 +250,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ExifResponse>
             color_space: toSafeStr(allTags["ColorSpace"]),
 
             // Full raw dump — JSON.stringify is always a string, safe
-            all_tags_json: JSON.stringify(allTags),
+            all_tags_json: allTags,
 
             // Storage path instead of BLOB
             image_storage_path: storagePath,

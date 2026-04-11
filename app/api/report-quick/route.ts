@@ -12,8 +12,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { getExifById } from "@/lib/db/sqlite-exif";
-import type { ExifRecord } from "@/lib/db/sqlite-exif";
+import { getExifById } from "@/lib/db/supabase-exif";
+import type { ExifRecord } from "@/lib/db/supabase-exif";
 
 export const runtime = "nodejs";
 
@@ -241,7 +241,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     if (body.id) {
         const id = Number(body.id);
         if (isFinite(id) && id > 0) {
-            record = await getExifById(id);
+            record = await getExifById(id) ?? undefined;
         }
     }
 

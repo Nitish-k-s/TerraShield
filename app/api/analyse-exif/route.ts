@@ -20,15 +20,14 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import axios from "axios";
 import { buildMemoryContext, retainSighting } from "@/lib/agent";
 import {
     getExifById,
     getPendingAiAnalysis,
     updateAiAnalysis,
     ExifRecord,
-} from "@/lib/db/sqlite-exif";
-import { getUserMeta, awardReportPoints } from "@/lib/db/sqlite-users";
+} from "@/lib/db/supabase-exif";
+import { getUserMeta, awardReportPoints } from "@/lib/db/supabase-users";
 import { getUserFromRequest } from "@/lib/auth";
 import { downloadReportImage } from "@/lib/storage";
 
@@ -70,104 +69,30 @@ async function withRetry<T>(fn: () => Promise<T>, maxAttempts = 3): Promise<T> {
     throw lastErr;
 }
 
-// ─── External Context Fetcher (Sentinel Hub Statistical API) ──────────────────────
-/**
- * Uses Sentinel Hub OAuth2 to fetch an access token, then posts a Statistical API 
- * request to calculate the NDVI (Normalized Difference Vegetation Index) for a 500m 
- * bounding box around the provided GPS coordinates over the last 30 days.
- */
+// ─── External Context Fetcher (Planet API) ───────────────────────────────────
 async function fetchLocationContext(lat: number, lng: number): Promise<any> {
-    const sentinelClientId = process.env.SENTINEL_CLIENT_ID;
-    const sentinelSecret = process.env.SENTINEL_CLIENT_SECRET;
-
-    if (!sentinelClientId || !sentinelSecret) {
-        console.warn("[analyse-exif] Missing Sentinel Hub credentials (SENTINEL_CLIENT_ID or SENTINEL_CLIENT_SECRET).");
+    const planetKey = process.env.PLANET_API_KEY;
+    if (!planetKey) {
+        console.warn("[analyse-exif] PLANET_API_KEY not set — skipping satellite context.");
         return null;
     }
 
     try {
-        // Planet API keys (PLAK prefix) used directly as Bearer token
-        let accessToken: string;
-        if (sentinelClientId.startsWith("PLAK")) {
-            accessToken = sentinelClientId;
-        } else {
-            const tokenParams = new URLSearchParams();
-            tokenParams.append("grant_type", "client_credentials");
-            tokenParams.append("client_id", sentinelClientId);
-            tokenParams.append("client_secret", sentinelSecret);
-            const tokenRes = await axios.post(
-                "https://services.sentinel-hub.com/oauth/token",
-                tokenParams.toString(),
-                { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
-            );
-            accessToken = tokenRes.data.access_token;
-        }
-        console.log(`[analyse-exif] Fetching Statistical NDVI data for GPS: ${lat}, ${lng}...`);
-
-        // 500m x 500m bounding box (~0.005 degrees) around the exact sighting
-        const bbox = [lng - 0.005, lat - 0.005, lng + 0.005, lat + 0.005];
-
-        const now = new Date();
-        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-        const statPayload = {
-            input: {
-                bounds: { bbox },
-                data: [{ type: "sentinel-2-l2a", dataFilter: { mosaickingOrder: "leastCC" } }]
-            },
-            aggregation: {
-                timeRange: { from: thirtyDaysAgo.toISOString(), to: now.toISOString() },
-                aggregationInterval: { of: "P30D" },
-                evalscript: `
-                    //VERSION=3
-                    function setup() {
-                        return {
-                            input: [{ bands: ["B04", "B08", "dataMask"] }],
-                            output: [
-                                { id: "ndvi", bands: 1, sampleType: "FLOAT32" },
-                                { id: "dataMask", bands: 1 }
-                            ]
-                        };
-                    }
-                    function evaluatePixel(samples) {
-                        let val = samples.dataMask === 1 ? (samples.B08 - samples.B04) / (samples.B08 + samples.B04) : 0;
-                        return { ndvi: [val], dataMask: [samples.dataMask] };
-                    }
-                `,
-                resx: 10,
-                resy: 10
-            }
-        };
-
-        const statRes = await axios.post(
-            "https://services.sentinel-hub.com/api/v1/statistics",
-            statPayload,
-            { headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" } }
-        );
-
-        // Parse mean NDVI from the Sentinel Hub response
-        // Sentinel Hub Statistical API returns historical intervals; we look at the most recent successful one
-        const intervals = statRes.data?.data;
-        if (!intervals || intervals.length === 0) throw new Error("No data returned from Sentinel Hub.");
-
-        const latestStats = intervals[intervals.length - 1]?.outputs?.ndvi?.bands?.B0?.stats;
-        const meanNdvi = latestStats?.mean ?? null;
-
+        const { validateVegetationAnomaly } = await import("@/lib/sentinel");
+        const result = await validateVegetationAnomaly(lat, lng);
         return {
-            source: "Sentinel Hub Statistical API (Sentinel-2 L2A)",
+            source: result.meta.source,
             coordinate: [lat, lng],
-            vegetation_index_ndvi_30d_avg: meanNdvi ? Number(meanNdvi.toFixed(3)) : "Data cloudy/unavailable",
-            ecological_note: meanNdvi && meanNdvi > 0.6
-                ? "High vegetative density currently detected via satellite; high capacity for invasive plant spread or fuel loading."
-                : "Low vegetative density or barren season detected."
+            vegetation_index_ndvi_30d_avg: result.current_ndvi,
+            historical_ndvi: result.historical_ndvi,
+            anomaly_score: result.anomaly_score,
+            risk_level: result.risk_level,
+            ecological_note: result.current_ndvi > 0.6
+                ? "High vegetative density detected; high capacity for invasive plant spread."
+                : "Low vegetative density or barren season detected.",
         };
-
-    } catch (err: unknown) {
-        if (axios.isAxiosError(err)) {
-            console.warn("[analyse-exif] Sentinel Hub API Error:", err.response?.data || err.message);
-        } else {
-            console.warn("[analyse-exif] Failed to fetch external location context:", err);
-        }
+    } catch (err) {
+        console.warn("[analyse-exif] Planet satellite context failed:", err instanceof Error ? err.message : err);
         return null;
     }
 }
@@ -353,7 +278,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         const body = await req.json().catch(() => ({}));
 
         if (body.recordId) {
-            const rec = getExifById(Number(body.recordId));
+            const rec = await getExifById(Number(body.recordId));
             if (!rec) {
                 return NextResponse.json(
                     { success: false, error: `Record ${body.recordId} not found.` },
@@ -362,7 +287,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             }
             records = [rec];
         } else if (body.pending) {
-            records = getPendingAiAnalysis();
+            records = await getPendingAiAnalysis();
         } else {
             return NextResponse.json(
                 { success: false, error: 'Provide { "recordId": <id> } or { "pending": true }.' },
@@ -388,14 +313,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
             const ai_analysed_at = new Date().toISOString();
 
-            updateAiAnalysis(record.id, {
+            await updateAiAnalysis(record.id, {
                 ai_label: ai.ai_label,
                 ai_confidence: ai.ai_confidence,
-                ai_tags: JSON.stringify(ai.ai_tags),
+                ai_tags: ai.ai_tags,
                 ai_summary: ai.ai_summary,
                 ai_risk_score: ai.ai_risk_score,
                 ai_analysed_at,
-                satellite_context_json: externalContext ? JSON.stringify(externalContext) : null,
+                satellite_context_json: externalContext ?? null,
             });
 
             // ── Retain in agent memory ────────────────────────────────────────
@@ -417,9 +342,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             }
 
             // ── Award TerraPoints ─────────────────────────────────────────────
-            getUserMeta(user.id, user.email ?? "");
+            await getUserMeta(user.id, user.email ?? "");
 
-            const { pointsAwarded, updatedUser } = awardReportPoints(
+            const { pointsAwarded, updatedUser } = await awardReportPoints(
                 user.id,
                 record.id,
                 ai.ai_label,

@@ -8,14 +8,14 @@
  * Exposes ONLY safe public fields. No user_id, email, or image data.
  */
 import { NextResponse } from "next/server";
-import { getPublicReports, detectOutbreakClusters } from "@/lib/db/sqlite-exif";
+import { getPublicReports, detectOutbreakClusters } from "@/lib/db/supabase-exif";
 
 export const runtime = "nodejs";
 
 export async function GET(): Promise<NextResponse> {
     try {
-        const reports = getPublicReports();
-        const clusters = detectOutbreakClusters();
+        const reports = await getPublicReports();
+        const clusters = await detectOutbreakClusters();
 
         return NextResponse.json(
             { success: true, reports, clusters },

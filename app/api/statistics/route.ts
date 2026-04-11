@@ -11,8 +11,6 @@
  */
 import { NextResponse, type NextRequest } from "next/server";
 import {
-    getDb,
-    getUsersDb,
     getDistrictDistribution,
     getOverviewStats,
     getRiskDistribution,
@@ -23,7 +21,8 @@ import {
     getTimeTrends,
     getRecentAlerts,
     type DistrictFilter,
-} from "@/lib/db/sqlite-exif";
+} from "@/lib/db/supabase-exif";
+import { getSupabaseAdmin } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
@@ -37,33 +36,32 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         };
         const hasFilter = !!(filter.country || filter.state || filter.district);
 
-        const db = getDb();
-        const usersDb = getUsersDb();
-        const totalUsers = (usersDb.prepare<[], { total: number }>("SELECT COUNT(*) AS total FROM users_meta").get()?.total) ?? 0;
+        const supabase = getSupabaseAdmin();
+        const { count: totalUsers } = await supabase.from("users_meta").select("*", { count: "exact", head: true });
 
-        const overview = getOverviewStats(hasFilter ? filter : undefined);
-        const risk_distribution = getRiskDistribution(hasFilter ? filter : undefined);
-        const district_list = getDistrictList();
-        const district_summary = getDistrictDistribution();
-        const species_by_district = getSpeciesByDistrict();
-        const top_districts = getTopDistricts(filter.country ? { country: filter.country } : undefined);
-        const time_trends = getTimeTrends(hasFilter ? filter : undefined, 30);
-        const alerts = getRecentAlerts(hasFilter ? filter : undefined, 20);
-        const clusters = detectOutbreakClusters();
+        const overview = await getOverviewStats(hasFilter ? filter : undefined);
+        const risk_distribution = await getRiskDistribution(hasFilter ? filter : undefined);
+        const district_list = await getDistrictList();
+        const district_summary = await getDistrictDistribution();
+        const species_by_district = await getSpeciesByDistrict();
+        const top_districts = await getTopDistricts(filter.country ? { country: filter.country } : undefined);
+        const time_trends = await getTimeTrends(hasFilter ? filter : undefined, 30);
+        const alerts = await getRecentAlerts(hasFilter ? filter : undefined, 20);
+        const clusters = await detectOutbreakClusters();
 
-        const clauses = ["ai_analysed_at IS NOT NULL"];
-        const params: string[] = [];
-        if (hasFilter && filter.country) { clauses.push("country = ?"); params.push(filter.country); }
-        if (hasFilter && filter.state) { clauses.push("state = ?"); params.push(filter.state); }
-        if (hasFilter && filter.district) { clauses.push("district = ?"); params.push(filter.district); }
-        const scoreRow = db.prepare<string[], { conf: number; risk: number }>(
-            `SELECT ROUND(AVG(COALESCE(ai_confidence,0)),3) AS conf, ROUND(AVG(COALESCE(ai_risk_score,0)),2) AS risk FROM exif_data WHERE ${clauses.join(" AND ")}`
-        ).get(...params);
+        let q = supabase.from("exif_data").select("ai_confidence, ai_risk_score").not("ai_analysed_at", "is", null);
+        if (hasFilter && filter.country) q = q.eq("country", filter.country);
+        if (hasFilter && filter.state) q = q.eq("state", filter.state);
+        if (hasFilter && filter.district) q = q.eq("district", filter.district);
+        const { data: scoreRows } = await q;
+        const rows = scoreRows || [];
+        const avgConf = rows.length > 0 ? rows.reduce((s, r) => s + (r.ai_confidence ?? 0), 0) / rows.length : 0;
+        const avgRisk = rows.length > 0 ? rows.reduce((s, r) => s + (r.ai_risk_score ?? 0), 0) / rows.length : 0;
 
         return NextResponse.json({
             success: true,
             filter_active: hasFilter,
-            total_users: totalUsers,
+            total_users: totalUsers ?? 0,
             overview,
             risk_distribution,
             district_list,
@@ -74,8 +72,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
             alerts,
             clusters,
             outbreak_score_components: {
-                avg_ai_confidence: Math.round((scoreRow?.conf ?? 0) * 100),
-                avg_risk_score: scoreRow?.risk ?? 0,
+                avg_ai_confidence: Math.round(avgConf * 100),
+                avg_risk_score: Math.round(avgRisk * 100) / 100,
                 active_clusters: clusters.length,
             },
         });

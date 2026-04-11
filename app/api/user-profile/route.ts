@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
-import { getUserMeta, getPointHistory } from "@/lib/db/sqlite-users";
+import { getUserMeta, getPointHistory } from "@/lib/db/supabase-users";
 
 export const runtime = "nodejs";
 
@@ -15,8 +15,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         // Backfill name from token metadata if missing
         const metaName = (user.user_metadata?.full_name as string) || '';
         if (!profile.name && metaName) {
-            const { updateProfileContent } = await import('@/lib/db/sqlite-users');
-            updateProfileContent(user.id, { name: metaName });
+            const { updateProfileContent } = await import('@/lib/db/supabase-users');
+            await updateProfileContent(user.id, { name: metaName });
             profile.name = metaName;
         }
 

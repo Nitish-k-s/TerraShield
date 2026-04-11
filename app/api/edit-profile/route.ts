@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
-import { updateProfileContent } from "@/lib/db/sqlite-users";
+import { updateProfileContent } from "@/lib/db/supabase-users";
 
 export const runtime = "nodejs";
 
