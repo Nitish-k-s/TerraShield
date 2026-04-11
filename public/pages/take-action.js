@@ -273,14 +273,14 @@ export function renderReport() {
             </div>
 
             <!-- Agent Memory Panel -->
-            <div id="agent-memory-panel" style="display:none;margin-top:var(--space-4);padding:var(--space-4) var(--space-5);background:rgba(127,255,127,0.06);border:1px solid rgba(74,222,128,0.25);border-radius:var(--radius-lg)">
+            <div id="agent-memory-panel" style="display:none;margin-top:var(--space-4);padding:var(--space-4) var(--space-5);background:rgba(74,222,128,0.06);border:1px solid rgba(74,222,128,0.25);border-radius:var(--radius-lg);animation:memory-panel-in 0.5s ease-out both">
               <div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-2)">
                 <span style="font-size:1.1rem">🧠</span>
                 <span style="font-size:0.75rem;font-weight:var(--fw-bold);text-transform:uppercase;letter-spacing:0.08em;color:#4ade80">Agent Memory</span>
                 <span id="memory-groq-badge" style="display:none;font-size:0.6rem;padding:2px 8px;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.3);border-radius:999px;color:#4ade80;font-weight:bold">⚡ Groq Enhanced</span>
                 <span style="margin-left:auto;font-size:0.75rem;color:#4ade80;font-weight:bold"><span id="memory-count">0</span> past sightings recalled nearby</span>
               </div>
-              <p id="memory-summary" style="font-size:0.85rem;color:#a8d5b0;margin:0;line-height:1.6"></p>
+              <p id="memory-summary" style="font-size:0.85rem;color:#a8d5b0;margin:0;line-height:1.6;min-height:1.2em"></p>
             </div>
           </div>
 
@@ -492,6 +492,95 @@ export function renderReport() {
     async init() {
       initNavbarAuth();
 
+      // ── Memory toast helper ───────────────────────────────────────────────
+      function showMemoryToast(state, count = 0, groqEnhanced = false) {
+        const existing = document.getElementById('memory-toast');
+        if (existing) existing.remove();
+
+        const toast = document.createElement('div');
+        toast.id = 'memory-toast';
+        toast.style.cssText = `
+          position:fixed; bottom:24px; right:24px; z-index:9999;
+          background:rgba(10,25,15,0.95); border:1px solid rgba(74,222,128,0.4);
+          border-radius:12px; padding:14px 18px; max-width:320px;
+          box-shadow:0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(74,222,128,0.15);
+          backdrop-filter:blur(12px); display:flex; align-items:flex-start; gap:12px;
+          transform:translateY(80px); opacity:0;
+          transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease;
+        `;
+
+        if (state === 'searching') {
+          toast.innerHTML = `
+            <div style="font-size:1.4rem;line-height:1;margin-top:2px">🧠</div>
+            <div>
+              <div style="font-size:0.75rem;font-weight:bold;color:#4ade80;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Agent Memory</div>
+              <div style="font-size:0.85rem;color:#a8d5b0">Searching past sightings near this location...</div>
+              <div style="margin-top:8px;height:3px;background:rgba(74,222,128,0.15);border-radius:2px;overflow:hidden">
+                <div style="height:100%;background:linear-gradient(90deg,#22c55e,#4ade80);border-radius:2px;animation:memory-scan 1.5s ease-in-out infinite"></div>
+              </div>
+            </div>
+          `;
+        } else {
+          const msg = count > 0
+            ? `Recalled <strong style="color:#4ade80">${count} past sighting${count > 1 ? 's' : ''}</strong> nearby${groqEnhanced ? ' · <span style="color:#4ade80">⚡ Groq enhanced</span>' : ''}`
+            : 'No previous sightings in memory for this area';
+          toast.innerHTML = `
+            <div style="font-size:1.4rem;line-height:1;margin-top:2px">${count > 0 ? '🧠' : '🔍'}</div>
+            <div>
+              <div style="font-size:0.75rem;font-weight:bold;color:#4ade80;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Memory ${count > 0 ? 'Recalled' : 'Result'}</div>
+              <div style="font-size:0.85rem;color:#a8d5b0;line-height:1.5">${msg}</div>
+            </div>
+          `;
+        }
+
+        // Add scan animation style
+        if (!document.getElementById('memory-toast-style')) {
+          const style = document.createElement('style');
+          style.id = 'memory-toast-style';
+          style.textContent = `
+            @keyframes memory-scan {
+              0% { width: 0%; margin-left: 0%; }
+              50% { width: 60%; margin-left: 20%; }
+              100% { width: 0%; margin-left: 100%; }
+            }
+            @keyframes memory-panel-in {
+              from { opacity: 0; transform: translateY(12px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+          `;
+          document.head.appendChild(style);
+        }
+
+        document.body.appendChild(toast);
+        requestAnimationFrame(() => {
+          toast.style.transform = 'translateY(0)';
+          toast.style.opacity = '1';
+        });
+
+        // Auto-dismiss after delay
+        const delay = state === 'searching' ? 99999 : 4000;
+        if (state !== 'searching') {
+          setTimeout(() => {
+            toast.style.transform = 'translateY(80px)';
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 400);
+          }, delay);
+        }
+      }
+
+      // ── Typewriter effect ─────────────────────────────────────────────────
+      function typewriterEffect(elementId, text, speed = 20) {
+        const el = document.getElementById(elementId);
+        if (!el) return;
+        el.textContent = '';
+        let i = 0;
+        const interval = setInterval(() => {
+          el.textContent += text[i];
+          i++;
+          if (i >= text.length) clearInterval(interval);
+        }, speed);
+      }
+
       // ── Date picker setup: set max = today, default value = today (ISO yyyy-mm-dd)
       const dateInput = document.getElementById('report-date');
       if (dateInput) {
@@ -567,17 +656,21 @@ export function renderReport() {
         }
       })();
       // Check auth status immediately
-      const user = await getUser();
+      const user = getUser();
       const form = document.getElementById('report-form');
       const authWarn = document.getElementById('report-auth-warning');
       const submitBtn = document.getElementById('report-submit-btn');
 
       if (!user) {
         // Disable form if not logged in
-        authWarn.style.display = 'block';
-        Array.from(form.elements).forEach(el => el.disabled = true);
-        document.getElementById('upload-dropzone').style.opacity = '0.5';
-        document.getElementById('upload-dropzone').style.cursor = 'not-allowed';
+        if (authWarn) authWarn.style.display = 'block';
+        if (form) Array.from(form.elements).forEach(el => el.disabled = true);
+        const dz = document.getElementById('upload-dropzone');
+        if (dz) { dz.style.opacity = '0.5'; dz.style.cursor = 'not-allowed'; }
+      } else {
+        // Make sure form is enabled
+        if (authWarn) authWarn.style.display = 'none';
+        if (form) Array.from(form.elements).forEach(el => el.disabled = false);
       }
 
       // File upload UI wiring
@@ -586,7 +679,8 @@ export function renderReport() {
       const uploadText = document.getElementById('upload-text');
 
       dropzone.addEventListener('click', () => {
-        if (user) fileInput.click();
+        if (getUser()) fileInput.click();
+        else { window.location.hash = '#/login'; }
       });
 
       dropzone.addEventListener('dragover', (e) => {
@@ -715,9 +809,10 @@ export function renderReport() {
         if (memoryPanel && ai.agentMemory) {
           const { pastSightingsNearby, summary, groqEnhanced } = ai.agentMemory;
           document.getElementById('memory-count').textContent = pastSightingsNearby;
-          document.getElementById('memory-summary').textContent = summary;
           document.getElementById('memory-groq-badge').style.display = groqEnhanced ? 'inline-block' : 'none';
           memoryPanel.style.display = 'block';
+          // Typewriter effect on summary
+          typewriterEffect('memory-summary', summary, 18);
         }
 
         // Map
@@ -985,7 +1080,12 @@ export function renderReport() {
       // ─── Form Submission ──────────────────────────────────────────────────────
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (!user) return;
+        const currentUser = getUser();
+        if (!currentUser) {
+          alert('Please sign in to submit a report.');
+          window.location.hash = '#/login';
+          return;
+        }
 
         const file = fileInput.files[0];
         if (!file) {
@@ -1083,8 +1183,15 @@ export function renderReport() {
             </span>
           `, 'success');
 
+          // ── Show memory recall toast ──────────────────────────────────────
+          showMemoryToast('searching');
+
           // ── Step 2: AI Analysis ───────────────────────────────────────────
           btnText.textContent = 'Running AI species analysis…';
+
+          updateLoader('Recalling Agent Memory...', '🧠 Searching past sightings near this location');
+          await new Promise(r => setTimeout(r, 800));
+          updateLoader('Analyzing Species...', 'Gemini Vision + memory context injected');
 
           const aiRes = await fetch('/api/analyse-exif', {
             method: 'POST',
@@ -1117,6 +1224,14 @@ export function renderReport() {
 
           // Merge GPS into analysed result for convenience
           const ai = { ...aiData.analysed[0], ai_tags: aiData.analysed[0].ai_tags || [] };
+
+          // ── Show memory result toast ──────────────────────────────────────
+          if (ai.agentMemory) {
+            // Dismiss searching toast first
+            const searchingToast = document.getElementById('memory-toast');
+            if (searchingToast) { searchingToast.style.opacity = '0'; setTimeout(() => searchingToast.remove(), 300); }
+            setTimeout(() => showMemoryToast('result', ai.agentMemory.pastSightingsNearby, ai.agentMemory.groqEnhanced), 400);
+          }
 
           // ── TerraPoints: read from API response ──────────────────────────────
           const pointsAwarded = ai.points_awarded ?? 0;
