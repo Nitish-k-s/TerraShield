@@ -15,6 +15,7 @@ import { renderProfile } from '../pages/profile.js';
 import { renderStatistics } from '../pages/statistics.js';
 import { renderEnterpriseRegister } from '../pages/enterprise-register.js';
 import { renderMemory } from '../pages/memory.js';
+import { renderApiDashboard } from '../pages/api-dashboard.js';
 
 const routes = {
     '/': renderHome,
@@ -28,6 +29,7 @@ const routes = {
     '/forgot-password': renderForgotPassword,
     '/profile': renderProfile,
     '/memory': renderMemory,
+    '/api-dashboard': renderApiDashboard,
 };
 
 const app = document.getElementById('app');
