@@ -6,3 +6,21 @@ lib/db/*.db
 lib/db/*.db-shm
 lib/db/*.db-wal
 .env.local
+
+# Uploaded images (local storage, not for git)
+public/uploads/
+
+# IDE / tool folders
+.kiro/
+
+# One-time migration scripts with hardcoded keys
+scripts/fix-passwords.mjs
+scripts/fix-rls.mjs
+scripts/fix-supabase-issues.mjs
+scripts/check-reports.mjs
+scripts/run-supabase-migration.mjs
+scripts/migrate-to-new-supabase.mjs
+scripts/test-planet.mjs
+scripts/test-sentinel-api.mjs
+scripts/test-app.mjs
+scripts/test-enterprise.mjs
