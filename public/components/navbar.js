@@ -16,7 +16,7 @@ export function renderNavbar(activePage = '') {
         <a href="#/alerts" class="${activePage === 'alerts' ? 'active' : ''}">Alerts</a>
         <a href="#/report" class="${activePage === 'report' ? 'active' : ''}">Report</a>
         <a href="#/statistics" class="${activePage === 'statistics' ? 'active' : ''}">Statistics</a>
-        <a href="#/memory" class="${activePage === 'memory' ? 'active' : ''}" style="display:flex;align-items:center;gap:4px">🧠 Memory</a>
+        <a href="#/memory" class="${activePage === 'memory' ? 'active' : ''}">Memory</a>
       </nav>
       <div class="navbar-actions">
         <!-- Auth slot — populated dynamically by initNavbarAuth() -->
@@ -34,7 +34,7 @@ export function renderNavbar(activePage = '') {
       <a href="#/alerts" onclick="document.getElementById('mobile-nav').classList.remove('open'); document.getElementById('hamburger-btn').classList.remove('open');">Alerts</a>
       <a href="#/report" onclick="document.getElementById('mobile-nav').classList.remove('open'); document.getElementById('hamburger-btn').classList.remove('open');">Report</a>
       <a href="#/statistics" onclick="document.getElementById('mobile-nav').classList.remove('open'); document.getElementById('hamburger-btn').classList.remove('open');">Statistics</a>
-      <a href="#/memory" onclick="document.getElementById('mobile-nav').classList.remove('open'); document.getElementById('hamburger-btn').classList.remove('open');">🧠 Memory</a>
+      <a href="#/memory" onclick="document.getElementById('mobile-nav').classList.remove('open'); document.getElementById('hamburger-btn').classList.remove('open');">Memory</a>
       <div id="mobile-auth-slot"></div>
     </nav>
   </header>`;
