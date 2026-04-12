@@ -250,7 +250,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     if (record) {
         const sat = parseSatData(record.satellite_context_json ?? null);
-        const tags: string[] = (() => { try { return JSON.parse(record.ai_tags ?? "[]"); } catch { return []; } })();
+        const tags: string[] = (() => {
+            if (Array.isArray(record.ai_tags)) return record.ai_tags;
+            try { return JSON.parse(record.ai_tags as unknown as string ?? "[]"); } catch { return []; }
+        })();
         const species = tags[0] || String(body.species ?? "Unknown Species");
 
         pdfData = {
