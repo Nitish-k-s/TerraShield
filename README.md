@@ -72,7 +72,7 @@ Users earn points for verified invasive species reports (10/20/30 based on confi
 |-------|-----------|
 | Framework | Next.js 16 (App Router) |
 | Frontend | Vanilla JS SPA |
-| Database | SQLite (better-sqlite3) |
+| Database | Supabase (PostgreSQL) |
 | AI Vision | Google Gemini 2.5 Flash |
 | Agent Memory | Hindsight Agent Memory Bank |
 | Satellite | Sentinel Hub / Planet API |

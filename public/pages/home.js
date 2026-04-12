@@ -292,7 +292,7 @@ export function renderHome() {
             </div>
             <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:#6ec89b;text-transform:uppercase;letter-spacing:0.1em">Step 02</span>
             <h3 style="margin-top:var(--space-2);font-weight:var(--fw-bold);color:#fff">AI Species Identification</h3>
-            <p style="color:rgba(255,255,255,0.6);font-size:0.8125rem;line-height:1.7;margin-top:var(--space-2)">Our AI analyzes the image, identifies the species, estimates confidence, and determines invasive status.</p>
+            <p style="color:rgba(255,255,255,0.6);font-size:0.8125rem;line-height:1.7;margin-top:var(--space-2)">Our AI analyzes the image, identifies the species, and Hindsight Agent Memory recalls past sightings nearby to boost accuracy.</p>
           </div>
 
           <div class="card hover-lift reveal" data-delay="200" style="text-align:center;padding:var(--space-8) var(--space-6);background:rgba(255,255,255,0.06);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.08)">
@@ -537,18 +537,6 @@ export function renderHome() {
             </div>
           </div>
 
-          <div class="card hover-lift reveal" data-delay="200" style="padding:var(--space-6);border-left:3px solid #6dbe4b;background:rgba(255,255,255,0.06);backdrop-filter:blur(8px);border-top:1px solid rgba(255,255,255,0.06);border-right:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06)">
-            <div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-3)">
-              <span style="width:0.5rem;height:0.5rem;border-radius:50%;background:#6dbe4b"></span>
-              <span style="font-size:0.65rem;font-weight:var(--fw-bold);color:#6dbe4b;text-transform:uppercase;letter-spacing:0.08em">Monitoring</span>
-            </div>
-            <h4 style="font-weight:var(--fw-bold);margin-bottom:var(--space-2);color:#fff">Giant Hogweed Spread</h4>
-            <p style="color:rgba(255,255,255,0.5);font-size:0.8125rem;line-height:1.6;margin-bottom:var(--space-4)">15 reports across 3 counties. Satellite verification in progress.</p>
-            <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:rgba(255,255,255,0.35)">
-              <span>Risk Score: <strong style="color:#6dbe4b">42/100</strong></span>
-              <span>1d ago</span>
-            </div>
-          </div>
         </div>
 
         <div class="text-center reveal" data-delay="300">
@@ -637,9 +625,8 @@ export function renderHome() {
           <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(109,190,75,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(109,190,75,0.04) 1px,transparent 1px);background-size:30px 30px"></div>
           <div class="map-dot critical" style="top:30%;left:25%"></div>
           <div class="map-dot elevated" style="top:45%;left:60%"></div>
-          <div class="map-dot monitoring" style="top:55%;left:35%"></div>
           <div class="map-dot critical" style="top:25%;right:30%"></div>
-          <div class="map-dot monitoring" style="top:65%;right:20%"></div>
+          <div class="map-dot elevated" style="top:65%;right:20%"></div>
           <div style="text-align:center;position:relative;z-index:2">
             <span class="material-symbols-outlined" style="font-size:4rem;color:rgba(109,190,75,0.25);margin-bottom:var(--space-4);display:block">public</span>
             <p style="color:rgba(255,255,255,0.4);font-size:0.875rem;margin-bottom:var(--space-4)">Interactive risk map visualization</p>
@@ -650,7 +637,6 @@ export function renderHome() {
         <div class="reveal" data-delay="200" style="display:flex;justify-content:center;gap:var(--space-8);margin-bottom:var(--space-6);font-size:0.75rem;color:rgba(255,255,255,0.4)">
           <span style="display:flex;align-items:center;gap:var(--space-2)"><span style="width:0.5rem;height:0.5rem;border-radius:50%;background:#ef4444"></span> Critical (90+)</span>
           <span style="display:flex;align-items:center;gap:var(--space-2)"><span style="width:0.5rem;height:0.5rem;border-radius:50%;background:#f59e0b"></span> Elevated (50-89)</span>
-          <span style="display:flex;align-items:center;gap:var(--space-2)"><span style="width:0.5rem;height:0.5rem;border-radius:50%;background:#6dbe4b"></span> Monitoring (<50)</span>
         </div>
       </div>
     </section>
