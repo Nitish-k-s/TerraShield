@@ -30,10 +30,13 @@ export function renderProfile() {
             <p id="profile-role" style="display:none"></p>
             <span id="profile-level-badge" style="display:none;margin-left:0.5rem;font-size:0.7rem;font-weight:var(--fw-bold);padding:0.2rem 0.6rem;border-radius:100px;letter-spacing:0.06em;text-transform:uppercase"></span>
           </div>
-          <div>
+          <div style="display:flex;gap:var(--space-3)">
             <button id="edit-profile-btn" class="btn mix-btn-primary" style="display:none;align-items:center;gap:0.5rem;background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.25);color:#4ade80;backdrop-filter:blur(8px);transition:all 0.3s ease">
               <span class="material-symbols-outlined">edit</span> Edit Profile
             </button>
+            <a href="#/api-dashboard" class="btn" style="display:inline-flex;align-items:center;gap:0.5rem;background:rgba(0,255,150,0.08);border:1px solid rgba(0,255,150,0.2);color:#00ff9d;backdrop-filter:blur(8px);transition:all 0.3s ease">
+              <span class="material-symbols-outlined">key</span> API Keys
+            </a>
           </div>
         </div>
       </div>
