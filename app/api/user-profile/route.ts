@@ -9,8 +9,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         const user = await getUserFromRequest(req);
         if (!user) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
 
-        const profile = getUserMeta(user.id, user.email);
-        const history = getPointHistory(user.id);
+        const profile = await getUserMeta(user.id, user.email);
+        const history = await getPointHistory(user.id);
 
         // Backfill name from token metadata if missing
         const metaName = (user.user_metadata?.full_name as string) || '';
