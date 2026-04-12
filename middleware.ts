@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { verifyToken } from "@/lib/auth";
 
+export const runtime = "nodejs";
+
 export async function middleware(request: NextRequest) {
     const isApiRoute = request.nextUrl.pathname.startsWith("/api");
     const isPublicApiRoute = [
