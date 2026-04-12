@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
+import { getUserFromRequest } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -24,13 +25,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
+        // Use the authenticated user's email if logged in, to ensure my-keys lookup works
+        const authUser = await getUserFromRequest(req);
+        const effectiveEmail = authUser?.email || email;
+
         const supabase = getSupabaseAdmin();
 
         // Check if email already has a key
         const { data: existing } = await supabase
             .from("api_keys")
             .select("key_prefix")
-            .eq("email", email)
+            .eq("email", effectiveEmail)
             .single();
 
         if (existing) {
@@ -46,7 +51,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             key_prefix: prefix,
             org_name,
             org_type,
-            email,
+            email: effectiveEmail,
             country,
             use_case: use_case || null,
             volume: volume || "moderate",
@@ -60,7 +65,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             api_key: raw,        // shown once, never stored
             key_prefix: prefix,
             org_name,
-            email,
+            email: effectiveEmail,
         });
 
     } catch (err) {

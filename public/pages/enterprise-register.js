@@ -1,5 +1,6 @@
 import { renderNavbar } from '../components/navbar.js';
 import { renderFooter } from '../components/footer.js';
+import { getUser, getSessionToken } from '../utils/auth.js';
 
 export function renderEnterpriseRegister() {
     return {
@@ -151,6 +152,13 @@ print(r.json())</pre>
             const form = document.getElementById('enterprise-form');
             if (!form) return;
 
+            // Auto-fill email with logged-in user's email
+            const user = getUser();
+            const emailField = document.getElementById('ent-email');
+            if (user && user.email && emailField) {
+                emailField.value = user.email;
+            }
+
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
@@ -165,9 +173,13 @@ print(r.json())</pre>
                 btnIcon.style.animation = 'spin 1.5s linear infinite';
 
                 try {
+                    const token = getSessionToken();
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
                     const res = await fetch('/api/enterprise/register', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers,
                         body: JSON.stringify({
                             org_name: document.getElementById('ent-company').value.trim(),
                             org_type: document.getElementById('ent-type').value,
