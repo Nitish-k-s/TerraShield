@@ -32,7 +32,6 @@ export function renderAlerts() {
           <div style="position:absolute;bottom:var(--space-4);left:50%;transform:translateX(-50%);display:flex;gap:var(--space-6);font-size:0.7rem;color:var(--color-slate-600);z-index:1000;background:rgba(10,26,15,0.85);backdrop-filter:blur(8px);padding:6px 16px;border-radius:999px;border:1px solid rgba(74,222,128,0.12);pointer-events:none">
             <span style="display:flex;align-items:center;gap:var(--space-1)"><span style="width:6px;height:6px;border-radius:50%;background:#ef4444"></span>Critical (≥7)</span>
             <span style="display:flex;align-items:center;gap:var(--space-1)"><span style="width:6px;height:6px;border-radius:50%;background:#f59e0b"></span>Elevated (4–7)</span>
-            <span style="display:flex;align-items:center;gap:var(--space-1)"><span style="width:6px;height:6px;border-radius:50%;background:#1dacc9"></span>Monitoring (&lt;4)</span>
           </div>
           <!-- Map loading indicator -->
           <div id="map-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,26,15,0.7);backdrop-filter:blur(4px);z-index:999;pointer-events:none">
