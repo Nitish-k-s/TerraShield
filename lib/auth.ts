@@ -6,7 +6,7 @@
 const SECRET = process.env.JWT_SECRET || "terrashield-dev-secret-change-in-production";
 
 async function getKey(): Promise<CryptoKey> {
-    return crypto.subtle.importKey(
+    return globalThis.crypto.subtle.importKey(
         "raw",
         new TextEncoder().encode(SECRET),
         { name: "HMAC", hash: "SHA-256" },
@@ -37,7 +37,7 @@ export async function createToken(user: AuthUser, expiresInSeconds = 60 * 60 * 2
         exp: Math.floor(Date.now() / 1000) + expiresInSeconds,
     })));
     const key = await getKey();
-    const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${header}.${payload}`));
+    const sig = await globalThis.crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${header}.${payload}`));
     return `${header}.${payload}.${base64url(sig)}`;
 }
 
@@ -46,7 +46,7 @@ export async function verifyToken(token: string): Promise<AuthUser | null> {
         const [header, payload, sig] = token.split(".");
         if (!header || !payload || !sig) return null;
         const key = await getKey();
-        const valid = await crypto.subtle.verify("HMAC", key, base64urlDecode(sig), new TextEncoder().encode(`${header}.${payload}`));
+        const valid = await globalThis.crypto.subtle.verify("HMAC", key, base64urlDecode(sig), new TextEncoder().encode(`${header}.${payload}`));
         if (!valid) return null;
         const data = JSON.parse(new TextDecoder().decode(base64urlDecode(payload)));
         if (data.exp && Date.now() / 1000 > data.exp) return null;
