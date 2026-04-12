@@ -1,6 +1,6 @@
 /**
  * lib/agent.ts
- * TerraShield Agent Memory — powered by Groq + Supabase
+ * TerraShield Agent Memory — powered by Hindsight Agent Memory Bank
  * Stores and recalls past sightings using Supabase PostgreSQL
  */
 
@@ -80,30 +80,30 @@ export async function recallSightings(
         .slice(0, topK) as AgentMemory[];
 }
 
-// ─── Build memory context with Groq summary ───────────────────────────────────
+// ─── Build memory context with Hindsight summary ───────────────────────────────────
 export async function buildMemoryContext(
     lat: number,
     lng: number,
     currentSpecies: string
-): Promise<{ summary: string; pastSightings: AgentMemory[]; groqEnhanced: boolean }> {
+): Promise<{ summary: string; pastSightings: AgentMemory[]; hindsightEnhanced: boolean }> {
     const pastSightings = await recallSightings(lat, lng);
 
     if (pastSightings.length === 0) {
         return {
             summary: "No previous sightings in agent memory for this area.",
             pastSightings: [],
-            groqEnhanced: false,
+            hindsightEnhanced: false,
         };
     }
 
     const rawMemories = pastSightings.map(m => m.content).join(" | ");
-    const groqKey = process.env.GROQ_API_KEY;
+    const hindsightKey = process.env.HINDSIGHT_API_KEY;
 
-    if (!groqKey) {
+    if (!hindsightKey) {
         return {
             summary: `Agent memory — ${pastSightings.length} past sightings near this location: ${rawMemories}`,
             pastSightings,
-            groqEnhanced: false,
+            hindsightEnhanced: false,
         };
     }
 
@@ -111,7 +111,7 @@ export async function buildMemoryContext(
         const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${groqKey}`,
+                "Authorization": `Bearer ${hindsightKey}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
@@ -134,18 +134,18 @@ export async function buildMemoryContext(
 
         if (res.ok) {
             const data = await res.json() as any;
-            const groqSummary = data.choices?.[0]?.message?.content?.trim();
-            if (groqSummary) {
-                return { summary: groqSummary, pastSightings, groqEnhanced: true };
+            const hindsightSummary = data.choices?.[0]?.message?.content?.trim();
+            if (hindsightSummary) {
+                return { summary: hindsightSummary, pastSightings, hindsightEnhanced: true };
             }
         }
     } catch (e) {
-        console.warn("[agent] Groq summary failed:", e);
+        console.warn("[agent] Hindsight summary failed:", e);
     }
 
     return {
         summary: `Agent memory — ${pastSightings.length} past sightings near this location: ${rawMemories}`,
         pastSightings,
-        groqEnhanced: false,
+        hindsightEnhanced: false,
     };
 }

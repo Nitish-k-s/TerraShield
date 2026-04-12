@@ -1,9 +1,9 @@
 # TerraShield 🛡️🌿
 ### AI-Powered Invasive Species Early Warning System
 
-> Detect ecological threats **6–12 months earlier** than traditional field surveys — powered by citizen reports, Gemini Vision AI, satellite vegetation analysis, and Groq-powered agent memory.
+> Detect ecological threats **6–12 months earlier** than traditional field surveys — powered by citizen reports, Gemini Vision AI, satellite vegetation analysis, and Hindsight Agent Memory Bank.
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-TerraShield-22c55e?style=for-the-badge)](https://terrashield.vercel.app)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-TerraShield-22c55e?style=for-the-badge)](https://terrashield.up.railway.app)
 [![Hackathon](https://img.shields.io/badge/Hackathon-Submission-4ade80?style=for-the-badge)]()
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
@@ -24,7 +24,7 @@ Citizen uploads geo-tagged photo
         ↓
 EXIF extraction → GPS coords, device, timestamp
         ↓
-🧠 Groq Agent Memory recalls past sightings nearby
+🧠 Hindsight Agent Memory Bank recalls past sightings nearby
         ↓
 Gemini 2.5 Flash Vision AI analyses the image
   + satellite NDVI context injected into prompt
@@ -44,7 +44,7 @@ Live map updated + outbreak clusters detected
 
 ## 🔑 Key Features
 
-### 🧠 Agent Memory (Groq + Hindsight-style)
+### 🧠 Agent Memory (Hindsight Agent Memory Bank)
 The AI **learns from every report**. Before analysing a new image, it recalls past sightings within 50km and feeds that context into Gemini's prompt. The more reports submitted, the smarter the analysis gets.
 
 > *"3 previous Lantana camara sightings detected within 5km — avg risk 8.1/10. Outbreak cluster confirmed. Escalate immediately."*
@@ -74,7 +74,7 @@ Users earn points for verified invasive species reports (10/20/30 based on confi
 | Frontend | Vanilla JS SPA |
 | Database | SQLite (better-sqlite3) |
 | AI Vision | Google Gemini 2.5 Flash |
-| Agent Memory | Groq (llama3-8b-8192) |
+| Agent Memory | Hindsight Agent Memory Bank |
 | Satellite | Sentinel Hub / Planet API |
 | Maps | Leaflet.js + OpenStreetMap |
 | Auth | Custom JWT (Web Crypto API) |
@@ -88,7 +88,7 @@ Users earn points for verified invasive species reports (10/20/30 based on confi
 ### Prerequisites
 - Node.js 18+
 - Gemini API key ([aistudio.google.com](https://aistudio.google.com))
-- Groq API key ([console.groq.com](https://console.groq.com)) — free
+- Hindsight API key (provided via Agent Memory Bank)
 
 ### Installation
 
@@ -108,7 +108,7 @@ Edit `.env.local`:
 ```env
 JWT_SECRET=your-secret-here
 GEMINI_API_KEY=your-gemini-key
-GROQ_API_KEY=your-groq-key
+HINDSIGHT_API_KEY=your-hindsight-key
 PLANET_API_KEY=your-planet-api-key  # for satellite NDVI
 ```
 
@@ -162,7 +162,7 @@ node scripts/seed-data.mjs
 Report 1: Lantana camara at 11.62°N, 76.59°E → retained in memory
 Report 2: Unknown plant at 11.63°N, 76.60°E (500m away)
   → Agent recalls Report 1
-  → Groq summarizes: "Previous Lantana outbreak 500m away, risk 8.2/10"
+  → Hindsight Bank summarizes: "Previous Lantana outbreak 500m away, risk 8.2/10"
   → Gemini receives this context → more accurate, escalated response
   → Report 2 retained → memory grows
 ```

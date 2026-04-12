@@ -143,6 +143,30 @@ Determine whether any species may be invasive or whether the landscape shows sig
 ecological disturbance consistent with invasive spread.
 Do NOT let the observer's self-selected category influence your label or risk score.
 
+## CRITICAL — Species-Level Identification Guidelines
+You MUST pay close attention to leaf morphology, texture, size, and growth pattern to 
+distinguish between visually similar species. Common misidentifications to AVOID:
+
+**Aquatic floating plants — distinguish carefully:**
+- **Salvinia (Salvinia molesta / S. minima)**: Small (1–4 cm) oval/round leaves with a distinctive 
+  FOLDED or cupped shape, HAIRY/fuzzy upper surface with egg-beater-shaped trichomes, leaves 
+  arranged in PAIRS along a stem, no visible roots from above, forms dense chain-like mats.
+- **Pistia stratiotes (Water Lettuce)**: Larger (5–15 cm) ROSETTE-shaped leaves, SPONGY and 
+  ribbed texture with parallel veins, velvety but NOT hairy, forms individual rosettes NOT chains, 
+  dangling feathery roots visible below.
+- **Eichhornia crassipes (Water Hyacinth)**: Glossy rounded leaves with BULBOUS inflated petioles, 
+  showy purple/lavender flowers when blooming, dark feathery roots.
+- **Lemna / Wolffia (Duckweed)**: Tiny (1–10 mm) individual oval fronds, flat, no visible structure.
+
+**Terrestrial invasive plants — distinguish carefully:**
+- **Lantana camara**: Opposite rough-textured leaves, square stems, multi-colored flower clusters.
+- **Prosopis juliflora (Mesquite)**: Thorny shrub/tree, bipinnate feathery leaves, yellow catkin flowers.
+- **Parthenium hysterophorus**: Deeply lobed leaves, small white daisy-like flower heads, strong odor.
+
+Always state the specific morphological features you observe that led to your identification.
+If uncertain between two species, mention BOTH possibilities and explain the distinguishing 
+features you see or cannot confirm.
+
 You MUST respond with ONLY valid JSON matching this exact schema.
 No markdown fences, no extra text — raw JSON only:
 
@@ -151,7 +175,7 @@ No markdown fences, no extra text — raw JSON only:
   "ai_confidence": <float 0.0–1.0, your confidence in the classification>,
   "ai_risk_score": <float 0.0–10.0, where 0 = no ecological risk, 10 = critical outbreak risk>,
   "ai_tags":       ["<identified species or condition>", "<habitat type>", "<spread severity>"],
-  "ai_summary":    "<2–3 sentences: what you see visually, any species identified, ecological risk rationale based on the image and the satellite context>"
+  "ai_summary":    "<2–3 sentences describing the specific morphological features you observed, the species identified with reasoning, and ecological risk rationale based on the image and satellite context>"
 }
 `.trim();
 }
@@ -169,7 +193,7 @@ interface AnalysisMetadata {
     externalContext: any | null;
     pastSightings: any[];
     memorySummary: string;
-    groqEnhanced: boolean;
+    hindsightEnhanced: boolean;
 }
 
 async function analyseWithGemini(record: ExifRecord): Promise<AnalysisMetadata> {
@@ -186,13 +210,13 @@ async function analyseWithGemini(record: ExifRecord): Promise<AnalysisMetadata> 
     // ── Recall agent memory for this location ────────────────────────────────
     let memoryContext = "No previous sightings in agent memory for this area.";
     let pastSightings: any[] = [];
-    let groqEnhanced = false;
+    let hindsightEnhanced = false;
     if (record.latitude != null && record.longitude != null) {
         try {
             const memory = await buildMemoryContext(record.latitude, record.longitude, record.filename);
             memoryContext = memory.summary;
             pastSightings = memory.pastSightings;
-            groqEnhanced = memory.groqEnhanced;
+            hindsightEnhanced = memory.hindsightEnhanced;
         } catch (e) {
             console.warn("[analyse-exif] Memory recall failed:", e);
         }
@@ -260,7 +284,7 @@ async function analyseWithGemini(record: ExifRecord): Promise<AnalysisMetadata> 
     parsed.ai_confidence = Math.min(1, Math.max(0, Number(parsed.ai_confidence) || 0));
     parsed.ai_risk_score = Math.min(10, Math.max(0, Number(parsed.ai_risk_score) || 0));
 
-    return { ai: parsed, externalContext, pastSightings, memorySummary: memoryContext, groqEnhanced };
+    return { ai: parsed, externalContext, pastSightings, memorySummary: memoryContext, hindsightEnhanced };
 }
 
 // ─── Route handler ────────────────────────────────────────────────────────────
@@ -309,7 +333,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     for (const record of records) {
         try {
-            const { ai, externalContext, pastSightings, memorySummary, groqEnhanced } = await analyseWithGemini(record);
+            const { ai, externalContext, pastSightings, memorySummary, hindsightEnhanced } = await analyseWithGemini(record);
 
             const ai_analysed_at = new Date().toISOString();
 
@@ -366,7 +390,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                 agentMemory: {
                     pastSightingsNearby: pastSightings.length,
                     summary: memorySummary,
-                    groqEnhanced,
+                    hindsightEnhanced,
                 },
             });
         } catch (e: unknown) {
