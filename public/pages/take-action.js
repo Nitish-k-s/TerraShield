@@ -277,7 +277,7 @@ export function renderReport() {
               <div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-2)">
                 <span style="font-size:1.1rem">🧠</span>
                 <span style="font-size:0.75rem;font-weight:var(--fw-bold);text-transform:uppercase;letter-spacing:0.08em;color:#4ade80">Agent Memory</span>
-                <span id="memory-groq-badge" style="display:none;font-size:0.6rem;padding:2px 8px;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.3);border-radius:999px;color:#4ade80;font-weight:bold">⚡ Groq Enhanced</span>
+                <span id="memory-groq-badge" style="display:none;font-size:0.6rem;padding:2px 8px;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.3);border-radius:999px;color:#4ade80;font-weight:bold">⚡ Hindsight Enhanced</span>
                 <span style="margin-left:auto;font-size:0.75rem;color:#4ade80;font-weight:bold"><span id="memory-count">0</span> past sightings recalled nearby</span>
               </div>
               <p id="memory-summary" style="font-size:0.85rem;color:#a8d5b0;margin:0;line-height:1.6;min-height:1.2em"></p>
@@ -522,7 +522,7 @@ export function renderReport() {
           `;
         } else {
           const msg = count > 0
-            ? `Recalled <strong style="color:#4ade80">${count} past sighting${count > 1 ? 's' : ''}</strong> nearby${groqEnhanced ? ' · <span style="color:#4ade80">⚡ Groq enhanced</span>' : ''}`
+            ? `Recalled <strong style="color:#4ade80">${count} past sighting${count > 1 ? 's' : ''}</strong> nearby${groqEnhanced ? ' · <span style="color:#4ade80">⚡ Hindsight enhanced</span>' : ''}`
             : 'No previous sightings in memory for this area';
           toast.innerHTML = `
             <div style="font-size:1.4rem;line-height:1;margin-top:2px">${count > 0 ? '🧠' : '🔍'}</div>

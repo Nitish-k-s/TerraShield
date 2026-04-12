@@ -1,6 +1,6 @@
 /**
  * lib/agent.ts
- * TerraShield Agent Memory — powered by Groq + Supabase
+ * TerraShield Agent Memory — powered by Hindsight Agent Memory Bank
  * Stores and recalls past sightings using Supabase PostgreSQL
  */
 
@@ -80,7 +80,7 @@ export async function recallSightings(
         .slice(0, topK) as AgentMemory[];
 }
 
-// ─── Build memory context with Groq summary ───────────────────────────────────
+// ─── Build memory context with agent summary ───────────────────────────────────
 export async function buildMemoryContext(
     lat: number,
     lng: number,
@@ -134,13 +134,13 @@ export async function buildMemoryContext(
 
         if (res.ok) {
             const data = await res.json() as any;
-            const groqSummary = data.choices?.[0]?.message?.content?.trim();
-            if (groqSummary) {
-                return { summary: groqSummary, pastSightings, groqEnhanced: true };
+            const agentSummary = data.choices?.[0]?.message?.content?.trim();
+            if (agentSummary) {
+                return { summary: agentSummary, pastSightings, groqEnhanced: true };
             }
         }
     } catch (e) {
-        console.warn("[agent] Groq summary failed:", e);
+        console.warn("[agent] Agent memory summary failed:", e);
     }
 
     return {

@@ -21,7 +21,7 @@ export function renderMemory() {
           <div>
             <div style="display:inline-flex;align-items:center;gap:var(--space-2);padding:0.2rem 0.75rem;border-radius:999px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);margin-bottom:var(--space-2)">
               <span style="width:6px;height:6px;border-radius:50%;background:#4ade80;animation:pulse-glow 2s infinite"></span>
-              <span style="font-size:0.65rem;font-weight:bold;color:#4ade80;text-transform:uppercase;letter-spacing:0.12em">Groq-Powered Agent Memory</span>
+              <span style="font-size:0.65rem;font-weight:bold;color:#4ade80;text-transform:uppercase;letter-spacing:0.12em">Hindsight-Powered Agent Memory</span>
             </div>
             <h1 style="font-size:clamp(1.75rem,4vw,2.5rem);font-weight:bold;color:#fff;margin:0">Agent Memory Timeline</h1>
           </div>
@@ -65,7 +65,7 @@ export function renderMemory() {
           <div style="display:flex;align-items:center;gap:var(--space-3)">
             <span style="font-size:1.25rem">⚡</span>
             <div>
-              <div style="font-size:0.75rem;font-weight:bold;color:#fff">Groq Summarizes</div>
+              <div style="font-size:0.75rem;font-weight:bold;color:#fff">Hindsight Summarizes</div>
               <div style="font-size:0.7rem;color:var(--color-slate-500)">2-sentence context</div>
             </div>
           </div>
@@ -216,7 +216,7 @@ export function renderMemory() {
                     <div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-3)">
                       <span style="font-size:1rem">🧠</span>
                       <span style="font-size:0.7rem;font-weight:bold;color:#4ade80;text-transform:uppercase;letter-spacing:0.08em">Agent recalled these past sightings</span>
-                      <span style="font-size:0.65rem;padding:1px 6px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.2);border-radius:999px;color:#4ade80">⚡ Groq Enhanced</span>
+                      <span style="font-size:0.65rem;padding:1px 6px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.2);border-radius:999px;color:#4ade80">⚡ Hindsight Enhanced</span>
                     </div>
                     <div style="display:flex;flex-direction:column;gap:var(--space-2)">
                       ${r.nearbyMemories.map(m => `

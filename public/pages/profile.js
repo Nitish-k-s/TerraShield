@@ -349,7 +349,7 @@ export function renderProfile() {
             historyContainer.innerHTML = data.history.map((item, idx) => `
                           <div class="profile-history-item" style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-4) var(--space-5);border:1px solid rgba(74,222,128,0.1);border-radius:var(--radius-lg);background:rgba(15,35,20,0.5);backdrop-filter:blur(4px);transition:all 0.3s ease;animation-delay:${idx * 0.08}s;cursor:default" onmouseover="this.style.borderColor='rgba(74,222,128,0.25)';this.style.background='rgba(15,35,20,0.7)';this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='rgba(74,222,128,0.1)';this.style.background='rgba(15,35,20,0.5)';this.style.transform='translateX(0)'">
                             <div>
-                              <div style="font-weight:var(--fw-bold);color:var(--color-slate-900);margin-bottom:0.25rem;font-size:0.95rem">${item.reason}</div>
+                              <div style="font-weight:var(--fw-bold);color:var(--color-slate-900);margin-bottom:0.25rem;font-size:0.95rem">${item.reason.startsWith('report:') ? 'Invasive Species Report' : item.reason}</div>
                               <div style="font-size:0.7rem;color:var(--color-slate-500)">${new Date(item.created_at).toLocaleString()}</div>
                             </div>
                             <div style="font-weight:var(--fw-bold);font-size:1.125rem;color:${item.amount > 0 ? '#4ade80' : 'var(--color-red)'};text-shadow:0 0 12px ${item.amount > 0 ? 'rgba(74,222,128,0.25)' : 'rgba(248,113,113,0.2)'}">

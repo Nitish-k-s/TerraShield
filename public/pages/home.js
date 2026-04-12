@@ -496,7 +496,7 @@ export function renderHome() {
           <div style="font-size:2rem;line-height:1">🧠</div>
           <div style="flex:1;min-width:200px">
             <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-2);flex-wrap:wrap">
-              <span style="font-size:0.7rem;font-weight:var(--fw-bold);color:#4ade80;text-transform:uppercase;letter-spacing:0.12em">Agent Memory — Groq Enhanced</span>
+              <span style="font-size:0.7rem;font-weight:var(--fw-bold);color:#4ade80;text-transform:uppercase;letter-spacing:0.12em">Agent Memory — Hindsight Enhanced</span>
               <span style="width:6px;height:6px;border-radius:50%;background:#4ade80;animation:pulse-glow 2s infinite"></span>
               <span id="home-memory-count" style="font-size:0.7rem;color:rgba(74,222,128,0.6)">Loading recalls...</span>
             </div>
