@@ -97,15 +97,46 @@ export function renderEnterpriseRegister() {
                         <div style="width:80px;height:80px;border-radius:50%;background:rgba(46,221,130,0.1);color:#2edd82;display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-6);box-shadow:0 0 30px rgba(46,221,130,0.2)">
                             <span class="material-symbols-outlined" style="font-size:3rem">check_circle</span>
                         </div>
-                        <h2 style="font-size:1.75rem;font-weight:bold;color:#fff;margin-bottom:var(--space-3);font-family:serif">Request Submitted Successfully</h2>
-                        <p style="color:var(--color-slate-400);font-size:1.05rem;line-height:1.6;margin-bottom:var(--space-6)">
-                           Your enterprise access request has been received.<br/>
-                           Our team will review your application and contact you within 24–48 hours.
+                        <h2 style="font-size:1.75rem;font-weight:bold;color:#fff;margin-bottom:var(--space-3);font-family:serif">Your API Key is Ready</h2>
+                        <p style="color:var(--color-slate-400);font-size:0.95rem;line-height:1.6;margin-bottom:var(--space-5)">
+                           Copy your key now — it will <strong style="color:#ef4444">never be shown again</strong>.
                         </p>
-                        <div style="background:rgba(255,255,255,0.05);border:1px dashed rgba(255,255,255,0.2);padding:1rem 2rem;border-radius:var(--radius-md);margin-bottom:var(--space-8)">
-                           <span style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;color:var(--color-slate-500);display:block;margin-bottom:4px">Application Tracking ID</span>
-                           <span id="ent-app-id" style="font-size:1.25rem;font-weight:bold;color:#2edd82;letter-spacing:2px;font-family:monospace">TS-ENT-XXXXX</span>
+
+                        <!-- Key display -->
+                        <div style="width:100%;background:rgba(0,0,0,0.4);border:1px solid rgba(46,221,130,0.3);border-radius:var(--radius-lg);padding:var(--space-4) var(--space-5);margin-bottom:var(--space-5);position:relative">
+                            <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-slate-500);margin-bottom:var(--space-2)">Your API Key</div>
+                            <div style="display:flex;align-items:center;gap:var(--space-3)">
+                                <code id="ent-api-key" style="font-size:0.85rem;font-weight:bold;color:#2edd82;font-family:monospace;word-break:break-all;flex:1;text-align:left">TSK-...</code>
+                                <button id="copy-key-btn" onclick="navigator.clipboard.writeText(document.getElementById('ent-api-key').textContent).then(()=>{this.textContent='✓ Copied';setTimeout(()=>this.textContent='Copy',2000)})" style="flex-shrink:0;padding:0.4rem 0.8rem;background:rgba(46,221,130,0.15);border:1px solid rgba(46,221,130,0.3);border-radius:var(--radius);color:#2edd82;font-size:0.75rem;font-weight:bold;cursor:pointer">Copy</button>
+                            </div>
                         </div>
+
+                        <!-- Usage examples -->
+                        <div style="width:100%;text-align:left;margin-bottom:var(--space-6)">
+                            <div style="font-size:0.75rem;font-weight:bold;color:#2edd82;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:var(--space-3)">How to use your key</div>
+
+                            <div style="margin-bottom:var(--space-3)">
+                                <div style="font-size:0.7rem;color:var(--color-slate-500);margin-bottom:4px">cURL</div>
+                                <pre id="curl-example" style="background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius);padding:var(--space-3);font-size:0.72rem;color:#a8d5b0;overflow-x:auto;margin:0">curl https://terrashield.app/api/v1/reports \
+  -H "Authorization: Bearer TSK-..."</pre>
+                            </div>
+
+                            <div style="margin-bottom:var(--space-3)">
+                                <div style="font-size:0.7rem;color:var(--color-slate-500);margin-bottom:4px">Python</div>
+                                <pre id="python-example" style="background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius);padding:var(--space-3);font-size:0.72rem;color:#a8d5b0;overflow-x:auto;margin:0">import requests
+r = requests.get("https://terrashield.app/api/v1/reports",
+    headers={"Authorization": "Bearer TSK-..."})
+print(r.json())</pre>
+                            </div>
+
+                            <div style="padding:var(--space-3) var(--space-4);background:rgba(46,221,130,0.05);border:1px solid rgba(46,221,130,0.15);border-radius:var(--radius);font-size:0.78rem;color:var(--color-slate-400)">
+                                <strong style="color:#2edd82">Available endpoints:</strong><br/>
+                                <code style="color:#a8d5b0">GET /api/v1/reports</code> — Invasive species sightings (last 30 days)<br/>
+                                <code style="color:#a8d5b0">GET /api/v1/statistics</code> — District-level outbreak analytics<br/>
+                                <code style="color:#a8d5b0">GET /api/v1/satellite?lat=&lng=</code> — Satellite NDVI for any coordinate
+                            </div>
+                        </div>
+
                         <a href="#/" style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);padding:0.75rem 1.5rem;border-radius:var(--radius-md);font-weight:bold;text-decoration:none;transition:all 0.2s" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
                             Return to Home
                         </a>
@@ -120,36 +151,68 @@ export function renderEnterpriseRegister() {
             const form = document.getElementById('enterprise-form');
             if (!form) return;
 
-            form.addEventListener('submit', (e) => {
+            form.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
                 const btn = document.getElementById('ent-submit-btn');
                 const btnText = document.getElementById('ent-btn-text');
                 const btnIcon = document.getElementById('ent-btn-icon');
 
-                // Loading state
                 btn.disabled = true;
                 btn.style.cursor = 'not-allowed';
-                btnText.textContent = 'Processing request...';
+                btnText.textContent = 'Generating API key...';
                 btnIcon.textContent = 'progress_activity';
                 btnIcon.style.animation = 'spin 1.5s linear infinite';
 
-                // Simulated delay exactly 1.5 seconds
-                setTimeout(() => {
-                    const randomId = 'TS-ENT-' + Math.floor(10000 + Math.random() * 90000);
+                try {
+                    const res = await fetch('/api/enterprise/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            org_name: document.getElementById('ent-company').value.trim(),
+                            org_type: document.getElementById('ent-type').value,
+                            email: document.getElementById('ent-email').value.trim(),
+                            country: document.getElementById('ent-country').value.trim(),
+                            state: document.getElementById('ent-state').value.trim(),
+                            use_case: document.getElementById('ent-usecase').value.trim(),
+                            volume: document.getElementById('ent-volume').value,
+                            sandbox: document.getElementById('ent-sandbox').checked,
+                        })
+                    });
+
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        btnText.textContent = data.error || 'Error — try again';
+                        btnIcon.textContent = 'error';
+                        btnIcon.style.animation = '';
+                        btn.disabled = false;
+                        btn.style.cursor = 'pointer';
+                        return;
+                    }
+
+                    // Show success with real key
+                    const apiKey = data.api_key;
+                    document.getElementById('ent-api-key').textContent = apiKey;
+                    document.getElementById('curl-example').textContent =
+                        `curl https://terrashield.app/api/v1/reports \\\n  -H "Authorization: Bearer ${apiKey}"`;
+                    document.getElementById('python-example').textContent =
+                        `import requests\nr = requests.get("https://terrashield.app/api/v1/reports",\n    headers={"Authorization": "Bearer ${apiKey}"})\nprint(r.json())`;
 
                     form.style.display = 'none';
-                    document.getElementById('ent-app-id').textContent = randomId;
-
                     const successView = document.getElementById('enterprise-success');
                     successView.style.display = 'flex';
                     successView.style.opacity = '0';
                     successView.style.transition = 'opacity 0.4s ease';
+                    setTimeout(() => { successView.style.opacity = '1'; }, 50);
 
-                    setTimeout(() => {
-                        successView.style.opacity = '1';
-                    }, 50);
-                }, 1500);
+                } catch (err) {
+                    btnText.textContent = 'Network error — try again';
+                    btnIcon.textContent = 'error';
+                    btnIcon.style.animation = '';
+                    btn.disabled = false;
+                    btn.style.cursor = 'pointer';
+                }
             });
         }
     };
