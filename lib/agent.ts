@@ -1,48 +1,10 @@
 /**
  * lib/agent.ts
- * TerraShield Agent Memory — powered by Groq + SQLite vector-like storage
- *
- * Since Hindsight requires Python 3.11+ which isn't available,
- * we implement the same recall/retain pattern directly:
- *  - retain: stores sighting as a memory in SQLite
- *  - recall: uses Groq to semantically find relevant past sightings
+ * TerraShield Agent Memory — powered by Groq + Supabase
+ * Stores and recalls past sightings using Supabase PostgreSQL
  */
 
-import Database from "better-sqlite3";
-import path from "path";
-import fs from "fs";
-
-const DB_DIR = path.join(process.cwd(), "lib", "db");
-const MEMORY_DB_PATH = path.join(DB_DIR, "memory.db");
-
-if (!fs.existsSync(DB_DIR)) fs.mkdirSync(DB_DIR, { recursive: true });
-
-declare global { var __memoryDb: Database.Database | undefined; }
-
-function getMemoryDb(): Database.Database {
-    if (!global.__memoryDb) {
-        global.__memoryDb = new Database(MEMORY_DB_PATH);
-        global.__memoryDb.pragma("journal_mode = WAL");
-        global.__memoryDb.exec(`
-            CREATE TABLE IF NOT EXISTS agent_memories (
-                id          INTEGER PRIMARY KEY AUTOINCREMENT,
-                content     TEXT NOT NULL,
-                lat         REAL,
-                lng         REAL,
-                district    TEXT,
-                state       TEXT,
-                classification TEXT,
-                risk_score  REAL,
-                species     TEXT,
-                confidence  REAL,
-                created_at  TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-            );
-            CREATE INDEX IF NOT EXISTS idx_memory_lat_lng ON agent_memories(lat, lng);
-            CREATE INDEX IF NOT EXISTS idx_memory_district ON agent_memories(district);
-        `);
-    }
-    return global.__memoryDb;
-}
+import { getSupabaseAdmin } from "@/lib/supabase/server";
 
 export interface AgentMemory {
     id: number;
@@ -79,13 +41,20 @@ export async function retainSighting(
     speciesTags: string[],
     confidence: number
 ): Promise<void> {
-    const db = getMemoryDb();
+    const supabase = getSupabaseAdmin();
     const content = `${classification} detected at ${lat.toFixed(5)}, ${lng.toFixed(5)} in ${district ?? "unknown"}, ${state ?? "unknown"}. Risk score: ${riskScore}/10. Species: ${speciesTags.join(", ")}. Confidence: ${Math.round(confidence * 100)}%. Date: ${new Date().toISOString()}`;
 
-    db.prepare(`
-        INSERT INTO agent_memories (content, lat, lng, district, state, classification, risk_score, species, confidence)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(content, lat, lng, district, state, classification, riskScore, speciesTags[0] ?? "unknown", confidence);
+    await supabase.from("agent_memories").insert({
+        content,
+        lat,
+        lng,
+        district,
+        state,
+        classification,
+        risk_score: riskScore,
+        species: speciesTags[0] ?? "unknown",
+        confidence,
+    });
 }
 
 // ─── Recall nearby sightings ──────────────────────────────────────────────────
@@ -95,19 +64,23 @@ export async function recallSightings(
     radiusKm = 50,
     topK = 5
 ): Promise<AgentMemory[]> {
-    const db = getMemoryDb();
+    const supabase = getSupabaseAdmin();
 
-    // Get all memories and filter by distance (SQLite has no spatial index)
-    const all = db.prepare<[], AgentMemory>("SELECT * FROM agent_memories ORDER BY created_at DESC LIMIT 500").all();
+    // Fetch recent memories and filter by distance
+    const { data } = await supabase
+        .from("agent_memories")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(200);
 
-    const nearby = all
+    if (!data?.length) return [];
+
+    return data
         .filter(m => m.lat != null && m.lng != null && haversineKm(lat, lng, m.lat, m.lng) <= radiusKm)
-        .slice(0, topK);
-
-    return nearby;
+        .slice(0, topK) as AgentMemory[];
 }
 
-// ─── Use Groq to generate a memory-aware context summary ─────────────────────
+// ─── Build memory context with Groq summary ───────────────────────────────────
 export async function buildMemoryContext(
     lat: number,
     lng: number,
@@ -124,9 +97,8 @@ export async function buildMemoryContext(
     }
 
     const rawMemories = pastSightings.map(m => m.content).join(" | ");
-
-    // Try Groq for a smart summary
     const groqKey = process.env.GROQ_API_KEY;
+
     if (!groqKey) {
         return {
             summary: `Agent memory — ${pastSightings.length} past sightings near this location: ${rawMemories}`,
@@ -168,7 +140,7 @@ export async function buildMemoryContext(
             }
         }
     } catch (e) {
-        console.warn("[agent] Groq summary failed, using raw memories:", e);
+        console.warn("[agent] Groq summary failed:", e);
     }
 
     return {
