@@ -40,9 +40,14 @@ export async function getUserMeta(userId: string, email: string): Promise<UserMe
     const supabase = getSupabaseAdmin();
     const { data: user } = await supabase.from("users_meta").select("*").eq("user_id", userId).single();
     if (!user) {
+        // Auto-create with welcome bonus
         await supabase.from("users_meta").insert({ user_id: userId, email, terra_points: 50 });
         await supabase.from("points_history").insert({ user_id: userId, amount: 50, reason: "Welcome to TerraShield" });
         const { data: newUser } = await supabase.from("users_meta").select("*").eq("user_id", userId).single();
+        if (!newUser) {
+            // Return safe default if insert failed
+            return withLevel({ id: 0, user_id: userId, email, terra_points: 50, reports_count: 0, verified_reports: 0, role: 'user', created_at: new Date().toISOString() });
+        }
         return withLevel(newUser as UserMeta);
     }
     return withLevel(user as UserMeta);

@@ -115,7 +115,7 @@ export async function detectOutbreakClusters(): Promise<OutbreakCluster[]> {
         .select("id, latitude, longitude, ai_tags, ai_summary, ai_risk_score")
         .not("ai_analysed_at", "is", null).in("ai_label", ["invasive-plant", "invasive-animal"])
         .not("latitude", "is", null).not("longitude", "is", null).gte("created_at", cutoff);
-    if (error) throw new Error(`Failed to detect clusters: ${error.message}`);
+    if (error) { console.warn("[clusters] Supabase error:", error.message); return []; }
     if (!rows?.length) return [];
 
     const assigned = new Set<number>(), clusters: OutbreakCluster[] = [];
